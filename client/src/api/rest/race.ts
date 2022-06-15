@@ -6,13 +6,16 @@ import { RaceStats } from "../../constants/stats";
 import { generateAuthHeader } from "..";
 import { User } from "firebase/auth";
 import { GuestUser } from "../../contexts/AuthContext";
+import { API_URL } from "../../constants/api";
 
 interface PassageResponse {
   passage: string;
 }
 
 export const getPassage = async (type: number): Promise<string> => {
-  const res = await axios.get<PassageResponse>(`/race/passage?type=${type}`);
+  const res = await axios.get<PassageResponse>(
+    API_URL + `/race/passage?type=${type}`
+  );
   return res.data.passage;
 };
 
@@ -21,7 +24,7 @@ export const sendRaceData = async (
   resultsData: ResultsData
 ) => {
   return axios.post(
-    "/race/statreport",
+    API_URL + "/race/statreport",
     {
       resultsData: resultsData,
     },

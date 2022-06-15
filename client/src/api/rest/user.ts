@@ -2,13 +2,14 @@ import axios from "axios";
 import { User } from "firebase/auth";
 import { GuestUser } from "../../contexts/AuthContext";
 import { generateAuthHeader } from "..";
+import { API_URL } from "../../constants/api";
 
 export const createUser = async (
   currentUser: User | GuestUser,
   username: string
 ) => {
   return await axios.post(
-    "/user/user-create",
+    API_URL + "/user/user-create",
     {
       username: username,
     },
@@ -24,7 +25,7 @@ export const sendFriendRequest = async (
   uid: string
 ) => {
   return await axios.post(
-    "/user/friend_request",
+    API_URL + "/user/friend_request",
     {
       uid: uid,
     },
@@ -40,7 +41,7 @@ export const acceptFriendRequest = async (
   uid: string
 ) => {
   return await axios.post(
-    "/user/accept_request",
+    API_URL + "/user/accept_request",
     {
       uid: uid,
     },
@@ -56,7 +57,7 @@ export const declineFriendRequest = async (
   uid: string
 ) => {
   return await axios.post(
-    "/user/decline_request",
+    API_URL + "/user/decline_request",
     {
       uid: uid,
     },
@@ -68,7 +69,7 @@ export const declineFriendRequest = async (
 };
 
 export const getFriendRequests = async (currentUser: User | GuestUser) => {
-  const res = await axios.get("/user/friend_requests", {
+  const res = await axios.get(API_URL + "/user/friend_requests", {
     withCredentials: true,
     headers: await generateAuthHeader(currentUser),
   });
@@ -81,7 +82,7 @@ export interface Friend {
 }
 
 export const getFriends = async (currentUser: User | GuestUser) => {
-  const res = await axios.get("/user/friends", {
+  const res = await axios.get(API_URL + "/user/friends", {
     withCredentials: true,
     headers: await generateAuthHeader(currentUser),
   });

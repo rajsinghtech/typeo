@@ -28,13 +28,16 @@ app.use((err: any, req: any, res: any, next: any) => {
   res.status(err.status || 500).send(err.text || "Something went wrong");
 });
 
-let buildDir = path.join(__dirname, "..", "..", "client", "/build");
+console.log(process.env.NODE_ENV);
 if (process.env.NODE_ENV === "production") {
-  buildDir = path.join(__dirname, "..", "build");
+  // let buildDir = path.join(__dirname, "..", "..", "client", "/build");
+  // if (process.env.NODE_ENV === "production") {
+  const buildDir = path.join(__dirname, "..", "..", "client", "build");
+  // }
+
+  app.use(express.static(buildDir));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(buildDir, "index.html"));
+  });
 }
-
-app.use(express.static(buildDir));
-
-app.get("*", (req, res) => {
-  res.sendFile(path.join(buildDir, "index.html"));
-});

@@ -3,12 +3,15 @@ import { Socket } from "socket.io-client";
 import { io } from "socket.io-client";
 import { useAuth } from "./AuthContext";
 import { User } from "firebase/auth";
+import { API_URL } from "../constants/api";
 
 interface S_Context {
   socket: Socket;
 }
 
-const initialSocket = io({ autoConnect: false });
+const initialSocket = API_URL
+  ? io(API_URL, { autoConnect: false })
+  : io({ autoConnect: false });
 
 const SocketContext = React.createContext<S_Context>({ socket: initialSocket });
 

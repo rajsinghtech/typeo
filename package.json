@@ -1,0 +1,20 @@
+{
+  "name": "typeo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "api/dist/index.js",
+  "scripts": {
+    "start": "cd api && npm run dev",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/laroccol/typeo.git"
+  },
+  "author": "Lucas LaRocco",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/laroccol/typeo/issues"
+  },
+  "homepage": "https://github.com/laroccol/typeo#readme"
+}
