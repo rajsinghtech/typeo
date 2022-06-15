@@ -4,8 +4,8 @@
   "private": true,
   "main": "dist/index.js",
   "scripts": {
-    "tsc": "tsc",
-    "start": "npm run tsc && node dist/index.js",
+    "build": "tsc",
+    "start": "node dist/index.js",
     "devnb": "ts-node-dev src/index.ts",
     "dev": "cd ../client && npm run build && cd ../api && ts-node-dev src/index.ts"
   },
