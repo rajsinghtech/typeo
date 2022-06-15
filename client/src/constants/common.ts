@@ -1,0 +1,31 @@
+export type TextVariant =
+  | "h1"
+  | "h2"
+  | "h3"
+  | "h4"
+  | "h5"
+  | "h6"
+  | "subtitle1"
+  | "subtitle2"
+  | "body1"
+  | "body2"
+  | "caption"
+  | "button"
+  | "overline"
+  | "inherit"
+  | undefined;
+
+export type Placement =
+  | "bottom-end"
+  | "bottom-start"
+  | "bottom"
+  | "left-end"
+  | "left-start"
+  | "left"
+  | "right-end"
+  | "right-start"
+  | "right"
+  | "top-end"
+  | "top-start"
+  | "top"
+  | undefined;
