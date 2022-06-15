@@ -5,6 +5,7 @@
   "main": "api/dist/index.js",
   "scripts": {
     "start": "cd api && npm run dev",
+    "heroku-prebuild": "cd client && npm install && cd api && npm install",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
