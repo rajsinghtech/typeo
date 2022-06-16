@@ -29,7 +29,7 @@ app.use((err: any, req: any, res: any, next: any) => {
 });
 console.log(process.env.NODE_ENV);
 if (process.env.NODE_ENV === "production") {
-  const buildDir = path.join(__dirname, "client", "build");
+  const buildDir = path.join(__dirname, "..", "client", "build");
   console.log(buildDir);
 
   app.use(express.static(buildDir));
