@@ -27,7 +27,7 @@ app.use("/user", verifyIDToken, userRouter);
 app.use((err: any, req: any, res: any, next: any) => {
   res.status(err.status || 500).send(err.text || "Something went wrong");
 });
-
+console.log(process.env.NODE_ENV);
 if (process.env.NODE_ENV === "production") {
   const buildDir = path.join(__dirname, "client", "build");
 
