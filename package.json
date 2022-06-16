@@ -4,8 +4,9 @@
   "description": "",
   "main": "api/dist/index.js",
   "scripts": {
-    "start": "cd api && npm start",
     "tsc": "tsc",
+    "start": "cd api && npm start",
+    "startProd": "cd api && npm run build && npm start",
     "heroku-prebuild": "cd client && npm install && cd ../api && npm install",
     "heroku-postbuild": "cd api && npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -21,6 +22,17 @@
   },
   "homepage": "https://github.com/laroccol/typeo#readme",
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.3",
+    "@types/cors": "^2.8.12",
+    "@types/express": "^4.17.13",
+    "@types/jest": "^28.1.1",
+    "@types/node": "^18.0.0",
+    "@types/pg": "^8.6.5",
+    "@types/supertest": "^2.0.12",
+    "@types/uuid": "^8.3.4",
+    "@types/ws": "^8.5.3",
+    "@typescript-eslint/eslint-plugin": "^5.28.0",
+    "@typescript-eslint/parser": "^5.28.0",
     "typescript": "^4.7.3"
   }
 }
