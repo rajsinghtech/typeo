@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "rootDir": "src",
     "module": "commonjs",
     "esModuleInterop": true,
     "target": "es6",
@@ -12,5 +13,6 @@
     "paths": {
       "*": ["node_modules/*"]
     }
-  }
+  },
+  "exclude": ["client"]
 }
