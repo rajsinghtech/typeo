@@ -29,7 +29,7 @@ module.exports = {
         schema: [],
 
         messages: {
-            preferLiteral: "The object literal notation {} is preferable."
+            preferLiteral: "The object literal notation {} is preferrable."
         }
     },
 
