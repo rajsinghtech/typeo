@@ -5,6 +5,7 @@
   "main": "api/dist/index.js",
   "scripts": {
     "start": "cd api && npm start",
+    "tsc": "tsc",
     "heroku-prebuild": "cd client && npm install && cd ../api && npm install",
     "heroku-postbuild": "cd api && npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -18,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/laroccol/typeo/issues"
   },
-  "homepage": "https://github.com/laroccol/typeo#readme"
+  "homepage": "https://github.com/laroccol/typeo#readme",
+  "devDependencies": {
+    "typescript": "^4.7.3"
+  }
 }
