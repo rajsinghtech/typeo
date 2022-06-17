@@ -36,8 +36,6 @@ const Follower = ({ wbRef, raceState, disabled }: FollowerProps) => {
   };
 
   const updateFollower = () => {
-    console.log("Updating Follower");
-    console.log(raceState.currentCharIndex);
     if (
       wbRef.current &&
       wbRef.current.children[1] &&
