@@ -50,10 +50,11 @@ interface SpeedProgressProps {
   sidePadding?: number;
 }
 
-export default function SpeedProgress({
+export default React.memo(function SpeedProgress({
   wpm,
   sidePadding,
 }: SpeedProgressProps) {
+  console.log("REnder");
   return (
     <Box sx={{ width: "100%", padding: `0px ${sidePadding}` }}>
       <Grid container spacing={3}>
@@ -69,7 +70,7 @@ export default function SpeedProgress({
       </Grid>
     </Box>
   );
-}
+});
 
 export function calculateWPMColor(wpm: number, opacity: number): string {
   const green = Math.floor(((clamp(wpm, 30, 170) - 30) / 140) * 255);

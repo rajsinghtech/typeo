@@ -17,7 +17,6 @@ import { CLIENT_RACE_UPDATE_EVENT } from "../../api/sockets/race";
 import { useSnackbar } from "notistack";
 
 interface RaceInfo {
-  startTime: number;
   textAreaText: string;
   words: Array<string>;
 }
@@ -25,9 +24,11 @@ interface RaceInfo {
 interface RaceStatus {
   isRaceRunning: boolean;
   isRaceFinished: boolean;
+  startTime: number;
+  secondsRunning: number;
 }
 
-interface RaceState {
+export interface RaceState {
   isCorrect: boolean; // Has an error been made and not fixed
   currentCharIndex: number; // The current character the user is on in the passage (Regardless if they are correct or not)
   currentWordIndex: number; // The index of the start of the word the user is currently on (Regardless if they are correct or not)
@@ -44,6 +45,7 @@ interface RaceState {
   prevInput: string;
   prevKey: string;
   overflowCount: number; // Detect if we have gone past the last character in the passage
+  errors: number;
 }
 
 interface StatState {
@@ -52,6 +54,44 @@ interface StatState {
   characterTrackingData: CharacterData[];
   resultsData: ResultsData;
 }
+
+const initialRaceState: RaceState = {
+  isCorrect: true,
+  currentCharIndex: 0,
+  currentWordIndex: 0,
+  correctWordIndex: 0,
+  errorIndex: 0,
+  errorWordIndexes: [],
+  wordsTyped: 0,
+  charactersTyped: 0,
+  lastCorrectWord: 0,
+  prevInput: "",
+  prevKey: "",
+  overflowCount: 0,
+  errors: 0,
+};
+
+const initialRaceStatus: RaceStatus = {
+  isRaceRunning: false,
+  isRaceFinished: false,
+  startTime: 0,
+  secondsRunning: 0,
+};
+
+const initialStatState: StatState = {
+  wpm: 0,
+  wpmData: [],
+  characterTrackingData: [],
+  resultsData: {
+    passage: "",
+    startTime: 0,
+    dataPoints: [],
+    accuracy: 0,
+    characters: { correct: 0, incorrect: 0, total: 0 },
+    testType: { name: "", textType: "" },
+    characterDataPoints: [],
+  },
+};
 
 interface RaceLogicProps {
   settings: GameSettings;
@@ -71,79 +111,46 @@ export default function useRaceLogic({
 
   // Race Info
   const [raceInfo, setRaceInfo] = React.useState<RaceInfo>({
-    startTime: 0,
     textAreaText: "",
     words: [],
   }); // The time the current race started
 
-  const [raceStatus, setRaceStatus] = React.useState<RaceStatus>({
-    isRaceRunning: false,
-    isRaceFinished: false,
-  });
+  const [raceStatus, setRaceStatus] =
+    React.useState<RaceStatus>(initialRaceStatus);
 
-  const [raceState, setRaceState] = React.useState<RaceState>({
-    isCorrect: true,
-    currentCharIndex: 0,
-    currentWordIndex: 0,
-    correctWordIndex: 0,
-    errorIndex: 0,
-    errorWordIndexes: [],
-    wordsTyped: 0,
-    charactersTyped: 0,
-    lastCorrectWord: 0,
-    prevInput: "",
-    prevKey: "",
-    overflowCount: 0,
-  });
-
-  // Game Type Specific
-  const [amount, setAmount] = React.useState<number>(0);
-
-  const [secondsRunning, setSecondsRunning] = React.useState<number>(0);
+  const [raceState, setRaceState] = React.useState<RaceState>(initialRaceState);
 
   // WPM Tracking
-  const [statState, setStatState] = React.useState<StatState>({
-    wpm: 0,
-    wpmData: [],
-    characterTrackingData: [],
-    resultsData: {
-      passage: "",
-      startTime: 0,
-      dataPoints: [],
-      accuracy: 0,
-      characters: { correct: 0, incorrect: 0, total: 0 },
-      testType: { name: "", textType: "" },
-      characterDataPoints: [],
-    },
-  });
+  const [statState, setStatState] = React.useState<StatState>(initialStatState);
 
-  const [errors, setErrors] = React.useState<number>(0);
-
-  const { enqueueSnackbar } = useSnackbar();
+  const [amount, setAmount] = React.useState<number>(0);
 
   useInterval(
     () => {
-      unstable_batchedUpdates(() => {
-        UpdateWPM();
-        setSecondsRunning((prevSecondsRunning) => {
-          if (prevSecondsRunning >= 150) {
-            enqueueSnackbar("Race Timeout : 150 Seconds", {
-              variant: "error",
-              anchorOrigin: {
-                vertical: "top",
-                horizontal: "right",
-              },
-            });
-            OnEndRace();
-          }
-          return prevSecondsRunning + 1;
-        });
-        if (settings.gameInfo.type === GameTypes.TIMED) {
-          setAmount((prev: number) => {
-            return prev - 1;
-          });
-        }
-      });
+      // unstable_batchedUpdates(() => {
+      //   UpdateWPM();
+      //   setRaceStatus((prevRaceStatus) => {
+      //     if (prevRaceStatus.secondsRunning >= 150) {
+      //       // enqueueSnackbar("Race Timeout : 150 Seconds", {
+      //       //   variant: "error",
+      //       //   anchorOrigin: {
+      //       //     vertical: "top",
+      //       //     horizontal: "right",
+      //       //   },
+      //       // });
+      //       OnEndRace();
+      //     }
+      //     return {
+      //       ...prevRaceStatus,
+      //       secondsRunning: prevRaceStatus.secondsRunning + 1,
+      //     };
+      //   });
+      //   if (settings.gameInfo.type === GameTypes.TIMED) {
+      //     setAmount((prevAmount) => {
+      //       return prevAmount - 1;
+      //     });
+      //   }
+      // });
     },
     raceStatus.isRaceRunning ? 1000 : null
   );
@@ -151,8 +158,6 @@ export default function useRaceLogic({
   const InitializePassage = () => {
     const textType = settings.textType;
     const gameInfo = settings.gameInfo;
-
-    console.log(gameInfo);
 
     const practice = settings.gameInfo.practice;
 
@@ -173,14 +178,8 @@ export default function useRaceLogic({
       }
       newWords.length = gameInfo.amount || 0;
     }
-
-    console.log({
-      ...raceInfo,
-      textAreaText: newWords.join(" ").trim(),
-      words: newWords,
-    });
+    console.log(newWords);
     setRaceInfo({
-      ...raceInfo,
       textAreaText: newWords.join(" ").trim(),
       words: newWords,
     });
@@ -204,24 +203,32 @@ export default function useRaceLogic({
   };
 
   const OnStartRace = () => {
-    setRaceInfo({ ...raceInfo, startTime: Date.now() });
-    setRaceStatus({ isRaceRunning: true, isRaceFinished: false });
+    setRaceStatus({
+      isRaceRunning: true,
+      isRaceFinished: false,
+      startTime: Date.now(),
+      secondsRunning: 0,
+    });
   };
 
   const OnEndRace = () => {
     UpdateWPM();
-    setRaceStatus({ isRaceRunning: false, isRaceFinished: true });
-    const correctCharacters = raceState.currentCharIndex - errors;
+    setRaceStatus({
+      ...raceStatus,
+      isRaceRunning: false,
+      isRaceFinished: true,
+    });
+    const correctCharacters = raceState.currentCharIndex - raceState.errors;
     const accuracy = (correctCharacters / raceState.currentCharIndex) * 100;
     setStatState((prevStatState) => {
       const resultsData = {
         passage: raceInfo.textAreaText,
-        startTime: raceInfo.startTime,
+        startTime: raceStatus.startTime,
         dataPoints: prevStatState.wpmData,
         accuracy: accuracy,
         characters: {
           correct: correctCharacters,
-          incorrect: errors,
+          incorrect: raceState.errors,
           total: raceState.currentCharIndex,
         },
         testType: {
@@ -247,23 +254,15 @@ export default function useRaceLogic({
 
   const ResetRace = React.useCallback(
     (shouldRaceStart = false) => {
-      console.log("RESETTING");
-      setRaceInfo({ ...raceInfo, startTime: 0 });
-      setRaceStatus({ isRaceRunning: false, isRaceFinished: false });
-      setRaceState({
-        isCorrect: true,
-        currentCharIndex: 0,
-        currentWordIndex: 0,
-        correctWordIndex: 0,
-        errorIndex: 0,
-        errorWordIndexes: [],
-        wordsTyped: 0,
-        charactersTyped: 0,
-        lastCorrectWord: 0,
-        prevInput: "",
-        prevKey: "",
-        overflowCount: 0,
+      setRaceStatus({
+        isRaceRunning: false,
+        isRaceFinished: false,
+        startTime: 0,
+        secondsRunning: 0,
       });
+      setRaceState(initialRaceState);
+
+      setAmount(settings.gameInfo.amount || 0);
 
       setStatState({
         wpm: 0,
@@ -280,15 +279,10 @@ export default function useRaceLogic({
         },
       });
 
-      setErrors(0);
-      setAmount(settings.gameInfo.amount || 0);
-      setSecondsRunning(0);
-
-      console.log(shouldRaceStart);
       if (shouldRaceStart) OnStartRace();
       else InitializePassage();
     },
-    [raceInfo, settings]
+    [settings]
   );
 
   const UpdateWPM = () => {
@@ -299,7 +293,7 @@ export default function useRaceLogic({
       : raceState.charactersTyped;
 
     const wpm =
-      (charactersTyped / 5 / (Date.now() - raceInfo.startTime)) * 60000;
+      (charactersTyped / 5 / (Date.now() - raceStatus.startTime)) * 60000;
     setStatState((prevStatState) => {
       return {
         ...prevStatState,
@@ -473,7 +467,6 @@ export default function useRaceLogic({
 
         inputRef.value = "";
         event.preventDefault();
-
         setRaceState(newRaceState);
 
         return;
@@ -508,7 +501,7 @@ export default function useRaceLogic({
             ];
             newRaceState.lastCorrectWord = raceState.wordsTyped;
             newRaceState.isCorrect = false;
-            setErrors(errors + 1);
+            newRaceState.errors++;
 
             // Increment the word trackers even if we are wrong on a space
             if (
@@ -570,7 +563,7 @@ export default function useRaceLogic({
       newRaceState.prevKey = key;
       setRaceState(newRaceState);
     },
-    [raceInfo, raceState]
+    [raceInfo, raceStatus.isRaceRunning, raceStatus.isRaceFinished, raceState]
   );
 
   const addCharacterDataPoint = () => {
@@ -592,15 +585,15 @@ export default function useRaceLogic({
   };
 
   React.useEffect(() => {
-    InitializePassage();
-  }, [passage]);
+    ResetRace(false);
+  }, [settings, passage]);
 
   React.useEffect(() => {
     const gameInfo = settings.gameInfo;
     if (gameInfo.type === GameTypes.ERRORS && gameInfo.amount) {
-      setAmount(gameInfo.amount - errors);
+      setAmount(gameInfo.amount - raceState.errors);
     }
-  }, [errors]);
+  }, [raceState.errors]);
 
   React.useEffect(() => {
     const gameInfo = settings.gameInfo;
@@ -634,22 +627,23 @@ export default function useRaceLogic({
     if (setResultsDataProp) setResultsDataProp(statState.resultsData);
   }, [statState.resultsData]);
 
-  // React.useEffect(() => {
-  //   if (raceState.prevKey.length > 1) return;
-  //   addCharacterDataPoint();
-  // }, [raceState.currentCharIndex]);
+  React.useEffect(() => {
+    if (raceState.prevKey.length > 1) return;
+    addCharacterDataPoint();
+  }, [raceState.currentCharIndex]);
 
-  return {
+  const val: RaceLogic = {
     raceInfo,
     raceStatus,
     raceState,
     statState,
     amount,
-    secondsRunning,
     OnChange,
     OnKeyDown,
     ResetRace,
   };
+
+  return val;
 }
 
 export interface RaceLogic {
@@ -658,7 +652,6 @@ export interface RaceLogic {
   raceState: RaceState;
   statState: StatState;
   amount: number;
-  secondsRunning: number;
   OnChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   OnKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
   ResetRace: (shouldRaceStart: boolean) => void;
