@@ -152,6 +152,8 @@ export default function useRaceLogic({
     const textType = settings.textType;
     const gameInfo = settings.gameInfo;
 
+    console.log(gameInfo);
+
     const practice = settings.gameInfo.practice;
 
     let newPassage = passage || getPassage(textType, practice);
@@ -172,6 +174,11 @@ export default function useRaceLogic({
       newWords.length = gameInfo.amount || 0;
     }
 
+    console.log({
+      ...raceInfo,
+      textAreaText: newWords.join(" ").trim(),
+      words: newWords,
+    });
     setRaceInfo({
       ...raceInfo,
       textAreaText: newWords.join(" ").trim(),
@@ -239,7 +246,8 @@ export default function useRaceLogic({
   };
 
   const ResetRace = React.useCallback(
-    (shouldRaceStart: boolean) => {
+    (shouldRaceStart = false) => {
+      console.log("RESETTING");
       setRaceInfo({ ...raceInfo, startTime: 0 });
       setRaceStatus({ isRaceRunning: false, isRaceFinished: false });
       setRaceState({
@@ -276,6 +284,7 @@ export default function useRaceLogic({
       setAmount(settings.gameInfo.amount || 0);
       setSecondsRunning(0);
 
+      console.log(shouldRaceStart);
       if (shouldRaceStart) OnStartRace();
       else InitializePassage();
     },
@@ -373,11 +382,9 @@ export default function useRaceLogic({
       ) {
         const newRaceState = {...raceState};
         HandleDeletion(event, newRaceState)
-
         newRaceState.isCorrect = true;
         setRaceState(newRaceState);
       }
-
       if (
         // If we have reached the end of the passage and we are correct, end the race
         inputVal === raceInfo.words[raceState.wordsTyped] &&
@@ -585,10 +592,6 @@ export default function useRaceLogic({
   };
 
   React.useEffect(() => {
-    setAmount(settings.gameInfo.amount || 0);
-  }, [settings]);
-
-  React.useEffect(() => {
     InitializePassage();
   }, [passage]);
 
@@ -615,7 +618,7 @@ export default function useRaceLogic({
   }, [raceState.wordsTyped]);
 
   React.useEffect(() => {
-    if (testDisabled === false) {
+    if (settings.online && testDisabled === false) {
       OnStartRace();
     }
   }, [testDisabled]);
@@ -631,10 +634,10 @@ export default function useRaceLogic({
     if (setResultsDataProp) setResultsDataProp(statState.resultsData);
   }, [statState.resultsData]);
 
-  React.useEffect(() => {
-    if (raceState.prevKey.length > 1) return;
-    addCharacterDataPoint();
-  }, [raceState.currentCharIndex]);
+  // React.useEffect(() => {
+  //   if (raceState.prevKey.length > 1) return;
+  //   addCharacterDataPoint();
+  // }, [raceState.currentCharIndex]);
 
   return {
     raceInfo,
@@ -647,4 +650,16 @@ export default function useRaceLogic({
     OnKeyDown,
     ResetRace,
   };
+}
+
+export interface RaceLogic {
+  raceInfo: RaceInfo;
+  raceStatus: RaceStatus;
+  raceState: RaceState;
+  statState: StatState;
+  amount: number;
+  secondsRunning: number;
+  OnChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  OnKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+  ResetRace: (shouldRaceStart: boolean) => void;
 }

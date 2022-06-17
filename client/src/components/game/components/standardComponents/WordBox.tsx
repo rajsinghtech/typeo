@@ -22,40 +22,40 @@ const StyledWord = styled("div")(({ theme }) => ({
   margin: "0.2em 0",
 }));
 
-class WordBox extends React.PureComponent<Props> {
-  render() {
-    const { words, boxRef } = this.props;
-    let char_count = 0;
-    return (
-      <Box m={5} overflow="hidden" height="8.1em" fontSize="20pt">
-        <StyledTextArea ref={boxRef}>
-          {words.map((word, index) => {
-            return (
-              <StyledWord key={char_count++}>
-                {word.split("").map((letter, index) => {
-                  return (
-                    <div
-                      key={char_count++}
-                      style={{ display: "inline-block" }}
-                      //ref={char_count === currentCharIndex ? measuredRef : null}
-                    >
-                      {letter}
-                    </div>
-                  );
-                })}
-                <div
-                  style={{ display: "inline-block" }}
-                  //ref={char_count + 1 === currentCharIndex ? measuredRef : null}
-                >
-                  &nbsp;
-                </div>
-              </StyledWord>
-            );
-          })}
-        </StyledTextArea>
-      </Box>
-    );
-  }
+interface WordBoxProps {
+  words: string[];
+  boxRef: any;
 }
 
-export default WordBox;
+export default React.memo(function WordBox({ words, boxRef }: WordBoxProps) {
+  let char_count = 0;
+  return (
+    <Box m={5} overflow="hidden" height="8.1em" fontSize="20pt">
+      <StyledTextArea ref={boxRef}>
+        {words.map((word, index) => {
+          return (
+            <StyledWord key={char_count++}>
+              {word.split("").map((letter, index) => {
+                return (
+                  <div
+                    key={char_count++}
+                    style={{ display: "inline-block" }}
+                    //ref={char_count === currentCharIndex ? measuredRef : null}
+                  >
+                    {letter}
+                  </div>
+                );
+              })}
+              <div
+                style={{ display: "inline-block" }}
+                //ref={char_count + 1 === currentCharIndex ? measuredRef : null}
+              >
+                &nbsp;
+              </div>
+            </StyledWord>
+          );
+        })}
+      </StyledTextArea>
+    </Box>
+  );
+});

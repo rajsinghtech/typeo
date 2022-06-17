@@ -40,6 +40,7 @@ import { GridCard } from "../../common";
 import { useAuth } from "../../../contexts/AuthContext";
 import OnlineResults from "../components/results/OnlineResults";
 import { ResultsData } from "../../../constants/race";
+import useRaceLogic from "../RaceLogic";
 
 export interface OnlineRaceData {
   playerData: Array<PlayerData>;
@@ -89,6 +90,13 @@ export default function FFAGame() {
 
   const [resultsOpen, setResultsOpen] = React.useState<boolean>(false);
   const [testDisabled, setTestDisabled] = React.useState<boolean>(true);
+
+  const raceLogic = useRaceLogic({
+    passage: passage,
+    settings: DefaultOnlineGameSettings,
+    testDisabled: testDisabled,
+    setResultsDataProp: setResultsData,
+  });
 
   const parentRef = React.useRef<HTMLDivElement>(null);
 
@@ -305,7 +313,7 @@ export default function FFAGame() {
         </Grid>
         <Grid item xs={12}>
           <StandardGame
-            passage={passage}
+            raceLogic={raceLogic}
             settings={DefaultOnlineGameSettings}
             testDisabled={testDisabled}
             onlineRaceData={onlineRaceData}

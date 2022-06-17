@@ -18,7 +18,7 @@ export default function TopSettings() {
       <FormControlLabel
         control={
           <Switch
-            defaultChecked={gameSettings.gameInfo.strict}
+            checked={gameSettings.gameInfo.strict}
             onChange={OnStrictChange}
           />
         }

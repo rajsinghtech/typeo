@@ -15,7 +15,7 @@ import Settings from "./standardComponents/Settings";
 import Results from "./results/Results";
 import { MAX_INPUT_LENGTH, ResultsData } from "../../../constants/race";
 import { OnlineRaceData } from "../types/FFAGame";
-import useRaceLogic from "../RaceLogic";
+import { RaceLogic } from "../RaceLogic";
 import HomeProfile from "../../profile/display/HomeProfile";
 import { useSnackbar } from "notistack";
 import TopSettings from "./standardComponents/TopSettings";
@@ -32,16 +32,16 @@ const usePrevious = (value: any): any => {
 const PREFIX = "MuiStandardGame";
 
 interface StandardGameProps {
+  raceLogic: RaceLogic;
   settings: GameSettings;
-  passage?: string;
   testDisabled?: boolean;
   onlineRaceData?: OnlineRaceData;
   setResultsDataProp?: (data: ResultsData) => void;
 }
 
 export default function StandardGame({
+  raceLogic,
   settings,
-  passage,
   testDisabled,
   onlineRaceData,
   setResultsDataProp,
@@ -52,16 +52,10 @@ export default function StandardGame({
     raceStatus,
     raceState,
     statState,
-    amount,
     OnChange,
     OnKeyDown,
     ResetRace,
-  } = useRaceLogic({
-    settings,
-    passage,
-    testDisabled,
-    setResultsDataProp,
-  });
+  } = raceLogic;
 
   const prevRaceState = usePrevious(raceState);
   // Element Details
@@ -94,40 +88,35 @@ export default function StandardGame({
       backgroundColor: "rgba(255,0,0,0.25)",
       outline: `1px solid ${theme.palette.error.main}`,
     },
-    amountCard: {
-      display: "inline-block",
-      textAlign: "center",
-      padding: "10px",
-      paddingLeft: "13px",
-      paddingTop: "15px",
-      backgroundColor: "rgba(255, 255, 255, 0.15)",
-    },
   };
 
-  const Reset = (shouldStartRace: boolean) => {
-    ResetRace(shouldStartRace);
+  const Reset = React.useCallback(
+    (shouldStartRace = false) => {
+      ResetRace(shouldStartRace);
 
-    if (inputRef.current) {
-      inputRef.current.value = "";
-      inputRef.current.focus();
-    }
+      if (inputRef.current) {
+        inputRef.current.value = "";
+        inputRef.current.focus();
+      }
 
-    if (wbRef.current) {
-      wbRef.current.style.top = "0";
-      for (const child of wbRef.current.children) {
-        for (const c of child.children) {
-          const element = c as HTMLElement;
-          if (element) {
-            element.style.color = "inherit";
-            element.style.backgroundColor = "inherit";
-            element.style.outline = "none";
-            element.style.borderBottom = "none";
-            element.style.marginBottom = "0";
+      if (wbRef.current) {
+        wbRef.current.style.top = "0";
+        for (const child of wbRef.current.children) {
+          for (const c of child.children) {
+            const element = c as HTMLElement;
+            if (element) {
+              element.style.color = "inherit";
+              element.style.backgroundColor = "inherit";
+              element.style.outline = "none";
+              element.style.borderBottom = "none";
+              element.style.marginBottom = "0";
+            }
           }
         }
       }
-    }
-  };
+    },
+    [settings]
+  );
 
   const CharStyle = {
     NONE: 0,
@@ -225,13 +214,11 @@ export default function StandardGame({
 
   React.useEffect(() => {
     updateFollower();
-
     const prevCurrentCharIndex = prevRaceState?.currentCharIndex || 0;
     const prevCurrentWordIndex = prevRaceState?.currentWordIndex || 0;
     const prevWordsTyped = prevRaceState?.wordsTyped || 0;
     const characterDifference =
       raceState.currentCharIndex - prevCurrentCharIndex;
-
     if (characterDifference === 1) {
       if (!raceState.isCorrect || raceState.prevKey !== " ") {
         setCharStyle(
@@ -274,7 +261,6 @@ export default function StandardGame({
         }
       }
     }
-
     if (raceState.overflowCount > 0 && !raceState.isCorrect) {
       setCharStyle(
         CharStyle.INCORRECT,
@@ -291,7 +277,6 @@ export default function StandardGame({
         );
       }
     }
-
     if (!settings.gameInfo.strict) {
       if (
         raceState.prevKey === " " &&
@@ -311,7 +296,6 @@ export default function StandardGame({
         }
       }
     }
-
     if (prevRaceState?.currentWordIndex > raceState.currentWordIndex) {
       if (wbRef.current && wbRef.current.children) {
         const wordElement = wbRef.current.children[raceState.wordsTyped];
@@ -331,151 +315,97 @@ export default function StandardGame({
   ]);
 
   React.useEffect(() => {
-    if (testDisabled === false) Reset(true);
-  }, [testDisabled]);
-
-  React.useEffect(() => {
     updateFollower();
   }, [onlineRaceData?.playerData?.length, onlineRaceData?.finisherData.length]);
 
   React.useEffect(() => {
-    Reset(false);
+    Reset();
   }, [settings]);
+  React.useEffect(() => {
+    // console.log("RERENDER");
+    // console.log(raceLogic.raceInfo.words);
+  });
 
   return (
-    <Box>
-      {!settings.online ? (
-        <Results
-          open={raceStatus.isRaceFinished}
-          setOpen={Reset}
-          data={statState.resultsData}
-        />
-      ) : null}
-      <Grid container spacing={3}>
-        {!settings.online ? (
+    <>
+      <GridCard accent={true} sx={{ mb: 3 }}>
+        {testDisabled && settings.gameInfo.practice.isPractice ? (
+          <Typography textAlign="center" height={300} pt={15}>
+            Select keys or sequences to add/remove them from your practice
+          </Typography>
+        ) : (
           <>
-            <Grid item xs={2} position="relative">
-              <Box position="absolute" bottom={0}>
-                <HomeProfile />
-              </Box>
-            </Grid>
-            <Grid item xs={6} textAlign="center">
-              <Card sx={styles.amountCard} elevation={15}>
-                <Typography variant="h4">{amount}</Typography>
-              </Card>
-            </Grid>
-            <Grid item xs={2} position="relative">
-              <Box position="absolute" bottom={0} right={0}>
-                <TopSettings />
-              </Box>
-            </Grid>
+            <WordBox words={raceInfo.words} boxRef={wbRef} />
+            <Follower
+              disabled={!raceStatus.isRaceRunning}
+              ccol={ccol}
+              ccot={ccot}
+              ccw={ccw}
+            />
           </>
-        ) : null}
-        <Grid item xs={settings.online ? 12 : 10}>
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <GridCard accent={true}>
-                {testDisabled && settings.gameInfo.practice.isPractice ? (
-                  <Typography textAlign="center" height={300} pt={15}>
-                    Select keys or sequences to add/remove them from your
-                    practice
-                  </Typography>
-                ) : (
-                  <>
-                    <WordBox words={raceInfo.words} boxRef={wbRef} />
-                    {/* <Follower
-                      disabled={!raceStatus.isRaceRunning}
-                      ccol={ccol}
-                      ccot={ccot}
-                      ccw={ccw}
-                    /> */}
-                  </>
-                )}
-                {onlineRaceData
-                  ? onlineRaceData.playerData.map((player) => {
-                      if (player.id === currentUser.uid) return null;
-                      const { col, cot, cw } = calculateFollowerPosition(
-                        player.wordsTyped,
-                        raceInfo.words,
-                        wbRef
-                      );
-                      return (
-                        <Follower
-                          key={player.id}
-                          ccol={col}
-                          ccot={cot}
-                          ccw={cw}
-                        />
-                      );
-                    })
-                  : null}
-                <SpeedProgress wpm={statState.wpm} />
-              </GridCard>
-            </Grid>
-            <Grid item xs={1}></Grid>
-            <Grid item xs={10}>
-              <GridCard accent={true} sx={{ display: "flex" }}>
-                <StyledTextField
-                  style={{
-                    padding: "10px",
-                    flexGrow: 1,
-                  }}
-                  inputProps={{
-                    maxLength: MAX_INPUT_LENGTH,
-                    style: { textAlign: "center" },
-                  }}
-                  variant="standard"
-                  required
-                  id="type"
-                  fullWidth
-                  placeholder="Type Here ..."
-                  name="type"
-                  fontSize="15pt"
-                  autoComplete="off"
-                  onKeyDown={OnKeyDown}
-                  onChange={OnChange}
-                  onFocus={React.useCallback(
-                    (e: React.ChangeEvent<HTMLInputElement>) =>
-                      (e.target.placeholder = ""),
-                    []
-                  )}
-                  onBlur={React.useCallback(
-                    (e: React.ChangeEvent<HTMLInputElement>) =>
-                      (e.target.placeholder = "Type Here ..."),
-                    []
-                  )}
-                  disabled={inputDisabled || testDisabled}
-                  inputRef={inputRef}
-                />
-                {!settings.online ? (
-                  <Button
-                    color="secondary"
-                    onClick={() => Reset(false)}
-                    sx={{ display: "inline-block" }}
-                  >
-                    <RestartAltIcon />
-                  </Button>
-                ) : null}
-              </GridCard>
-            </Grid>
-          </Grid>
-        </Grid>
-
+        )}
+        {onlineRaceData
+          ? onlineRaceData.playerData.map((player) => {
+              if (player.id === currentUser.uid) return null;
+              const { col, cot, cw } = calculateFollowerPosition(
+                player.wordsTyped,
+                raceInfo.words,
+                wbRef
+              );
+              return (
+                <Follower key={player.id} ccol={col} ccot={cot} ccw={cw} />
+              );
+            })
+          : null}
+        <SpeedProgress wpm={statState.wpm} />
+      </GridCard>
+      <GridCard
+        accent={true}
+        sx={{ display: "flex", width: "85%", margin: "0 auto" }}
+      >
+        <StyledTextField
+          style={{
+            padding: "10px",
+            flexGrow: 1,
+          }}
+          inputProps={{
+            maxLength: MAX_INPUT_LENGTH,
+            style: { textAlign: "center" },
+          }}
+          variant="standard"
+          required
+          id="type"
+          fullWidth
+          placeholder="Type Here ..."
+          name="type"
+          fontSize="15pt"
+          autoComplete="off"
+          onKeyDown={OnKeyDown}
+          onChange={OnChange}
+          onFocus={React.useCallback(
+            (e: React.ChangeEvent<HTMLInputElement>) =>
+              (e.target.placeholder = ""),
+            []
+          )}
+          onBlur={React.useCallback(
+            (e: React.ChangeEvent<HTMLInputElement>) =>
+              (e.target.placeholder = "Type Here ..."),
+            []
+          )}
+          disabled={inputDisabled || testDisabled}
+          inputRef={inputRef}
+        />
         {!settings.online ? (
-          <Grid item xs={2}>
-            {/* <Button
-              variant="contained"
-              fullWidth
-              sx={{ mb: 3, p: 1, fontSize: "0.9em" }}
-              onClick={() => history.push("/online")}
-            >
-              Find Online Match
-            </Button> */}
-            <Settings />
-          </Grid>
+          <Button
+            color="secondary"
+            onClick={() => Reset(false)}
+            sx={{ display: "inline-block" }}
+          >
+            <RestartAltIcon />
+          </Button>
         ) : null}
-      </Grid>
-    </Box>
+      </GridCard>
+    </>
   );
 }
 

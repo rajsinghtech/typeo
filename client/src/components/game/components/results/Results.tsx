@@ -57,7 +57,7 @@ interface ResultsProps {
   data: ResultsData;
 }
 
-export default function Results({
+export default React.memo(function Results({
   open,
   setOpen,
   data: {
@@ -77,6 +77,9 @@ export default function Results({
   const { socket } = useSocketContext();
   const history = useHistory();
   const theme = useTheme();
+  React.useEffect(() => {
+    console.log("Results Render");
+  });
 
   React.useEffect(() => {
     setKeyData(getCharacterSpeed(characterDataPoints));
@@ -287,4 +290,4 @@ export default function Results({
       </Dialog>
     </>
   );
-}
+});
