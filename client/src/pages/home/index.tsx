@@ -70,7 +70,9 @@ export default function Home(props: HomeProps) {
       <Grid container spacing={3}>
         <Grid item xs={1.5}></Grid>
         <Grid item xs={9}>
-          <SoloGame />
+          <Grid container spacing={3}>
+            <SoloGame />
+          </Grid>
         </Grid>
         <Grid item xs={1.5}>
           {/* <Button onClick={logout}>Logout</Button>

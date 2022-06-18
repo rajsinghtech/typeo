@@ -3,7 +3,11 @@ import ReactDOM from "react-dom";
 import ReactGA from "react-ga";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Router from "./Router";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
+import {
+  ThemeProvider,
+  createTheme,
+  responsiveFontSizes,
+} from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { GameSettingsProvider } from "./contexts/GameSettings";
 import { SocketProvider } from "./contexts/SocketContext";
@@ -14,7 +18,7 @@ import { StatsProvider } from "./contexts/StatsContext";
 const TRACKING_ID = "UA-230352416-1"; // YOUR_OWN_TRACKING_ID
 ReactGA.initialize(TRACKING_ID);
 
-const theme = createTheme({
+let theme = createTheme({
   palette: {
     mode: "dark",
     primary: {
@@ -96,6 +100,9 @@ const theme = createTheme({
     },
   },
 });
+
+theme = responsiveFontSizes(theme);
+
 ReactDOM.render(
   <AuthProvider>
     <SocketProvider>

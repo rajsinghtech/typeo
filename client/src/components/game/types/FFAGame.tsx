@@ -91,7 +91,22 @@ export default function FFAGame() {
   const [resultsOpen, setResultsOpen] = React.useState<boolean>(false);
   const [testDisabled, setTestDisabled] = React.useState<boolean>(true);
 
-  const raceLogic = useRaceLogic({
+  const {
+    raceState: {
+      isCorrect,
+      currentCharIndex,
+      currentWordIndex,
+      wordsTyped,
+      words,
+      textAreaText,
+      isRaceRunning,
+      isRaceFinished,
+      prevKey,
+      prevInput,
+      overflowCount,
+    },
+    raceStateDispatch,
+  } = useRaceLogic({
     passage: passage,
     settings: DefaultOnlineGameSettings,
     testDisabled: testDisabled,
@@ -313,7 +328,6 @@ export default function FFAGame() {
         </Grid>
         <Grid item xs={12}>
           <StandardGame
-            raceLogic={raceLogic}
             settings={DefaultOnlineGameSettings}
             testDisabled={testDisabled}
             onlineRaceData={onlineRaceData}

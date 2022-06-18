@@ -34,7 +34,7 @@ export default React.memo(function WordBox({ words, boxRef }: WordBoxProps) {
       <StyledTextArea ref={boxRef}>
         {words.map((word, index) => {
           return (
-            <StyledWord key={char_count++}>
+            <StyledWord key={`word_${char_count++}`}>
               {word.split("").map((letter, index) => {
                 return (
                   <div

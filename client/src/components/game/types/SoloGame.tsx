@@ -11,48 +11,10 @@ import HomeProfile from "../../profile/display/HomeProfile";
 import TopSettings from "../components/standardComponents/TopSettings";
 import Settings from "../components/standardComponents/Settings";
 
-const styles = {
-  amountCard: {
-    display: "inline-block",
-    textAlign: "center",
-    padding: "10px",
-    paddingLeft: "13px",
-    paddingTop: "15px",
-    backgroundColor: "rgba(255, 255, 255, 0.15)",
-  },
-};
-
 export default function SoloGame() {
   const { gameSettings } = useGameSettings();
 
   const { isPractice, practiceStrings } = gameSettings.gameInfo.practice;
-
-  const raceLogic = useRaceLogic({
-    settings: gameSettings,
-    testDisabled: isPractice && practiceStrings.length === 0,
-  });
-
-  const HomeProfileDisplay = React.useMemo(
-    () => (
-      <Grid item xs={2} position="relative">
-        <Box position="absolute" bottom={0}>
-          <HomeProfile />
-        </Box>
-      </Grid>
-    ),
-    []
-  );
-
-  const AmountDisplay = React.useMemo(
-    () => (
-      <Grid item xs={6} textAlign="center">
-        <Card sx={styles.amountCard} elevation={15}>
-          <Typography variant="h4">{raceLogic.amount}</Typography>
-        </Card>
-      </Grid>
-    ),
-    [raceLogic.amount]
-  );
 
   const TopSettingsDisplay = React.useMemo(
     () => (
@@ -68,6 +30,9 @@ export default function SoloGame() {
   const SettingsDisplay = React.useMemo(
     () => (
       <Grid item xs={2}>
+        <Box mb={3}>
+          <TopSettings />
+        </Box>
         <Settings />
       </Grid>
     ),
@@ -75,24 +40,17 @@ export default function SoloGame() {
   );
 
   return (
-    <Grid container spacing={3}>
-      <Results
-        open={raceLogic.raceStatus.isRaceFinished}
-        setOpen={raceLogic.ResetRace}
-        data={raceLogic.statState.resultsData}
-      />
-      {HomeProfileDisplay}
-      {AmountDisplay}
-      {TopSettingsDisplay}
+    <>
       <Grid item xs={10}>
-        <StandardGame
-          settings={gameSettings}
-          raceLogic={raceLogic}
-          testDisabled={isPractice && practiceStrings.length === 0}
-        />
+        <Grid container spacing={3}>
+          <StandardGame
+            settings={gameSettings}
+            testDisabled={isPractice && practiceStrings.length === 0}
+          />
+        </Grid>
       </Grid>
       {SettingsDisplay}
       {isPractice ? <PracticeBox /> : null}
-    </Grid>
+    </>
   );
 }
