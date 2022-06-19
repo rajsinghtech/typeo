@@ -68,7 +68,11 @@ export default function Home(props: HomeProps) {
   return (
     <>
       <Grid container spacing={3}>
-        <Grid item xs={1.5}></Grid>
+        <Grid item xs={1.5}>
+          <Box marginTop={12}>
+            <HomeProfile />
+          </Box>
+        </Grid>
         <Grid item xs={9}>
           <Grid container spacing={3}>
             <SoloGame />

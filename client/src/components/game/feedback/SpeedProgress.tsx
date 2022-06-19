@@ -63,8 +63,8 @@ export default React.memo(function SpeedProgress({ wpm }: SpeedProgressProps) {
 
   const Display = React.useMemo(() => {
     return (
-      <Grid item xs={1.5}>
-        <GridCard
+      <Grid item xs={2}>
+        <Box
           sx={{
             height: "100%",
             display: "flex",
@@ -73,10 +73,11 @@ export default React.memo(function SpeedProgress({ wpm }: SpeedProgressProps) {
             alignItems: "center",
           }}
         >
+          <Typography>{"WPM "}</Typography>
           <Typography ref={textRef} variant="h4">
-            {0}
+            0
           </Typography>
-        </GridCard>
+        </Box>
       </Grid>
     );
   }, []);

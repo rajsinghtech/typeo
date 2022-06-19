@@ -144,21 +144,10 @@ export default function StandardGame({
     );
   }, [settings, raceState.isRaceFinished]);
 
-  const HomeProfileDisplay = React.useMemo(
-    () => (
-      <Grid item xs={2} position="relative">
-        <Box position="absolute" bottom={0}>
-          <HomeProfile />
-        </Box>
-      </Grid>
-    ),
-    []
-  );
-
   const AmountDisplay = React.useMemo(() => {
     console.log("AMount Render");
     return (
-      <Grid item xs={8.5} textAlign="center">
+      <Grid item xs={8} textAlign="center">
         <Card sx={styles.amountCard} elevation={15}>
           <Typography variant="h4">{raceState.amount}</Typography>
         </Card>
@@ -273,9 +262,8 @@ export default function StandardGame({
         wbRef={wbRef}
         raceState={raceState}
       />
-      {HomeProfileDisplay}
-      {AmountDisplay}
       <SpeedProgress wpm={raceState.statState.wpm} />
+      {AmountDisplay}
       {WordBoxDisplay}
       {TextFieldDisplay}
     </>
