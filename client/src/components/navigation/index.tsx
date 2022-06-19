@@ -286,11 +286,39 @@ export default function MiniDrawer(props: MiniDrawerProps) {
             { name: "Friends", icon: <PeopleIcon />, click: Friends },
             { name: "Inbox", icon: <MailIcon />, click: Inbox },
           ].map((val, index) => (
-            <Tooltip title={val.name} key={val.name} placement="right">
+            <Tooltip
+              title={
+                ["Friends", "Inbox", "Find Online Match"].includes(val.name) ? (
+                  <span>
+                    <p style={{ display: "inline", fontSize: "1em" }}>
+                      {val.name}:
+                    </p>
+                    <p
+                      style={{
+                        color: "red",
+                        display: "inline",
+                        fontSize: "1em",
+                      }}
+                    >
+                      {" Currently Disabled"}
+                    </p>
+                  </span>
+                ) : (
+                  val.name
+                )
+              }
+              key={val.name}
+              placement="right"
+            >
               <ListItem
-                disabled={["Friends", "Inbox"].includes(val.name)}
                 button
-                onClick={val.click}
+                onClick={
+                  ["Friends", "Inbox", "Find Online Match"].includes(val.name)
+                    ? () => {
+                        null;
+                      }
+                    : val.click
+                }
               >
                 <ListItemIcon>{val.icon}</ListItemIcon>
                 <ListItemText primary={val.name} />

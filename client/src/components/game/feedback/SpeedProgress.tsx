@@ -88,7 +88,7 @@ export default React.memo(function SpeedProgress({ wpm }: SpeedProgressProps) {
 export function calculateWPMColor(wpm: number, opacity: number): string {
   const green = Math.floor(((clamp(wpm, 30, 170) - 30) / 140) * 255);
   const red = 255 - green;
-  return `rgba(${red},${green},80, ${opacity})`;
+  return `rgba(${red},${green},65, ${opacity})`;
 }
 
 function clamp(num: number, min: number, max: number): number {
