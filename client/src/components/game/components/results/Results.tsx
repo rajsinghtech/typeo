@@ -53,13 +53,13 @@ ChartJS.register(
 
 interface ResultsProps {
   open: boolean;
-  setOpen: (open: boolean) => void;
+  onClose: (retry: boolean) => void;
   data: ResultsData;
 }
 
 export default function Results({
   open,
-  setOpen,
+  onClose,
   data: {
     passage,
     startTime,
@@ -73,7 +73,6 @@ export default function Results({
   const [graphData, setGraphData] = React.useState<ChartData>();
   const [wpm, setWPM] = React.useState<number>(0);
   const [keyData, setKeyData] = React.useState<number[]>(new Array(26).fill(0));
-  console.log("RESULTS RENDER");
   const { socket } = useSocketContext();
   const history = useHistory();
   const theme = useTheme();
@@ -166,7 +165,7 @@ export default function Results({
       <Dialog
         open={open}
         onClose={() => {
-          setOpen(false);
+          onClose(false);
         }}
         maxWidth="lg"
       >
@@ -232,11 +231,20 @@ export default function Results({
               <Button
                 variant="contained"
                 onClick={() => {
-                  setOpen(false);
+                  onClose(false);
                 }}
                 sx={{ mx: 2 }}
               >
-                <Typography>Exit</Typography>
+                <Typography>Next</Typography>
+              </Button>
+              <Button
+                variant="contained"
+                onClick={() => {
+                  onClose(true);
+                }}
+                sx={{ mx: 2 }}
+              >
+                <Typography>Retry</Typography>
               </Button>
             </Box>
           </GridCard>

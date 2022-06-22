@@ -68,18 +68,18 @@ export default function Home(props: HomeProps) {
   return (
     <>
       <Grid container spacing={3}>
-        <Grid item xs={1.5}>
+        {/* <Grid item xs={1.5}>
           <Box marginTop={12}>
             <HomeProfile />
           </Box>
-        </Grid>
-        <Grid item xs={9}>
+        </Grid> */}
+        <Grid item xs={12}>
           <Grid container spacing={3}>
             <SoloGame />
           </Grid>
         </Grid>
-        <Grid item xs={1.5}>
-          {/* <Button onClick={logout}>Logout</Button>
+        {/* <Grid item xs={1.5}>
+          <Button onClick={logout}>Logout</Button>
         <Button
           onClick={() => {
             UserAPI.sendFriendRequest(
@@ -95,8 +95,8 @@ export default function Home(props: HomeProps) {
           }}
         >
           Get Players
-        </Button> */}
-        </Grid>
+        </Button>
+        </Grid> */}
       </Grid>
       <Grid container spacing={3} mt={15}>
         <Grid item xs={1}></Grid>

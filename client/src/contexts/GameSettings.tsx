@@ -50,6 +50,10 @@ export function GameSettingsProvider({ children }: ProviderProps) {
 const getStoredGameSettings = () => {
   const storedSettings = localStorage.getItem("typeo_game_settings");
   if (storedSettings) {
+    const parsedSettings = JSON.parse(storedSettings);
+    if (!parsedSettings.display) {
+      parsedSettings.display = { ...DefaultGameSettings.display };
+    }
     return JSON.parse(storedSettings);
   }
   return DefaultGameSettings;
