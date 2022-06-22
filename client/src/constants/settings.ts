@@ -9,7 +9,20 @@ export interface GameSettings {
     };
     strict?: boolean;
   };
+  display: {
+    smoothFollower: boolean;
+    followerStyle: FollowerTypes;
+    followerSpeed: number;
+    showWPM: boolean;
+    showProfile: boolean;
+  };
   online: boolean;
+}
+
+export enum FollowerTypes {
+  DEFAULT,
+  LEFT,
+  BOTTOM,
 }
 
 export enum GameTypes {
@@ -41,6 +54,13 @@ export const DefaultGameSettings: GameSettings = {
     practice: { isPractice: false, practiceStrings: [] },
     strict: false,
   },
+  display: {
+    smoothFollower: true,
+    followerSpeed: 0.1,
+    followerStyle: FollowerTypes.DEFAULT,
+    showWPM: true,
+    showProfile: true,
+  },
   online: false,
 };
 
@@ -51,6 +71,13 @@ export const DefaultOnlineGameSettings: GameSettings = {
     amount: 50,
     practice: { isPractice: false, practiceStrings: [] },
     strict: true,
+  },
+  display: {
+    smoothFollower: true,
+    followerSpeed: 0.1,
+    followerStyle: FollowerTypes.DEFAULT,
+    showWPM: true,
+    showProfile: true,
   },
   online: true,
 };

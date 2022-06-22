@@ -16,32 +16,14 @@ export default function SoloGame() {
 
   const { isPractice, practiceStrings } = gameSettings.gameInfo.practice;
 
-  const TopSettingsDisplay = React.useMemo(
-    () => (
-      <Grid item xs={2} position="relative">
-        <Box position="absolute" bottom={0} right={0}>
-          <TopSettings />
-        </Box>
-      </Grid>
-    ),
-    [gameSettings]
-  );
-
-  const SettingsDisplay = React.useMemo(
-    () => (
-      <Grid item xs={2}>
-        <Box mb={3}>
-          <TopSettings />
-        </Box>
-        <Settings />
-      </Grid>
-    ),
-    [gameSettings]
-  );
-
   return (
     <>
-      <Grid item xs={10}>
+      <Grid item xs={1.5}>
+        <Box mt={12}>
+          {gameSettings.display.showProfile ? <HomeProfile /> : null}
+        </Box>
+      </Grid>
+      <Grid item xs={7.5}>
         <Grid container spacing={3}>
           <StandardGame
             settings={gameSettings}
@@ -49,7 +31,11 @@ export default function SoloGame() {
           />
         </Grid>
       </Grid>
-      {SettingsDisplay}
+      <Grid item xs={3}>
+        <Box mt={0}>
+          <Settings />
+        </Box>
+      </Grid>
       {isPractice ? <PracticeBox /> : null}
     </>
   );

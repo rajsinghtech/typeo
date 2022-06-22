@@ -16,6 +16,7 @@ import { useInterval } from "../common";
 import { CLIENT_RACE_UPDATE_EVENT } from "../../api/sockets/race";
 import { useSnackbar } from "notistack";
 import { User } from "firebase/auth";
+import Settings from "./components/standardComponents/Settings";
 
 export interface RaceState {
   textAreaText: string;
@@ -181,28 +182,29 @@ const OnEndRace = (
   settings: GameSettings,
   currentUser: User | GuestUser
 ): RaceState => {
-  raceState = UpdateWPM(raceState, settings);
+  let newRaceState = { ...raceState };
+  newRaceState = UpdateWPM(raceState, settings);
 
   const correctCharacters = raceState.currentCharIndex - raceState.errors;
   const accuracy = (correctCharacters / raceState.currentCharIndex) * 100;
   const newStatState = {
-    ...raceState.statState,
+    ...newRaceState.statState,
     resultsData: {
-      passage: raceState.textAreaText,
-      startTime: raceState.startTime,
-      dataPoints: raceState.statState.wpmData,
+      passage: newRaceState.textAreaText,
+      startTime: newRaceState.startTime,
+      dataPoints: newRaceState.statState.wpmData,
       accuracy: accuracy,
       characters: {
         correct: correctCharacters,
-        incorrect: raceState.errors,
-        total: raceState.currentCharIndex,
+        incorrect: newRaceState.errors,
+        total: newRaceState.currentCharIndex,
       },
       testType: {
         name: GameTypeNames[settings.gameInfo.type],
         amount: settings.gameInfo.amount,
         textType: TextTypeNames[settings.textType],
       },
-      characterDataPoints: raceState.statState.characterTrackingData,
+      characterDataPoints: newRaceState.statState.characterTrackingData,
     },
   };
 
@@ -212,54 +214,91 @@ const OnEndRace = (
     console.error(err);
   }
 
-  return {
-    ...raceState,
-    isRaceRunning: false,
-    isRaceFinished: true,
-    statState: newStatState,
-  };
+  newRaceState.isRaceRunning = false;
+  newRaceState.isRaceFinished = true;
+  newRaceState.statState = newStatState;
+
+  return newRaceState;
 };
 
 const ResetRace = (
-  shouldRaceStart = false,
+  raceState: RaceState,
+  shouldRaceStart: boolean,
+  retry: boolean,
   settings: GameSettings
 ): RaceState => {
   const newRaceState = { ...initialRaceState };
+  if (retry) {
+    newRaceState.words = raceState.words;
+    newRaceState.textAreaText = raceState.textAreaText;
+  }
   newRaceState.amount = settings.gameInfo.amount || 0;
   if (shouldRaceStart) return OnStartRace(newRaceState);
-  else return InitializePassage(newRaceState, settings);
+  else if (!retry) return InitializePassage(newRaceState, settings);
+  else return newRaceState;
 };
 
 const HandleDeletion = (
-  event: React.ChangeEvent<HTMLInputElement> | KeyboardEvent,
-  raceState: RaceState
+  event:
+    | React.ChangeEvent<HTMLInputElement>
+    | React.KeyboardEvent<HTMLInputElement>,
+  raceState: RaceState,
+  settings: GameSettings
 ): RaceState => {
   const newRaceState = { ...raceState };
   const inputRef = event.target as HTMLInputElement;
   if (raceState.currentCharIndex > raceState.correctWordIndex) {
     if (raceState.currentCharIndex === 0) return newRaceState;
     if (
-      raceState.isCorrect &&
-      raceState.currentCharIndex !== raceState.currentWordIndex
+      (raceState.currentCharIndex !== raceState.correctWordIndex &&
+        settings.gameInfo.strict) ||
+      (raceState.currentCharIndex !== raceState.currentWordIndex &&
+        !settings.gameInfo.strict)
     ) {
-      newRaceState.currentCharIndex--;
-      newRaceState.charactersTyped--;
-    } else {
+      if (raceState.overflowCount > 0) {
+        newRaceState.overflowCount--;
+      } else {
+        newRaceState.currentCharIndex--;
+        if (raceState.isCorrect) newRaceState.charactersTyped--;
+      }
+
+      if (
+        raceState.textAreaText[newRaceState.currentCharIndex] === " " &&
+        settings.gameInfo.strict
+      ) {
+        newRaceState.wordsTyped--;
+        newRaceState.currentWordIndex =
+          newRaceState.currentCharIndex -
+          raceState.words[newRaceState.wordsTyped].length;
+      }
+    } else if (!settings.gameInfo.strict) {
       const { wordsTyped, wordIndex, charIndex } =
         raceState.errorWordIndexes[raceState.errorWordIndexes.length - 1];
       newRaceState.currentCharIndex = charIndex;
       newRaceState.wordsTyped = wordsTyped;
       newRaceState.currentWordIndex = wordIndex;
-
       inputRef.value = (raceState.words[wordsTyped] + " ").substring(
         0,
         charIndex - wordIndex
       );
       event.preventDefault();
-
-      newRaceState.charactersTyped += inputRef.value.length;
+      const errorWordIndexes = raceState.errorWordIndexes;
+      const prevError = errorWordIndexes[errorWordIndexes.length - 2];
+      const currentError = errorWordIndexes[errorWordIndexes.length - 1];
+      if (
+        prevError &&
+        currentError &&
+        prevError.wordIndex === currentError.wordIndex
+      ) {
+        newRaceState.charactersTyped +=
+          prevError.charIndex - prevError.wordIndex;
+        newRaceState.isCorrect = false;
+      } else {
+        newRaceState.charactersTyped += inputRef.value.length;
+        newRaceState.isCorrect = true;
+      }
+      newRaceState.overflowCount = 0;
     }
-    newRaceState.overflowCount = 0;
     // newRaceState.currentCharIndex--;
     // // Going back to a new word
     // if (raceInfo.textAreaText[raceState.currentCharIndex - 1] === " ") {
@@ -279,12 +318,24 @@ const HandleDeletion = (
 
   // If we go back past where an error was made, we have corrected it
   if (newRaceState.currentCharIndex <= raceState.errorIndex) {
+    const errorWordIndexes = raceState.errorWordIndexes;
+    const prevError = errorWordIndexes[errorWordIndexes.length - 2];
+    const currentError = errorWordIndexes[errorWordIndexes.length - 1];
+    if (
+      prevError &&
+      currentError &&
+      prevError.wordIndex === currentError.wordIndex
+    ) {
+      newRaceState.isCorrect = false;
+    } else {
+      newRaceState.isCorrect = true;
+    }
     const errorIndexes = newRaceState.errorWordIndexes;
     const newErrorIndexes = errorIndexes.slice(0, errorIndexes.length - 1);
     newRaceState.errorWordIndexes = newErrorIndexes;
     newRaceState.errorIndex =
       newErrorIndexes[newErrorIndexes.length - 1]?.charIndex || 0;
-    newRaceState.isCorrect = true;
+    // newRaceState.isCorrect = true;
   }
   return newRaceState;
 };
@@ -297,14 +348,34 @@ const OnChange = (
 ): RaceState => {
   const inputVal = event.target.value;
   const inputRef = event.target as HTMLInputElement;
+
   // Handle multi-character deletion
   // prettier-ignore
+
   if (
-      raceState.prevInput.length - inputVal.length > 1 && raceState.prevKey !== "Backspace"
+      raceState.prevInput.length - inputVal.length > 1
     ) {
-      raceState = HandleDeletion(event, raceState);
-      raceState.isCorrect = true;
-      return raceState;
+
+      const newRaceState = {...raceState}
+      if (settings.gameInfo.strict) {
+        newRaceState.currentCharIndex = raceState.correctWordIndex
+        newRaceState.currentWordIndex = raceState.correctWordIndex
+        newRaceState.wordsTyped = raceState.lastCorrectWord;
+      } else {
+        newRaceState.currentCharIndex = raceState.currentWordIndex
+        const lastError = raceState.errorWordIndexes[raceState.errorWordIndexes.length - 1];
+        if (lastError && lastError.wordIndex === raceState.currentWordIndex) {
+          newRaceState.charactersTyped -= lastError.charIndex - raceState.currentWordIndex
+          newRaceState.errorIndex = raceState.errorWordIndexes[raceState.errorWordIndexes.length - 2]?.charIndex || 0;
+          newRaceState.errorWordIndexes = raceState.errorWordIndexes.slice(0, raceState.errorWordIndexes.length - 1)
+        } else {
+          newRaceState.charactersTyped -= raceState.currentCharIndex - raceState.currentWordIndex
+        }
+      }
+      newRaceState.isCorrect = true;
+      newRaceState.overflowCount = 0;
+      inputRef.value = "";
+      return newRaceState;
     }
   if (
     // If we have reached the end of the passage and we are correct, end the race
@@ -329,13 +400,13 @@ const OnChange = (
       currentUser
     );
   }
-  return raceState;
+  return { ...raceState };
 };
 
 const OnKeyDown = (
   raceState: RaceState,
   settings: GameSettings,
-  event: KeyboardEvent,
+  event: React.KeyboardEvent<HTMLInputElement>,
   currentUser: User | GuestUser
 ): RaceState => {
   const key = event.key;
@@ -355,7 +426,8 @@ const OnKeyDown = (
       return OnEndRace(raceState, settings, currentUser);
     }
 
-    const isWordCorrect = inputVal === raceState.words[raceState.wordsTyped];
+    const isWordCorrect =
+      inputVal === raceState.words[raceState.wordsTyped] && raceState.isCorrect;
 
     const nextWordIndex =
       raceState.currentWordIndex +
@@ -371,7 +443,14 @@ const OnKeyDown = (
     }
 
     newRaceState.wordsTyped++;
-    if (raceState.isCorrect && !isWordCorrect) {
+    if (!isWordCorrect) {
+      if (!raceState.isCorrect) {
+        newRaceState.charactersTyped -=
+          raceState.errorIndex - raceState.currentWordIndex;
+      } else {
+        newRaceState.charactersTyped -=
+          raceState.currentCharIndex - raceState.currentWordIndex;
+      }
       newRaceState.errorIndex = raceState.currentCharIndex;
       newRaceState.errorWordIndexes = [
         ...newRaceState.errorWordIndexes,
@@ -387,11 +466,6 @@ const OnKeyDown = (
     newRaceState.prevInput = inputVal;
     newRaceState.prevKey = key;
 
-    if (!isWordCorrect) {
-      newRaceState.charactersTyped -=
-        newRaceState.errorIndex - raceState.currentWordIndex;
-    }
-
     inputRef.value = "";
     event.preventDefault();
     return newRaceState;
@@ -400,7 +474,7 @@ const OnKeyDown = (
   if (key === "Backspace") {
     // We shouldn't be able to go back past the current word we are on unless we aren't in strict mode
     // if (raceState.overflowCount < 1) {
-    newRaceState = HandleDeletion(event, newRaceState);
+    newRaceState = HandleDeletion(event, newRaceState, settings);
   } else {
     // Keys like alt and ctrl should be ignored for now
     if (
@@ -409,6 +483,32 @@ const OnKeyDown = (
       inputVal.length >= MAX_INPUT_LENGTH
     )
       return raceState;
+
+    const selectionLength = document.getSelection()?.toString().length;
+    if (selectionLength === 1 || selectionLength === 2) {
+      newRaceState.currentCharIndex = raceState.currentWordIndex;
+      const lastError =
+        raceState.errorWordIndexes[raceState.errorWordIndexes.length - 1];
+      if (lastError && lastError.wordIndex === raceState.currentWordIndex) {
+        newRaceState.charactersTyped -=
+          lastError.charIndex - raceState.currentWordIndex;
+        newRaceState.errorIndex =
+          raceState.errorWordIndexes[raceState.errorWordIndexes.length - 2]
+            ?.charIndex || 0;
+        newRaceState.errorWordIndexes = raceState.errorWordIndexes.slice(
+          0,
+          raceState.errorWordIndexes.length - 1
+        );
+      } else {
+        newRaceState.charactersTyped -=
+          raceState.currentCharIndex - raceState.currentWordIndex;
+      }
+
+      newRaceState.isCorrect = true;
+      inputRef.value = "";
+
+      return newRaceState;
+    }
 
     if (raceState.isCorrect) {
       // We have misstyped a character
@@ -505,8 +605,7 @@ const IncrementSeconds = (
 };
 
 const SetAmount = (raceState: RaceState, amount: number): RaceState => {
-  raceState.amount = amount;
-  return raceState;
+  return { ...raceState, amount };
 };
 
 const AddCharacterDataPoint = (raceState: RaceState): RaceState => {
@@ -537,7 +636,7 @@ interface OnChangeAction {
 interface KeydownAction {
   type: "keydown";
   settings: GameSettings;
-  event: KeyboardEvent;
+  event: React.KeyboardEvent<HTMLInputElement>;
   currentUser: User | GuestUser;
 }
 
@@ -554,6 +653,7 @@ interface EndRaceAction {
 interface ResetAction {
   type: "reset";
   shouldStartRace: boolean;
+  retry: boolean;
   settings: GameSettings;
 }
 
@@ -603,7 +703,12 @@ const RaceStateReducer = (
         action.currentUser
       );
     case "reset":
-      return ResetRace(action.shouldStartRace, action.settings);
+      return ResetRace(
+        state,
+        action.shouldStartRace,
+        action.retry,
+        action.settings
+      );
     case "addPassageLength":
       return AddPasageLength(state, action.settings);
     case "startRace":
@@ -650,8 +755,13 @@ export default function useRaceLogic({
   );
 
   React.useEffect(() => {
-    raceStateDispatch({ type: "reset", shouldStartRace: false, settings });
-  }, [settings, passage]);
+    raceStateDispatch({
+      type: "reset",
+      shouldStartRace: false,
+      retry: false,
+      settings,
+    });
+  }, [settings.gameInfo, settings.textType, passage]);
 
   React.useEffect(() => {
     const gameInfo = settings.gameInfo;

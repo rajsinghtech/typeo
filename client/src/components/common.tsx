@@ -73,6 +73,7 @@ export const ElevatedCard = (props: DefaultProps) => {
 };
 
 interface GridCardProps {
+  refObject?: React.RefObject<HTMLDivElement>;
   padding?: string;
   accent?: boolean;
   textalign?: string;
@@ -104,11 +105,16 @@ export const GridCard = (props: GridCardProps) => {
     },
   };
 
-  const { accent, sx, ...rest } = props;
+  const { refObject, accent, sx, ...rest } = props;
   return (
-    <ElevatedCard {...rest} sx={{ ...styles.card, ...sx }}>
+    <Card
+      ref={refObject}
+      elevation={10}
+      {...rest}
+      sx={{ ...styles.card, ...sx }}
+    >
       {props.children}
-    </ElevatedCard>
+    </Card>
   );
 };
 

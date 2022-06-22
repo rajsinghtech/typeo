@@ -30,7 +30,15 @@ interface WordBoxProps {
 export default React.memo(function WordBox({ words, boxRef }: WordBoxProps) {
   let char_count = 0;
   return (
-    <Box m={5} overflow="hidden" height="8.1em" fontSize="20pt">
+    <Box
+      mx={5}
+      mt={5}
+      mb={1}
+      overflow="hidden"
+      height="8.1em"
+      fontSize="20pt"
+      textAlign="left"
+    >
       <StyledTextArea ref={boxRef}>
         {words.map((word, index) => {
           return (

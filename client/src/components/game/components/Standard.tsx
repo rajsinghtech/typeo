@@ -6,7 +6,7 @@ import Button from "@mui/material/Button";
 import SpeedProgress, { calculateWPMColor } from "../feedback/SpeedProgress";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import { GridCard, StyledTextField } from "../../common";
-import { Box, Theme, Typography } from "@mui/material";
+import { Box, IconButton, Theme, Typography } from "@mui/material";
 import Follower from "../feedback/Follower";
 import WordBox from "./standardComponents/WordBox";
 import { GameSettings, GameTypes } from "../../../constants/settings";
@@ -68,9 +68,13 @@ export default function StandardGame({
 
   const prevRaceState = usePrevious(raceState);
   // Element Details
+  const wbContainerRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const wbRef = React.useRef<HTMLDivElement>(null);
   const [inputDisabled, setInputDisabled] = React.useState<boolean>(false);
+  const [isFocused, setIsFocused] = React.useState<boolean>(true);
+  const [focusMessageOpen, setFocusMessageOpen] = React.useState<boolean>(true);
+  const [focusTimeout, setFocusTimeout] = React.useState<number>(0);
 
   const theme = useTheme();
 
@@ -98,10 +102,11 @@ export default function StandardGame({
   }, []);
 
   const Reset = React.useCallback(
-    (shouldStartRace = false) => {
+    (retry: boolean) => {
       raceStateDispatch({
         type: "reset",
-        shouldStartRace: shouldStartRace,
+        shouldStartRace: false,
+        retry,
         settings,
       });
 
@@ -112,7 +117,7 @@ export default function StandardGame({
 
   React.useEffect(() => {
     StyleReset();
-  }, [settings]);
+  }, [settings.gameInfo, settings.textType]);
 
   React.useEffect(() => {
     if (raceState.isRaceFinished) {
@@ -129,23 +134,61 @@ export default function StandardGame({
     raceState.currentCharIndex,
     raceState.overflowCount,
     raceState.isCorrect,
-    settings,
+    settings.gameInfo,
   ]);
+
+  React.useEffect(() => {
+    const onBodyKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Tab") return;
+      if (inputRef.current) {
+        if (
+          document.activeElement !== inputRef.current &&
+          !raceState.isRaceFinished
+        ) {
+          inputRef.current.focus();
+        }
+      }
+    };
+    document.body.addEventListener("keyup", onBodyKeyDown);
+
+    return () => {
+      document.body.removeEventListener("keyup", onBodyKeyDown);
+    };
+  }, [raceState.isRaceFinished]);
+
+  React.useEffect(() => {
+    clearTimeout(focusTimeout);
+    if (isFocused) {
+      if (wbRef.current) {
+        wbRef.current.style.filter = "none";
+      }
+      setFocusMessageOpen(false);
+    } else {
+      const timeout = window.setTimeout(() => {
+        setFocusMessageOpen(true);
+        if (wbRef.current) {
+          wbRef.current.style.filter = "blur(2px)";
+        }
+      }, 1000);
+      setFocusTimeout(timeout);
+    }
+
+    return () => {
+      clearTimeout();
+    };
+  }, [isFocused]);
 
   const ResultsDisplay = React.useMemo(() => {
     return (
       <Results
         open={raceState.isRaceFinished}
-        setOpen={() => {
-          Reset(false);
-        }}
+        onClose={Reset}
         data={raceState.statState.resultsData}
       />
     );
   }, [settings, raceState.isRaceFinished]);
 
   const AmountDisplay = React.useMemo(() => {
-    console.log("AMount Render");
     return (
       <Grid item xs={8} textAlign="center">
         <Card sx={styles.amountCard} elevation={15}>
@@ -155,17 +198,86 @@ export default function StandardGame({
     );
   }, [raceState.amount]);
 
-  const WordBoxDisplay = React.useMemo(() => {
-    console.log("Main Render");
+  const MainDisplay = React.useMemo(() => {
     return (
-      <Grid item xs={12}>
-        <GridCard accent={true}>
+      <Grid
+        item
+        xs={12}
+        sx={{ userSelect: "none" }}
+        onClick={() => {
+          if (inputRef.current) {
+            inputRef.current.focus();
+          }
+        }}
+      >
+        <GridCard
+          refObject={wbContainerRef}
+          accent={true}
+          sx={{ position: "relative", textAlign: "center" }}
+        >
+          <input
+            id="type"
+            name="type"
+            autoComplete="off"
+            maxLength={MAX_INPUT_LENGTH}
+            style={{
+              position: "absolute",
+              opacity: 0,
+              width: "100%",
+              height: "100%",
+              top: 0,
+              left: 0,
+              cursor: "default",
+              zIndex: 99,
+            }}
+            onKeyDown={(event) =>
+              raceStateDispatch({
+                type: "keydown",
+                event,
+                settings,
+                currentUser,
+              })
+            }
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+              raceStateDispatch({
+                type: "onChange",
+                event,
+                settings,
+                currentUser,
+              })
+            }
+            onFocus={(e: React.ChangeEvent<HTMLInputElement>) => {
+              setIsFocused(true);
+            }}
+            onBlur={(e: React.ChangeEvent<HTMLInputElement>) => {
+              setIsFocused(false);
+            }}
+            disabled={inputDisabled || testDisabled}
+            ref={inputRef}
+          />
           {testDisabled && settings.gameInfo.practice.isPractice ? (
             <Typography textAlign="center" height={300} pt={15}>
               Select keys or sequences to add/remove them from your practice
             </Typography>
           ) : (
             <>
+              {focusMessageOpen ? (
+                <GridCard
+                  sx={{
+                    position: "absolute",
+                    width: "100%",
+                    left: 0,
+                    textAlign: "center",
+                    mt: 15,
+                    zIndex: 999,
+                    backgroundColor: "primary.main",
+                  }}
+                >
+                  <Typography color="secondary" variant="h6">
+                    Click here or press any key to focus
+                  </Typography>
+                </GridCard>
+              ) : null}
               <WordBox words={raceState.words} boxRef={wbRef} />
             </>
           )}
@@ -186,86 +298,42 @@ export default function StandardGame({
                 );
               })
             : null} */}
-        </GridCard>
-      </Grid>
-    );
-  }, [raceState.words]);
-
-  const TextFieldDisplay = React.useMemo(() => {
-    return (
-      <Grid item xs={12}>
-        <GridCard
-          accent={true}
-          sx={{ display: "flex", width: "85%", margin: "0 auto" }}
-        >
-          <StyledTextField
-            style={{
-              padding: "10px",
-              flexGrow: 1,
-            }}
-            inputProps={{
-              maxLength: MAX_INPUT_LENGTH,
-              style: { textAlign: "center" },
-            }}
-            variant="standard"
-            required
-            id="type"
-            fullWidth
-            placeholder="Type Here ..."
-            name="type"
-            fontSize="15pt"
-            autoComplete="off"
-            onKeyDown={(event: KeyboardEvent) =>
-              raceStateDispatch({
-                type: "keydown",
-                event,
-                settings,
-                currentUser,
-              })
-            }
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-              raceStateDispatch({
-                type: "onChange",
-                event,
-                settings,
-                currentUser,
-              })
-            }
-            onFocus={(e: React.ChangeEvent<HTMLInputElement>) =>
-              (e.target.placeholder = "")
-            }
-            onBlur={(e: React.ChangeEvent<HTMLInputElement>) =>
-              (e.target.placeholder = "Type Here ...")
-            }
-            disabled={inputDisabled || testDisabled}
-            inputRef={inputRef}
-          />
           {!settings.online ? (
-            <Button
+            <IconButton
               color="secondary"
               onClick={() => Reset(false)}
-              sx={{ display: "inline-block" }}
+              sx={{ zIndex: 999 }}
             >
               <RestartAltIcon />
-            </Button>
+            </IconButton>
           ) : null}
         </GridCard>
       </Grid>
     );
-  }, [raceStateDispatch, inputDisabled, testDisabled, settings, currentUser]);
+  }, [
+    raceState.words,
+    raceStateDispatch,
+    inputDisabled,
+    testDisabled,
+    settings,
+    currentUser,
+    focusMessageOpen,
+  ]);
 
   return (
     <>
       {ResultsDisplay}
       <Follower
         disabled={!raceState.isRaceRunning}
+        wbContainerRef={wbContainerRef}
         wbRef={wbRef}
         raceState={raceState}
       />
-      <SpeedProgress wpm={raceState.statState.wpm} />
+      {settings.display.showWPM ? (
+        <SpeedProgress wpm={raceState.statState.wpm} />
+      ) : null}
       {AmountDisplay}
-      {WordBoxDisplay}
-      {TextFieldDisplay}
+      {MainDisplay}
     </>
   );
 }
@@ -408,7 +476,8 @@ const updateStyles = (
   if (!settings.gameInfo.strict) {
     if (
       raceState.prevKey === " " &&
-      raceState.prevInput !== raceState.words[prevRaceState.wordsTyped]
+      (raceState.prevInput !== raceState.words[prevRaceState.wordsTyped] ||
+        !prevRaceState.isCorrect)
     ) {
       if (wbRef.current && wbRef.current.children) {
         const wordElement = wbRef.current.children[prevRaceState.wordsTyped];

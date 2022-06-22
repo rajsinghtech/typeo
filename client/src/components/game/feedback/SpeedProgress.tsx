@@ -49,11 +49,8 @@ interface SpeedProgressProps {
 
 export default React.memo(function SpeedProgress({ wpm }: SpeedProgressProps) {
   const textRef = React.useRef<HTMLSpanElement>(null);
-  console.log("SPEED RENDER");
 
   React.useEffect(() => {
-    console.log(wpm);
-    console.log(textRef.current);
     if (textRef.current) {
       const heading = textRef.current as HTMLHeadingElement;
       heading.innerText = `${wpm}`;
