@@ -190,13 +190,13 @@ export default function StandardGame({
 
   const AmountDisplay = React.useMemo(() => {
     return (
-      <Grid item xs={8} textAlign="center">
+      <Grid item xs={settings.display.showWPM ? 8 : 12} textAlign="center">
         <Card sx={styles.amountCard} elevation={15}>
           <Typography variant="h4">{raceState.amount}</Typography>
         </Card>
       </Grid>
     );
-  }, [raceState.amount]);
+  }, [raceState.amount, settings.display.showWPM]);
 
   const MainDisplay = React.useMemo(() => {
     return (
