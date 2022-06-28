@@ -54,7 +54,7 @@ const getStoredGameSettings = () => {
     if (!parsedSettings.display) {
       parsedSettings.display = { ...DefaultGameSettings.display };
     }
-    return JSON.parse(storedSettings);
+    return parsedSettings;
   }
   return DefaultGameSettings;
 };
