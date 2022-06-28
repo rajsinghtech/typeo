@@ -10,7 +10,6 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { calculateWPMColor } from "../../game/feedback/SpeedProgress";
 import { GridCard } from "../../common";
 import { useGameSettings } from "../../../contexts/GameSettings";
 import { Timeframes } from "../../../constants/stats";

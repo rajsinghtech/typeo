@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import ReactGA from "react-ga";
-import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import Router from "./Router";
 import {
   ThemeProvider,
@@ -12,7 +12,6 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { GameSettingsProvider } from "./contexts/GameSettings";
 import { SocketProvider } from "./contexts/SocketContext";
 import { SnackbarProvider } from "notistack";
-import ChatBox from "./components/chat/ChatBox";
 import { StatsProvider } from "./contexts/StatsContext";
 
 const TRACKING_ID = "UA-230352416-1"; // YOUR_OWN_TRACKING_ID

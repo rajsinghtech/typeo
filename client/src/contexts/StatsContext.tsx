@@ -1,5 +1,4 @@
 import React from "react";
-import { getPlayerStats } from "../api/rest/stats";
 import { RaceSchema } from "../constants/schemas/race";
 import { CharacterData } from "../constants/race";
 import { RaceStats, Timeframes } from "../constants/stats";
@@ -9,8 +8,6 @@ import {
   query,
   collection,
   onSnapshot,
-  where,
-  Timestamp,
   limit,
   orderBy,
 } from "firebase/firestore";
@@ -24,12 +21,12 @@ interface ContextStats {
 
 const StatContext = React.createContext<ContextStats>({
   races: [],
-  getBaseStats: (timeframe: number) => ({
+  getBaseStats: () => ({
     averages: { wpm: 0, accuracy: 0 },
     best: { wpm: 0, accuracy: 0 },
   }),
-  getKeySpeeds: (timeframe: number) => [],
-  getMissedSequences: (timeframe: number) => ({}),
+  getKeySpeeds: () => [],
+  getMissedSequences: () => ({}),
 });
 
 export function useStats(): ContextStats {

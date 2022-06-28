@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import {
   User,
   UserCredential,
@@ -9,7 +9,6 @@ import {
   sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth } from "../firebase";
-import { createUser } from "../api/rest/user";
 import { v4 as uuidv4 } from "uuid";
 
 export interface GuestUser {
