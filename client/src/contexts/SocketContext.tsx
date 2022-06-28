@@ -21,7 +21,7 @@ export function useSocketContext() {
 
 export function SocketProvider({ children }: { children: any }) {
   const { currentUser, isLoggedIn } = useAuth();
-  const [socket, setSocket] = React.useState<Socket>(initialSocket);
+  const [socket] = React.useState<Socket>(initialSocket);
 
   const value = {
     socket,

@@ -2,8 +2,6 @@ import React, { useContext, useState } from "react";
 import {
   GameSettings,
   DefaultGameSettings,
-  GameTypes,
-  TextTypes,
 } from "../constants/settings";
 
 interface ContextGameSettings {

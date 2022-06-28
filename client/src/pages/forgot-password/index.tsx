@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import ReactGA from "react-ga";
 import { Grid } from "@mui/material";
 import ForgotPasswordComponent from "../../components/profile/forgot-password";

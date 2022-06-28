@@ -1,17 +1,10 @@
 import React from "react";
-import { keyframes } from "@mui/system";
-import { Box, Container } from "@mui/material";
+import {  } from "@mui/system";
+import { Box,  } from "@mui/material";
 import { RaceState } from "../RaceLogic";
 import { useGameSettings } from "../../../contexts/GameSettings";
 import { GameSettings } from "../../../constants/settings";
 
-const usePrevious = (value: any): any => {
-  const ref = React.useRef<any>();
-  React.useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
-};
 
 const styles = {
   marginTop: "-2.5px",
@@ -37,17 +30,7 @@ const typeStyles = [
   },
 ];
 
-interface CharOffsets {
-  ccol: number;
-  ccot: number;
-  ccw: number;
-}
 
-const DefaultCharOffsets = {
-  ccol: 0,
-  ccot: 0,
-  ccw: 0,
-};
 
 interface FollowerProps {
   wbContainerRef: React.RefObject<HTMLDivElement>;
@@ -179,7 +162,6 @@ const updateFollower = (
       4;
     const ccw = charInfo?.offsetWidth + 3;
 
-    const followerSpeed = `${settings.display?.followerSpeed || 0.1}s`;
 
     if (ccot !== parseFloat(followerRef.current.style.top))
       followerRef.current.style.transitionDuration = "0.03s";
