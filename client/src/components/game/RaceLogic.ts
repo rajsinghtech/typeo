@@ -14,13 +14,13 @@ import { useInterval } from "../common";
 import { User } from "firebase/auth";
 
 export interface RaceState {
-  textAreaText: string;
-  words: Array<string>;
-  amount: number;
+  textAreaText: string; // The text as one string
+  words: Array<string>; // The text as an array of the word strings (spaces not included)
+  amount: number; // The value that tracks the status for the current game mode. For example, it could represent time left, words left, etc.
   isRaceRunning: boolean;
   isRaceFinished: boolean;
-  startTime: number;
-  secondsRunning: number;
+  startTime: number; // The timestamp when the test started
+  secondsRunning: number; // seconds the test has been running
   isCorrect: boolean; // Has an error been made and not fixed
   currentCharIndex: number; // The current character the user is on in the passage (Regardless if they are correct or not)
   currentWordIndex: number; // The index of the start of the word the user is currently on (Regardless if they are correct or not)
@@ -30,36 +30,36 @@ export interface RaceState {
     wordsTyped: number;
     wordIndex: number;
     charIndex: number;
-  }[];
+  }[]; // Tracks if multiple errors have been made in a row in the non-strict mode. This is only used in non-strict so they can go back to previous words that are not correct
   wordsTyped: number; // The number of words typed (Regardless if they are correct or not)
-  charactersTyped: number;
+  charactersTyped: number; // The number of correct characters typed in the non-strict mode
   lastCorrectWord: number; // The index of the last correct word in the words array
-  prevInput: string;
-  prevKey: string;
-  overflowCount: number; // Detect if we have gone past the last character in the passage
+  prevInput: string; // The value that is in the input
+  prevKey: string; // The last key pressed
+  overflowCount: number; // Detect if we have gone past the last character in the passage or past the end of a word in non-strict mode
   errors: number;
   statState: StatState;
 }
 
 interface StatState {
   wpm: number;
-  wpmData: WPMData[];
-  characterTrackingData: CharacterData[];
-  resultsData: ResultsData;
+  wpmData: WPMData[]; // Array of wpm for each second of the test
+  characterTrackingData: CharacterData[]; // Array of every key pressed with its timestamp and if it is correct
+  resultsData: ResultsData; // Data to display after the race
 }
 
 const initialStatState: StatState = {
   wpm: 0,
-  wpmData: [],
-  characterTrackingData: [],
+  wpmData: [], // Array of wpm for each second
+  characterTrackingData: [], // Array of every key pressed with its timestamp and if it is correct
   resultsData: {
     passage: "",
     startTime: 0,
-    dataPoints: [],
+    dataPoints: [], // wpmData
     accuracy: 0,
     characters: { correct: 0, incorrect: 0, total: 0 },
     testType: { name: "", textType: "" },
-    characterDataPoints: [],
+    characterDataPoints: [], // characterTrackingData
   },
 };
 
@@ -98,6 +98,8 @@ const InitializePassage = (
 
   let newPassage = getPassage(textType, practice);
 
+  // If we are in timed mode we have to add more passage length
+  // TODO - make cleaner
   if (gameInfo.type === GameTypes.TIMED) {
     newPassage = `${newPassage} ${getPassage(textType, practice)} ${getPassage(
       textType,
@@ -108,9 +110,11 @@ const InitializePassage = (
   let newWords = newPassage.split(" ");
 
   if (gameInfo.type === GameTypes.WORDS && gameInfo.amount != undefined) {
+    // Keep adding to the text if we are less than the amount of words needed
     while (newWords.length < gameInfo.amount) {
       newWords = [...newWords, ...getPassage(textType, practice).split(" ")];
     }
+    // This will cut off any extra words added
     newWords.length = gameInfo.amount || 0;
   }
 
@@ -129,6 +133,7 @@ const AddPasageLength = (
 
   const practice = settings.gameInfo.practice;
 
+  // TODO - make cleaner
   const newTextAreaText = `${raceState.textAreaText} ${getPassage(
     textType,
     practice
@@ -141,15 +146,26 @@ const AddPasageLength = (
   };
 };
 
+/**
+ * Get the current wpm during the race at any given time
+ * @param raceState - The current race state
+ * @param settings - The game settings
+ * @returns - The updated race state that contains the new stat state
+ */
 const UpdateWPM = (raceState: RaceState, settings: GameSettings): RaceState => {
-  const charactersTyped = settings.gameInfo.strict
-    ? raceState.isCorrect
-      ? raceState.currentCharIndex
-      : raceState.errorIndex
-    : raceState.charactersTyped;
+  let charactersTyped = raceState.currentCharIndex;
 
+  if (settings.gameInfo.strict && !raceState.isCorrect)
+    // This prevents wpm from increasing when the user is not correct
+    charactersTyped = raceState.errorIndex;
+  else if (!settings.gameInfo.strict)
+    // The amount of characters is calculated different for non-strict mode
+    charactersTyped = raceState.charactersTyped;
+
+  // To calculated wpm you take the amount of characters / 5, and then divide that by the amount of minutes the test has been running
   const wpm =
     (charactersTyped / 5 / (Date.now() - raceState.startTime)) * 60000;
+
   const newStatState = {
     ...raceState.statState,
     wpm: +wpm.toFixed(1),
@@ -172,6 +188,13 @@ const OnStartRace = (raceState: RaceState): RaceState => {
   };
 };
 
+/**
+ * End race and calculate results data. Send the results to the server.
+ * @param raceState
+ * @param settings
+ * @param currentUser
+ * @returns - Updated race state
+ */
 const OnEndRace = (
   raceState: RaceState,
   settings: GameSettings,
@@ -180,6 +203,7 @@ const OnEndRace = (
   let newRaceState = { ...raceState };
   newRaceState = UpdateWPM(raceState, settings);
 
+  // TODO - This may be inaccurate for non-strict mode
   const correctCharacters = raceState.currentCharIndex - raceState.errors;
   const accuracy = (correctCharacters / raceState.currentCharIndex) * 100;
   const newStatState = {
@@ -204,6 +228,7 @@ const OnEndRace = (
   };
 
   try {
+    // Send results data to server
     RaceAPI.sendRaceData(currentUser, newStatState.resultsData);
   } catch (err) {
     console.error(err);
@@ -216,6 +241,14 @@ const OnEndRace = (
   return newRaceState;
 };
 
+/**
+ * Handles initializing a new race
+ * @param raceState
+ * @param shouldRaceStart - Should we start the race immediately after resetting
+ * @param retry - Should we use the same text
+ * @param settings
+ * @returns - initial race state
+ */
 const ResetRace = (
   raceState: RaceState,
   shouldRaceStart: boolean,
@@ -224,6 +257,7 @@ const ResetRace = (
 ): RaceState => {
   const newRaceState = { ...initialRaceState };
   if (retry) {
+    // Keep existing text
     newRaceState.words = raceState.words;
     newRaceState.textAreaText = raceState.textAreaText;
   }
@@ -233,6 +267,13 @@ const ResetRace = (
   else return newRaceState;
 };
 
+/**
+ * Logic for deleting character in strict and non-strict mode
+ * @param event - Keydown and OnChange event
+ * @param raceState
+ * @param settings
+ * @returns Race state after deletion
+ */
 const HandleDeletion = (
   event:
     | React.ChangeEvent<HTMLInputElement>
@@ -242,8 +283,12 @@ const HandleDeletion = (
 ): RaceState => {
   const newRaceState = { ...raceState };
   const inputRef = event.target as HTMLInputElement;
+
+  // Can't go back if the currentCharIndex is less than the correct word
   if (raceState.currentCharIndex > raceState.correctWordIndex) {
     if (raceState.currentCharIndex === 0) return newRaceState;
+
+    // Standard deletion of one character if not at the start of the word
     if (
       (raceState.currentCharIndex !== raceState.correctWordIndex &&
         settings.gameInfo.strict) ||
