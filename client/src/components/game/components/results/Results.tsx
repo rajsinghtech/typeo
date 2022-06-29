@@ -18,20 +18,15 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { Line, Bar, Chart } from "react-chartjs-2";
-import { WPMData } from "../../../../constants/race";
+import { Chart } from "react-chartjs-2";
 import "chartjs-adapter-date-fns";
 import { GridCard, HoverableText } from "../../../common";
 import {
-  BarChartData,
   ChartData,
-  GraphData,
 } from "../../../../constants/graphs";
 import { ResultsData } from "../../../../constants/race";
 import { useHistory } from "react-router-dom";
-import { JoinQueue } from "../../../../api/sockets/matchmaking";
 import { useSocketContext } from "../../../../contexts/SocketContext";
-import { CharacterData } from "../../../../constants/race";
 import StatKeyboard from "../../../stats/components/StatKeyboard";
 import {
   getCharacterSpeed,
@@ -73,8 +68,6 @@ export default function Results({
   const [graphData, setGraphData] = React.useState<ChartData>();
   const [wpm, setWPM] = React.useState<number>(0);
   const [keyData, setKeyData] = React.useState<number[]>(new Array(26).fill(0));
-  const { socket } = useSocketContext();
-  const history = useHistory();
   const theme = useTheme();
 
   React.useEffect(() => {

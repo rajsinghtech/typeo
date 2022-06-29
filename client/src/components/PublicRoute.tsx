@@ -1,9 +1,10 @@
 import React from "react";
-import { Redirect, Route, RouteComponentProps } from "react-router-dom";
+import { Redirect, Route } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
 interface PublicRouteProps {
   component: () => JSX.Element;
+  // TODO:  Add proper type for this
   [x: string]: any;
 }
 
@@ -15,7 +16,7 @@ export default function PublicRoute({
   return (
     <Route
       {...rest}
-      render={(props) => {
+      render={() => {
         return isLoggedIn ? <Redirect to="/" /> : <Component />;
       }}
     ></Route>
