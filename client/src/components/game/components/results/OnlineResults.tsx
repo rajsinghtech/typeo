@@ -7,7 +7,6 @@ import {
   useTheme,
   Divider,
 } from "@mui/material";
-import TimelineIcon from "@mui/icons-material/Timeline";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -20,13 +19,11 @@ import {
   Legend,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
-import { WPMData } from "../../../../constants/race";
 import "chartjs-adapter-date-fns";
 import { GridCard, HoverableText } from "../../../common";
 import { GraphData } from "../../../../constants/graphs";
 import { ResultsData } from "../../../../constants/race";
 import { useHistory } from "react-router-dom";
-import { JoinQueue } from "../../../../api/sockets/matchmaking";
 import { useSocketContext } from "../../../../contexts/SocketContext";
 
 ChartJS.register(
@@ -56,11 +53,10 @@ export default function OnlineResults({
   place,
 }: ResultsProps) {
   const [graphData, setGraphData] = React.useState<GraphData>();
-  const [isGraphOpen, setIsGraphOpen] = React.useState<boolean>(false);
+  const [isGraphOpen] = React.useState<boolean>(false);
 
   const graphRef = React.useRef<HTMLDivElement>();
 
-  const { socket } = useSocketContext();
   const history = useHistory();
   const theme = useTheme();
 

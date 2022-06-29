@@ -4,12 +4,10 @@ import SortByAlphaIcon from "@mui/icons-material/SortByAlpha";
 import ImportContactsIcon from "@mui/icons-material/ImportContacts";
 import { GridCard } from "../../../common";
 import {
-  GameTypes,
   GameTypeNames,
   GameTypeAmounts,
   TextTypeNames,
   DefaultGameSettings,
-  GameSettings,
   FollowerTypes,
 } from "../../../../constants/settings";
 import {
@@ -17,8 +15,6 @@ import {
   Button,
   Dialog,
   Divider,
-  FormControlLabel,
-  FormGroup,
   Grid,
   IconButton,
   Slider,
@@ -99,9 +95,7 @@ export default function Settings() {
     });
   };
 
-  const ResetSettings = () => {
-    setGameSettings(DefaultGameSettings);
-  };
+
 
   const SetFollowerStyle = (_: any, followerStyle: FollowerTypes) => {
     setGameSettings({

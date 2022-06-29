@@ -1,5 +1,4 @@
 import React from "react";
-import { unstable_batchedUpdates } from "react-dom";
 import * as RaceAPI from "../../api/rest/race";
 import { CharacterData, MAX_INPUT_LENGTH } from "../../constants/race";
 import { getPassage } from "../../constants/passages";
@@ -11,12 +10,8 @@ import {
   TextTypeNames,
 } from "../../constants/settings";
 import { GuestUser, useAuth } from "../../contexts/AuthContext";
-import { useSocketContext } from "../../contexts/SocketContext";
 import { useInterval } from "../common";
-import { CLIENT_RACE_UPDATE_EVENT } from "../../api/sockets/race";
-import { useSnackbar } from "notistack";
 import { User } from "firebase/auth";
-import Settings from "./components/standardComponents/Settings";
 
 export interface RaceState {
   textAreaText: string;
@@ -112,8 +107,8 @@ const InitializePassage = (
 
   let newWords = newPassage.split(" ");
 
-  if (gameInfo.type === GameTypes.WORDS) {
-    while (newWords.length < gameInfo.amount!) {
+  if (gameInfo.type === GameTypes.WORDS && gameInfo.amount != undefined) {
+    while (newWords.length < gameInfo.amount) {
       newWords = [...newWords, ...getPassage(textType, practice).split(" ")];
     }
     newWords.length = gameInfo.amount || 0;
@@ -737,10 +732,8 @@ export default function useRaceLogic({
   settings,
   passage,
   testDisabled,
-  setResultsDataProp,
 }: RaceLogicProps) {
   const { currentUser } = useAuth();
-  const { socket } = useSocketContext();
 
   const [raceState, raceStateDispatch] = React.useReducer(
     RaceStateReducer,

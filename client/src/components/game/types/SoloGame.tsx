@@ -1,14 +1,9 @@
 import React from "react";
 import StandardGame from "../components/Standard";
 import { useGameSettings } from "../../../contexts/GameSettings";
-import { Box, Card, Grid, Typography } from "@mui/material";
-import MissedSequences from "../../stats/components/MissedSequences";
-import StatKeyboard from "../../stats/components/StatKeyboard";
+import { Box,  Grid} from "@mui/material";
 import PracticeBox from "../components/standardComponents/PracticeBox";
-import useRaceLogic from "../RaceLogic";
-import Results from "../components/results/Results";
 import HomeProfile from "../../profile/display/HomeProfile";
-import TopSettings from "../components/standardComponents/TopSettings";
 import Settings from "../components/standardComponents/Settings";
 
 export default function SoloGame() {

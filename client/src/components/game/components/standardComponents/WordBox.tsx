@@ -1,5 +1,4 @@
 import React from "react";
-import Follower from "../../feedback/Follower";
 import { Box } from "@mui/material";
 import { styled } from "@mui/system";
 

@@ -4,14 +4,10 @@ import { styled } from "@mui/material/styles";
 import Alert from "@mui/material/Alert";
 import {
   Card,
-  Snackbar,
-  SnackbarCloseReason,
   TextField,
-  Avatar,
   Typography,
   Tooltip,
 } from "@mui/material";
-import { css } from "@emotion/react";
 import { Placement, TextVariant } from "../constants/common";
 
 type DefaultProps = {
@@ -37,7 +33,7 @@ export const StyledTextField = (props: DefaultProps) => {
 };
 
 export const ErrorAlert = (props: DefaultProps) => {
-  const StyledAlert = styled(Alert)(({ theme }) => ({
+  const StyledAlert = styled(Alert)(() => ({
     marginTop: "5px",
     color: "black",
     backgroundColor: "rgb(253, 236, 234)",
@@ -51,7 +47,7 @@ export const ErrorAlert = (props: DefaultProps) => {
 };
 
 export const SuccessAlert = (props: DefaultProps) => {
-  const StyledAlert = styled(Alert)(({ theme }) => ({
+  const StyledAlert = styled(Alert)(() => ({
     marginTop: "5px",
     color: "black",
     backgroundColor: "rgb(237, 247, 237)",

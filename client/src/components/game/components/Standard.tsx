@@ -1,29 +1,22 @@
 import React from "react";
-import { useHistory } from "react-router-dom";
+
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
-import Button from "@mui/material/Button";
-import SpeedProgress, { calculateWPMColor } from "../feedback/SpeedProgress";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
-import { GridCard, StyledTextField } from "../../common";
-import { Box, IconButton, Theme, Typography } from "@mui/material";
+import { GridCard } from "../../common";
+import {  IconButton, Theme, Typography } from "@mui/material";
 import Follower from "../feedback/Follower";
 import WordBox from "./standardComponents/WordBox";
-import { GameSettings, GameTypes } from "../../../constants/settings";
+import { GameSettings } from "../../../constants/settings";
 import { useAuth } from "../../../contexts/AuthContext";
-import Settings from "./standardComponents/Settings";
 import Results from "./results/Results";
 import { MAX_INPUT_LENGTH, ResultsData } from "../../../constants/race";
 import { OnlineRaceData } from "../types/FFAGame";
 import useRaceLogic, {
-  RaceLogic,
   RaceState,
-  RaceStateReducerActions,
 } from "../RaceLogic";
-import HomeProfile from "../../profile/display/HomeProfile";
-import { useSnackbar } from "notistack";
-import TopSettings from "./standardComponents/TopSettings";
 import { useTheme } from "@mui/material";
+import SpeedProgress from "../feedback/SpeedProgress";
 
 const styles = {
   amountCard: {
@@ -35,7 +28,7 @@ const styles = {
     backgroundColor: "rgba(255, 255, 255, 0.15)",
   },
 };
-
+// TODO: Add a type for value
 const usePrevious = (value: any): any => {
   const ref = React.useRef<any>();
   React.useEffect(() => {
@@ -44,7 +37,6 @@ const usePrevious = (value: any): any => {
   return ref.current;
 };
 
-const PREFIX = "MuiStandardGame";
 
 interface StandardGameProps {
   settings: GameSettings;
@@ -56,8 +48,6 @@ interface StandardGameProps {
 export default function StandardGame({
   settings,
   testDisabled,
-  onlineRaceData,
-  setResultsDataProp,
 }: StandardGameProps) {
   const { currentUser } = useAuth();
 
@@ -246,10 +236,10 @@ export default function StandardGame({
                 currentUser,
               })
             }
-            onFocus={(e: React.ChangeEvent<HTMLInputElement>) => {
+            onFocus={() => {
               setIsFocused(true);
             }}
-            onBlur={(e: React.ChangeEvent<HTMLInputElement>) => {
+            onBlur={() => {
               setIsFocused(false);
             }}
             disabled={inputDisabled || testDisabled}
@@ -507,33 +497,4 @@ const updateStyles = (
   }
 };
 
-const calculateFollowerPosition = (
-  wordsTyped: number,
-  passageArray: Array<string>,
-  wordBoxRef: React.RefObject<HTMLDivElement>
-): { col: number; cot: number; cw: number } => {
-  if (
-    wordBoxRef.current &&
-    wordBoxRef.current.children[1] &&
-    wordBoxRef.current.offsetLeft
-  ) {
-    let wordIndex = wordsTyped;
-    let charIndex = 0;
-    if (wordIndex >= passageArray.length) {
-      wordIndex = passageArray.length - 1;
-      charIndex = passageArray[wordIndex].length - 1;
-    }
-    if (!wordBoxRef.current.children[wordIndex])
-      return { col: 0, cot: 0, cw: 0 };
-    const charInfo = wordBoxRef.current.children[wordIndex].children[
-      charIndex
-    ] as HTMLDivElement;
-    if (!charInfo) return { col: 0, cot: 0, cw: 0 };
-    return {
-      col: wordBoxRef.current.offsetLeft + charInfo.offsetLeft - 1,
-      cot: wordBoxRef.current.offsetTop + charInfo.offsetTop + 2.5,
-      cw: charInfo.offsetWidth + 3,
-    };
-  }
-  return { col: 0, cot: 0, cw: 0 };
-};
+
