@@ -9,7 +9,7 @@
     "heroku-prebuild": "cd client && npm install && npm run build",
     "heroku-postbuild": "npm run tsc",
     "devnb": "ts-node-dev src/index.ts",
-    "dev": "cd ../client && npm run build && cd ../api && ts-node-dev src/index.ts"
+    "dev": "cd ./client && npm run build && cd .. && ts-node-dev src/index.ts"
   },
   "dependencies": {
     "@types/cookie-parser": "^1.4.2",

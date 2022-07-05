@@ -1,10 +1,11 @@
 import React from "react";
 import StandardGame from "../components/Standard";
 import { useGameSettings } from "../../../contexts/GameSettings";
-import { Box,  Grid} from "@mui/material";
+import { Box, Grid } from "@mui/material";
 import PracticeBox from "../components/standardComponents/PracticeBox";
 import HomeProfile from "../../profile/display/HomeProfile";
 import Settings from "../components/standardComponents/Settings";
+import Defender from "../components/defender/Defender";
 
 export default function SoloGame() {
   const { gameSettings } = useGameSettings();
@@ -20,10 +21,11 @@ export default function SoloGame() {
       </Grid>
       <Grid item xs={7.5}>
         <Grid container spacing={3}>
-          <StandardGame
+          {/* <StandardGame
             settings={gameSettings}
             testDisabled={isPractice && practiceStrings.length === 0}
-          />
+          /> */}
+          <Defender />
         </Grid>
       </Grid>
       <Grid item xs={3}>

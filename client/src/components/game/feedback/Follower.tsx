@@ -1,10 +1,9 @@
 import React from "react";
-import {  } from "@mui/system";
-import { Box,  } from "@mui/material";
-import { RaceState } from "../RaceLogic";
+import {} from "@mui/system";
+import { Box } from "@mui/material";
+import { RaceState, RaceStateSubset } from "../RaceLogic";
 import { useGameSettings } from "../../../contexts/GameSettings";
 import { GameSettings } from "../../../constants/settings";
-
 
 const styles = {
   marginTop: "-2.5px",
@@ -30,12 +29,10 @@ const typeStyles = [
   },
 ];
 
-
-
 interface FollowerProps {
-  wbContainerRef: React.RefObject<HTMLDivElement>;
+  wbContainerRef?: React.RefObject<HTMLDivElement>;
   wbRef: React.RefObject<HTMLDivElement>;
-  raceState: RaceState;
+  raceState: RaceState | RaceStateSubset;
   disabled?: boolean;
 }
 
@@ -46,7 +43,6 @@ const Follower = ({
   disabled,
 }: FollowerProps) => {
   const followerRef = React.useRef<HTMLDivElement>(null);
-
   const { gameSettings } = useGameSettings();
 
   //   const followerSlide = keyframes`
@@ -58,7 +54,6 @@ const Follower = ({
   //     left: ${ccol}px;
   //   }
   // `;
-
   React.useEffect(() => {
     updateFollower(wbRef, wbContainerRef, followerRef, raceState, gameSettings);
   }, [raceState]);
@@ -116,32 +111,34 @@ const Follower = ({
 };
 
 export default React.memo(Follower, (props, newProps) => {
-  const { amount, statState, secondsRunning, ...state } = props.raceState;
+  const { currentCharIndex, currentWordIndex, wordsTyped } = props.raceState;
   const {
-    amount: newAmount,
-    statState: newStatState,
-    secondsRunning: newSecondsRunning,
-    ...newState
+    currentCharIndex: newCurrentCharIndex,
+    currentWordIndex: newCurrentWordIndex,
+    wordsTyped: newWordsTyped,
   } = newProps.raceState;
-  const raceState = JSON.stringify(state);
-  const newRaceState = JSON.stringify(newState);
 
-  if (raceState === newRaceState) return true;
+  if (
+    currentCharIndex === newCurrentCharIndex &&
+    currentWordIndex === newCurrentWordIndex &&
+    wordsTyped === newWordsTyped
+  )
+    return true;
+
   return false;
 });
 
 const updateFollower = (
   wbRef: React.RefObject<HTMLDivElement>,
-  wbContainerRef: React.RefObject<HTMLDivElement>,
+  wbContainerRef: React.RefObject<HTMLDivElement> | undefined,
   followerRef: React.RefObject<HTMLDivElement>,
-  raceState: RaceState,
+  raceState: RaceState | RaceStateSubset,
   settings: GameSettings
 ) => {
   if (
     wbRef.current &&
     wbRef.current.children[1] &&
     wbRef.current.offsetLeft &&
-    wbContainerRef.current &&
     followerRef.current
   ) {
     const charInfo = wbRef.current.children[raceState.wordsTyped].children[
@@ -151,17 +148,18 @@ const updateFollower = (
     if (charInfo.offsetTop > 155)
       wbRef.current.style.top = `-${charInfo.offsetTop - 149}px`;
 
-    const ccol =
-      wbContainerRef.current.offsetLeft +
-      wbRef.current.offsetLeft +
-      charInfo?.offsetLeft;
-    const ccot =
-      wbContainerRef.current.offsetTop +
-      wbRef.current.offsetTop +
-      charInfo?.offsetTop -
-      4;
-    const ccw = charInfo?.offsetWidth + 3;
+    let containerOffsetLeft = 0;
+    let containerOffsetTop = 0;
+    if (wbContainerRef && wbContainerRef.current) {
+      containerOffsetLeft = wbContainerRef.current.offsetLeft;
+      containerOffsetTop = wbContainerRef.current.offsetTop;
+    }
 
+    const ccol =
+      containerOffsetLeft + wbRef.current.offsetLeft + charInfo?.offsetLeft;
+    const ccot =
+      containerOffsetTop + wbRef.current.offsetTop + charInfo?.offsetTop - 4;
+    const ccw = charInfo?.offsetWidth + 3;
 
     if (ccot !== parseFloat(followerRef.current.style.top))
       followerRef.current.style.transitionDuration = "0.03s";
