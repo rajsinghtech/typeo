@@ -41,6 +41,12 @@ export interface RaceState {
   statState: StatState;
 }
 
+export interface RaceStateSubset {
+  currentCharIndex: number;
+  currentWordIndex: number;
+  wordsTyped: number;
+}
+
 interface StatState {
   wpm: number;
   wpmData: WPMData[]; // Array of wpm for each second of the test
@@ -96,15 +102,20 @@ const InitializePassage = (
 
   const practice = settings.gameInfo.practice;
 
-  let newPassage = getPassage(textType, practice);
+  let newPassage = getPassage(textType, 80, practice);
 
   // If we are in timed mode we have to add more passage length
   // TODO - make cleaner
   if (gameInfo.type === GameTypes.TIMED) {
-    newPassage = `${newPassage} ${getPassage(textType, practice)} ${getPassage(
+    newPassage = `${newPassage} ${getPassage(
       textType,
+      80,
       practice
-    )} ${getPassage(textType, practice)}`;
+    )} ${getPassage(textType, 80, practice)} ${getPassage(
+      textType,
+      80,
+      practice
+    )}`;
   }
 
   let newWords = newPassage.split(" ");
@@ -112,7 +123,10 @@ const InitializePassage = (
   if (gameInfo.type === GameTypes.WORDS && gameInfo.amount != undefined) {
     // Keep adding to the text if we are less than the amount of words needed
     while (newWords.length < gameInfo.amount) {
-      newWords = [...newWords, ...getPassage(textType, practice).split(" ")];
+      newWords = [
+        ...newWords,
+        ...getPassage(textType, 80, practice).split(" "),
+      ];
     }
     // This will cut off any extra words added
     newWords.length = gameInfo.amount || 0;
@@ -136,8 +150,9 @@ const AddPasageLength = (
   // TODO - make cleaner
   const newTextAreaText = `${raceState.textAreaText} ${getPassage(
     textType,
+    80,
     practice
-  )} ${getPassage(textType, practice)}`;
+  )} ${getPassage(textType, 80, practice)}`;
 
   return {
     ...raceState,

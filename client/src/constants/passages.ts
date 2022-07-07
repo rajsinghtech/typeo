@@ -138,14 +138,19 @@ export const CommonWords = [
   "part",
 ];
 
+interface PracticeInfo {
+  isPractice: boolean;
+  practiceStrings: string[];
+}
+
 export const getPassage = (
   textType: TextTypes,
-  {
-    isPractice,
-    practiceStrings,
-  }: { isPractice: boolean; practiceStrings: string[] },
-  passageLength = 80
-) => {
+  passageLength = 80,
+  { isPractice, practiceStrings }: PracticeInfo = {
+    isPractice: false,
+    practiceStrings: [],
+  }
+): string => {
   if (isPractice) {
     let passageWords: string[] = [];
     for (const chars of practiceStrings) {
