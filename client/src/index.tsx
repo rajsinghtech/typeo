@@ -28,7 +28,7 @@ let theme = createTheme({
     secondary: {
       main: "#ffffff",
       light: "#ffffff",
-      dark: "#ffffff",
+      dark: "#b0b0b0",
       // second: "#e25048",
       // third: "#8fcf39",
       // highlight: "rgba(255,0,0,0.8)",

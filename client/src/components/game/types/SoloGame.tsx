@@ -6,6 +6,7 @@ import PracticeBox from "../components/standardComponents/PracticeBox";
 import HomeProfile from "../../profile/display/HomeProfile";
 import Settings from "../components/standardComponents/Settings";
 import Defender from "../components/defender/Defender";
+import { GameTypes } from "../../../constants/settings";
 
 export default function SoloGame() {
   const { gameSettings } = useGameSettings();
@@ -21,11 +22,14 @@ export default function SoloGame() {
       </Grid>
       <Grid item xs={7.5}>
         <Grid container spacing={3}>
-          {/* <StandardGame
-            settings={gameSettings}
-            testDisabled={isPractice && practiceStrings.length === 0}
-          /> */}
-          <Defender />
+          {gameSettings.gameInfo.type === GameTypes.DEFENDER ? (
+            <Defender />
+          ) : (
+            <StandardGame
+              settings={gameSettings}
+              testDisabled={isPractice && practiceStrings.length === 0}
+            />
+          )}
         </Grid>
       </Grid>
       <Grid item xs={3}>

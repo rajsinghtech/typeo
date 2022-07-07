@@ -4,6 +4,8 @@ import {
   Grid,
   keyframes,
   LinearProgress,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
   useTheme,
 } from "@mui/material";
@@ -14,20 +16,30 @@ import { v4 as uuidv4 } from "uuid";
 import WordBox from "../standardComponents/WordBox";
 import Follower from "../../feedback/Follower";
 import FavoriteIcon from "@mui/icons-material/Favorite";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import {
   DefenderStateReducerActions,
   EnemyType,
   EnemyVariant,
+  EXPLOSION_TIME,
   ParticleType,
   useDefenderLogic,
 } from "./DefenderLogic";
+import { useGameSettings } from "../../../../contexts/GameSettings";
+import { Difficulty } from "../../../../constants/settings";
 
 const PATH_WIDTH = "36px";
 const BORDER_WIDTH = "2px";
 
 const PATH_OFFSET_TOP_PERCENTAGE = 15;
 
+type Status = "menu" | "running" | "finished";
+
 export default function Defender() {
+  const [status, setStatus] = React.useState<Status>("menu");
+  const [resultScore, setResultScore] = React.useState<number>(0);
+
   return (
     <Grid item xs={12}>
       {/* <Button onClick={() => setLevel((prev) => prev + 1)}>Start</Button> */}
@@ -41,13 +53,146 @@ export default function Defender() {
           margin: "0 auto",
         }}
       >
-        <DefenderComponent />
+        {status === "menu" ? (
+          <StartMenu setStatus={setStatus} />
+        ) : status === "running" ? (
+          <DefenderComponent
+            setStatus={setStatus}
+            setResultScore={setResultScore}
+          />
+        ) : (
+          <GameOver score={resultScore} setStatus={setStatus} />
+        )}
       </GridCard>
     </Grid>
   );
 }
 
-const DefenderComponent = () => {
+const StartMenu = ({
+  setStatus,
+}: {
+  setStatus: React.Dispatch<React.SetStateAction<Status>>;
+}) => {
+  const { gameSettings, setGameSettings } = useGameSettings();
+
+  const SetDifficulty = (_: any, newDifficulty: Difficulty) => {
+    setGameSettings({
+      ...gameSettings,
+      defender: { ...gameSettings.defender, difficulty: newDifficulty },
+    });
+  };
+
+  return (
+    <Box
+      display="flex"
+      flexDirection="column"
+      justifyContent="center"
+      width="100%"
+      height="100%"
+      alignItems="center"
+      gap={5}
+    >
+      <Typography variant="h1" color="text.primary">
+        Defender
+      </Typography>
+      <Typography variant="subtitle1">
+        Tip: Press CTRL to go to next enemy
+      </Typography>
+      <ToggleButtonGroup
+        value={gameSettings.defender.difficulty}
+        exclusive
+        onChange={SetDifficulty}
+      >
+        <ToggleButton value="easy" color="success">
+          Easy
+        </ToggleButton>
+        <ToggleButton value="medium" color="primary">
+          Medium
+        </ToggleButton>
+        <ToggleButton value="hard" color="warning">
+          Hard
+        </ToggleButton>
+        <ToggleButton value="impossible" color="error">
+          Impossible
+        </ToggleButton>
+      </ToggleButtonGroup>
+      <Button
+        variant="outlined"
+        color="secondary"
+        sx={{ mt: 2 }}
+        onClick={() => setStatus("running")}
+      >
+        Start
+      </Button>
+    </Box>
+  );
+};
+
+interface GameOverProps {
+  score: number;
+  setStatus: React.Dispatch<React.SetStateAction<Status>>;
+}
+
+const GameOver = ({ score, setStatus }: GameOverProps) => {
+  const [highscore, setHighscore] = React.useState<number>(0);
+
+  React.useEffect(() => {
+    let newHighscore = score;
+    const storedHighscore = localStorage.getItem("defender_highscore");
+    if (storedHighscore) {
+      const parsedHighscore = parseInt(storedHighscore);
+      if (score > parsedHighscore) {
+        localStorage.setItem("defender_highscore", `${score}`);
+        newHighscore = score;
+      } else {
+        newHighscore = parsedHighscore;
+      }
+    } else {
+      localStorage.setItem("defender_highscore", `${score}`);
+    }
+    setHighscore(newHighscore);
+  }, []);
+
+  return (
+    <Box
+      display="flex"
+      flexDirection="column"
+      justifyContent="center"
+      width="100%"
+      height="100%"
+      alignItems="center"
+      gap={1}
+    >
+      <Typography variant="h2" color="text.primary">
+        Game Over
+      </Typography>
+      <Typography variant="h6">Score</Typography>
+      <Typography variant="h3" color="warning.main">
+        {score.toFixed(0)}
+      </Typography>
+      <Typography variant="h6">Highscore</Typography>
+      <Typography variant="h3">{highscore.toFixed(0)}</Typography>
+      <Button
+        variant="outlined"
+        color="secondary"
+        sx={{ mt: 2 }}
+        onClick={() => setStatus("menu")}
+      >
+        Play Again
+      </Button>
+    </Box>
+  );
+};
+
+interface DefenderComponentProps {
+  setStatus: React.Dispatch<React.SetStateAction<Status>>;
+  setResultScore: React.Dispatch<React.SetStateAction<number>>;
+}
+
+const DefenderComponent = ({
+  setStatus,
+  setResultScore,
+}: DefenderComponentProps) => {
   const { defenderState, defenderStateDispatch } = useDefenderLogic();
 
   const [isFocused, setIsFocused] = React.useState<boolean>(true);
@@ -68,6 +213,7 @@ const DefenderComponent = () => {
           const element = c as HTMLElement;
           if (element) {
             element.style.color = theme.palette.text.disabled;
+            element.style.border = "none";
           }
         }
       }
@@ -84,21 +230,58 @@ const DefenderComponent = () => {
   React.useEffect(() => {
     if (defenderState.raceState.currentCharIndex === 0) {
       resetStyles();
-    } else if (
-      wbRef.current &&
-      wbRef.current.children[defenderState.raceState.wordsTyped]
-    ) {
-      const charDiv = wbRef.current.children[defenderState.raceState.wordsTyped]
-        .children[
-        defenderState.raceState.currentCharIndex -
-          defenderState.raceState.currentWordIndex -
-          1
-      ] as HTMLElement;
+    } else if (wbRef.current) {
+      const raceState = defenderState.raceState;
+
+      const isNewWord =
+        raceState.currentCharIndex === raceState.currentWordIndex;
+      const wordIndex = isNewWord
+        ? Math.max(raceState.wordsTyped - 1, 0)
+        : raceState.wordsTyped;
+
+      if (!wbRef.current.children[wordIndex]) return;
+
+      const charDiv = isNewWord
+        ? (wbRef.current.children[wordIndex].lastChild as HTMLElement)
+        : (wbRef.current.children[wordIndex].children[
+            defenderState.raceState.currentCharIndex -
+              defenderState.raceState.currentWordIndex -
+              1
+          ] as HTMLElement);
       if (charDiv) {
         charDiv.style.color = theme.palette.text.primary;
+        if (charDiv.innerHTML === "&nbsp;") {
+          charDiv.style.borderBottom = `2px solid ${theme.palette.text.primary}`;
+        }
       }
     }
   }, [defenderState.raceState.currentCharIndex]);
+
+  React.useEffect(() => {
+    if (wbRef.current) {
+      let count = 0;
+      for (const word of wbRef.current.children) {
+        for (const letter of word.children) {
+          if (count >= defenderState.raceState.currentCharIndex) return;
+          count++;
+          const charDiv = letter as HTMLElement;
+          if (charDiv) {
+            charDiv.style.color = theme.palette.text.primary;
+            if (charDiv.innerHTML === "&nbsp;") {
+              charDiv.style.borderBottom = `2px solid ${theme.palette.text.primary}`;
+            }
+          }
+        }
+      }
+    }
+  }, [defenderState.currentEnemyUID]);
+
+  React.useEffect(() => {
+    if (defenderState.isFinished) {
+      setResultScore(defenderState.score);
+      setStatus("finished");
+    }
+  }, [defenderState.isFinished]);
 
   React.useEffect(() => {
     clearTimeout(focusTimeout);
@@ -146,12 +329,6 @@ const DefenderComponent = () => {
       {React.useMemo(() => {
         return (
           <>
-            <Button
-              onClick={() => defenderStateDispatch({ type: "spawnEnemies" })}
-              sx={{ position: "absolute", zIndex: 9999 }}
-            >
-              Start
-            </Button>
             <input
               id="type"
               name="type"
@@ -164,7 +341,7 @@ const DefenderComponent = () => {
                 top: 0,
                 left: 0,
                 cursor: "default",
-                zIndex: 99,
+                zIndex: 1,
               }}
               onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) =>
                 defenderStateDispatch({
@@ -190,8 +367,41 @@ const DefenderComponent = () => {
         );
       }, [isFocused])}
       {React.useMemo(() => {
+        if (defenderState.errors === 0) {
+          return null;
+        } else {
+          return (
+            <Box
+              key={`errors_${defenderState.errors}`}
+              position="absolute"
+              width="100%"
+              top="23%"
+              textAlign="center"
+              sx={{
+                opacity: 0,
+                animation: `${keyframes`
+          0% {
+            opacity: 1
+          }
+          100% {
+            opacity: 0
+          }`} 1s`,
+              }}
+            >
+              <ErrorOutlineIcon color="error" />
+            </Box>
+          );
+        }
+      }, [defenderState.errors])}
+      {React.useMemo(() => {
         return (
-          <Box sx={{ position: "absolute", width: "100%", top: "20%" }}>
+          <Box
+            sx={{
+              position: "absolute",
+              width: "100%",
+              top: "20%",
+            }}
+          >
             <WordBox
               words={getCurrentEnemy()?.text.split(" ") || []}
               boxRef={wbRef}
@@ -200,6 +410,25 @@ const DefenderComponent = () => {
           </Box>
         );
       }, [defenderState.currentEnemyUID])}
+      {/* {React.useMemo(() => {
+        return (
+          <Box
+            key={`errors_${defenderState.errors}`}
+            position="absolute"
+            width="100%"
+            height="100%"
+            sx={{
+              animation: `${keyframes`
+              0% {
+                background-color: rgba(255, 0, 0, 0.1)
+              }
+              100% {
+                background-color: transparent
+              }`} 2s`,
+            }}
+          ></Box>
+        );
+      }, [defenderState.errors])} */}
       {focusMessageOpen ? (
         <GridCard
           sx={{
@@ -208,7 +437,7 @@ const DefenderComponent = () => {
             left: 0,
             top: "50%",
             textAlign: "center",
-            zIndex: 999,
+            zIndex: 2,
             backgroundColor: "primary.main",
           }}
         >
@@ -231,6 +460,7 @@ const DefenderComponent = () => {
                     type={type}
                     text={text}
                     charactersTyped={charactersTyped}
+                    targeted={defenderState.currentEnemyUID === uid}
                     delay={delay}
                     dispatch={defenderStateDispatch}
                   />
@@ -239,7 +469,7 @@ const DefenderComponent = () => {
             )}
           </Box>
         );
-      }, [defenderState.enemies])}
+      }, [defenderState.enemies, defenderState.currentEnemyUID])}
       {React.useMemo(() => {
         return (
           <>
@@ -307,17 +537,21 @@ const DefenderComponent = () => {
               variant="h6"
               sx={{
                 position: "absolute",
-                top: 15,
+                top: "4%",
                 left: "50%",
                 transform: "translateX(-50%)",
+                opacity: 0,
                 animation: `${keyframes`
                   0% {
                       opacity: 0
                   }
-                  100% {
-                      opacity: 1
+                  50% {
+                    opacity: 1
                   }
-                  `} 4s`,
+                  100% {
+                      opacity: 0
+                  }
+                  `} 5s ease-out`,
               }}
             >{`Level ${defenderState.level}`}</Typography>
             <Box sx={{ position: "absolute", right: 40, bottom: 25 }}>
@@ -355,7 +589,6 @@ const PlayerRocket = ({ shipRotation }: PlayerRocketProps) => {
 };
 
 const BULLET_TIME = 350;
-const EXPLOSION_TIME = 1200;
 
 interface BulletProps {
   offsetLeft: number;
@@ -449,6 +682,7 @@ interface EnemyProps {
   type: EnemyVariant;
   text: string;
   charactersTyped: number;
+  targeted: boolean;
   delay: number;
   dispatch: React.Dispatch<DefenderStateReducerActions>;
 }
@@ -457,18 +691,38 @@ const Enemy = React.memo(function EnemyComponent({
   type,
   text,
   charactersTyped,
+  targeted,
   delay,
   dispatch,
 }: EnemyProps) {
+  const { gameSettings } = useGameSettings();
+  let animationSpeed = 25;
+  switch (gameSettings.defender.difficulty) {
+    case "easy":
+      animationSpeed = 28;
+      break;
+    case "medium":
+      animationSpeed = 23;
+      break;
+    case "hard":
+      animationSpeed = 15;
+      break;
+    case "impossible":
+      animationSpeed = 3;
+      break;
+    default:
+      break;
+  }
   return (
     <Box
       sx={{
         position: "absolute",
         width: "100%",
-        animation: `${moveEnemy} 25s linear`,
+        animation: `${moveEnemy} ${animationSpeed}s linear`,
         animationDelay: `${delay}s`,
-        left: "-5%",
+        left: 0,
         top: `${PATH_OFFSET_TOP_PERCENTAGE}%`,
+        transform: "translateX(105%)",
       }}
       onAnimationEnd={() =>
         dispatch({ type: "dealDamage", damage: text.split(" ").length })
@@ -483,7 +737,7 @@ const Enemy = React.memo(function EnemyComponent({
           borderRadius: type.shape === "circle" ? "50%" : 0,
           transform: "translateY(10px)",
           outline: `1px solid ${type.color}`,
-          zIndex: 99,
+          zIndex: 1,
         }}
       >
         {charactersTyped > 0 ? (
@@ -495,6 +749,18 @@ const Enemy = React.memo(function EnemyComponent({
               width: "100%",
               top: -20,
               ".MuiLinearProgress-bar": { transitionDuration: "75ms" },
+            }}
+          />
+        ) : null}
+        {targeted ? (
+          <ArrowDropUpIcon
+            color="warning"
+            fontSize="medium"
+            sx={{
+              position: "absolute",
+              top: 25,
+              left: "50%",
+              transform: "translateX(-50%)",
             }}
           />
         ) : null}
