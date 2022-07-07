@@ -4,24 +4,17 @@ import { Timeframes } from "../../../constants/stats";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useStats } from "../../../contexts/StatsContext";
 import { GridCard } from "../../common";
-import { calculateWPMColor } from "../../game/feedback/SpeedProgress";
 
 export default function HomeProfile() {
-  const { currentUser, isLoggedIn } = useAuth();
+  const { isLoggedIn } = useAuth();
 
   const { getBaseStats } = useStats();
 
-  React.useEffect(() => {
-    const stats = getBaseStats(Timeframes.LAST_100);
-  });
 
   const baseStats = getBaseStats(Timeframes.LAST_100);
 
   return (
     <GridCard accent>
-      <Typography variant="h6" color="secondary.main">
-        {currentUser.displayName}
-      </Typography>
       <Divider sx={{ my: 1 }} />
       {isLoggedIn ? (
         <>

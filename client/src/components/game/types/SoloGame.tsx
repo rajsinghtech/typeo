@@ -1,15 +1,12 @@
 import React from "react";
 import StandardGame from "../components/Standard";
 import { useGameSettings } from "../../../contexts/GameSettings";
-import { Box, Card, Grid, Typography } from "@mui/material";
-import MissedSequences from "../../stats/components/MissedSequences";
-import StatKeyboard from "../../stats/components/StatKeyboard";
+import { Box, Grid } from "@mui/material";
 import PracticeBox from "../components/standardComponents/PracticeBox";
-import useRaceLogic from "../RaceLogic";
-import Results from "../components/results/Results";
 import HomeProfile from "../../profile/display/HomeProfile";
-import TopSettings from "../components/standardComponents/TopSettings";
 import Settings from "../components/standardComponents/Settings";
+import Defender from "../components/defender/Defender";
+import { GameTypes } from "../../../constants/settings";
 
 export default function SoloGame() {
   const { gameSettings } = useGameSettings();
@@ -25,10 +22,14 @@ export default function SoloGame() {
       </Grid>
       <Grid item xs={7.5}>
         <Grid container spacing={3}>
-          <StandardGame
-            settings={gameSettings}
-            testDisabled={isPractice && practiceStrings.length === 0}
-          />
+          {gameSettings.gameInfo.type === GameTypes.DEFENDER ? (
+            <Defender />
+          ) : (
+            <StandardGame
+              settings={gameSettings}
+              testDisabled={isPractice && practiceStrings.length === 0}
+            />
+          )}
         </Grid>
       </Grid>
       <Grid item xs={3}>

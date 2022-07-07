@@ -1,5 +1,4 @@
 import React from "react";
-import Follower from "../../feedback/Follower";
 import { Box } from "@mui/material";
 import { styled } from "@mui/system";
 
@@ -13,7 +12,6 @@ const StyledTextArea = styled("div")(({ theme }) => ({
   display: "inline-block",
   fontSize: "20pt",
   lineHeight: "0.95em",
-  textAlign: "left",
 }));
 
 const StyledWord = styled("div")(({ theme }) => ({
@@ -25,9 +23,14 @@ const StyledWord = styled("div")(({ theme }) => ({
 interface WordBoxProps {
   words: string[];
   boxRef: any;
+  textAlign?: "left" | "center" | "right";
 }
 
-export default React.memo(function WordBox({ words, boxRef }: WordBoxProps) {
+export default React.memo(function WordBox({
+  words,
+  boxRef,
+  textAlign,
+}: WordBoxProps) {
   let char_count = 0;
   return (
     <Box
@@ -37,7 +40,7 @@ export default React.memo(function WordBox({ words, boxRef }: WordBoxProps) {
       overflow="hidden"
       height="8.1em"
       fontSize="20pt"
-      textAlign="left"
+      textAlign={textAlign || "left"}
     >
       <StyledTextArea ref={boxRef}>
         {words.map((word, index) => {

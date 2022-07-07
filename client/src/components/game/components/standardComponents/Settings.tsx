@@ -4,21 +4,18 @@ import SortByAlphaIcon from "@mui/icons-material/SortByAlpha";
 import ImportContactsIcon from "@mui/icons-material/ImportContacts";
 import { GridCard } from "../../../common";
 import {
-  GameTypes,
   GameTypeNames,
   GameTypeAmounts,
   TextTypeNames,
   DefaultGameSettings,
-  GameSettings,
   FollowerTypes,
+  GameTypes,
 } from "../../../../constants/settings";
 import {
   Box,
   Button,
   Dialog,
   Divider,
-  FormControlLabel,
-  FormGroup,
   Grid,
   IconButton,
   Slider,
@@ -39,6 +36,9 @@ const GameTypeIcons = [
   </Typography>,
   <Typography key="errorsSetting" fontSize="small">
     Error
+  </Typography>,
+  <Typography key="errorsSetting" fontSize="small">
+    Defender
   </Typography>,
 ];
 
@@ -97,10 +97,6 @@ export default function Settings() {
       ...gameSettings,
       gameInfo: { ...gameSettings.gameInfo, strict: value },
     });
-  };
-
-  const ResetSettings = () => {
-    setGameSettings(DefaultGameSettings);
   };
 
   const SetFollowerStyle = (_: any, followerStyle: FollowerTypes) => {
@@ -259,32 +255,28 @@ export default function Settings() {
         <GridCard sx={{ textAlign: "center" }}>
           <Typography marginBottom={1}>MODE</Typography>
           {GameTypeNames.map((name, index) => (
-            <Tooltip
-              disableHoverListener={index !== 0}
-              title={name}
-              placement="top"
+            <Button
               key={name}
+              sx={{ margin: 1 }}
+              onClick={() => SetMode(index)}
+              color={
+                gameSettings.gameInfo.type === index ? "primary" : "inherit"
+              }
             >
-              <Button
-                sx={{ margin: 1 }}
-                onClick={() => SetMode(index)}
-                color={
-                  gameSettings.gameInfo.type === index ? "primary" : "inherit"
-                }
-              >
-                {GameTypeIcons[index]}
-              </Button>
-            </Tooltip>
+              {GameTypeIcons[index]}
+            </Button>
           ))}
-          <Button
-            variant="contained"
-            sx={{ margin: 1 }}
-            onClick={() => TogglePracticeMode()}
-          >
-            {gameSettings.gameInfo.practice.isPractice
-              ? "Exit Practice"
-              : "Practice Mode"}
-          </Button>
+          {!(gameSettings.gameInfo.type === GameTypes.DEFENDER) ? (
+            <Button
+              variant="contained"
+              sx={{ margin: 1 }}
+              onClick={() => TogglePracticeMode()}
+            >
+              {gameSettings.gameInfo.practice.isPractice
+                ? "Exit Practice"
+                : "Practice Mode"}
+            </Button>
+          ) : null}
         </GridCard>
       </Grid>
       {GameTypeAmounts[gameSettings.gameInfo.type].length > 0 ? (
@@ -309,7 +301,8 @@ export default function Settings() {
           </GridCard>
         </Grid>
       ) : null}
-      {!gameSettings.gameInfo.practice.isPractice ? (
+      {!gameSettings.gameInfo.practice.isPractice &&
+      gameSettings.gameInfo.type !== GameTypes.DEFENDER ? (
         <Grid item xs={12}>
           <GridCard sx={{ textAlign: "center" }}>
             <Typography marginBottom={1}>TEXT TYPE</Typography>

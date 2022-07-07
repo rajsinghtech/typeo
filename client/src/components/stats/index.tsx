@@ -6,33 +6,24 @@ import {
   InputLabel,
   MenuItem,
   Box,
-  Tabs,
-  Tab,
   useTheme,
   Theme,
   Typography,
 } from "@mui/material";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
-// @ts-expect-error No types for module
-import SwipeableViews from "react-swipeable-views";
 import { Line } from "react-chartjs-2";
-import { GraphData } from "../../constants/graphs";
 import { RaceSchema } from "../../constants/schemas/race";
 import {
   Chart as ChartJS,
-  CategoryScale,
   TimeScale,
-  TimeSeriesScale,
-  LinearScale,
   PointElement,
   LineElement,
   Title,
   Tooltip,
   Legend,
 } from "chart.js";
-import { RaceStats, StatsStructure, Timeframes } from "../../constants/stats";
+import {  StatsStructure, Timeframes } from "../../constants/stats";
 import { useAuth } from "../../contexts/AuthContext";
-import { GridCard } from "../common";
 import StatKeyboard from "./components/StatKeyboard";
 import MissedSequences from "./components/MissedSequences";
 import { useStats } from "../../contexts/StatsContext";
@@ -61,7 +52,7 @@ export default function MainStats() {
 
   const { races, getBaseStats } = useStats();
 
-  const { isLoggedIn, currentUser } = useAuth();
+  const { isLoggedIn } = useAuth();
   const theme = useTheme();
 
   const handleStatTimeframeChange = (event: SelectChangeEvent) => {

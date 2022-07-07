@@ -1,10 +1,5 @@
 import React, { useContext, useState } from "react";
-import {
-  GameSettings,
-  DefaultGameSettings,
-  GameTypes,
-  TextTypes,
-} from "../constants/settings";
+import { GameSettings, DefaultGameSettings } from "../constants/settings";
 
 interface ContextGameSettings {
   gameSettings: GameSettings;
@@ -51,10 +46,8 @@ const getStoredGameSettings = () => {
   const storedSettings = localStorage.getItem("typeo_game_settings");
   if (storedSettings) {
     const parsedSettings = JSON.parse(storedSettings);
-    if (!parsedSettings.display) {
-      parsedSettings.display = { ...DefaultGameSettings.display };
-    }
-    return parsedSettings;
+
+    return { ...DefaultGameSettings, ...parsedSettings };
   }
   return DefaultGameSettings;
 };

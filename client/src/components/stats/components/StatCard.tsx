@@ -1,5 +1,5 @@
 import { useTheme } from "@mui/system";
-import { Divider, MenuItem, Typography } from "@mui/material";
+import { Divider, Typography } from "@mui/material";
 import React from "react";
 import { GridCard } from "../../common";
 
@@ -9,7 +9,7 @@ interface StatCardProps {
   stat: number | string;
 }
 
-export default function StatCard({ title, subtitle, stat }: StatCardProps) {
+export default function StatCard({ title, stat }: StatCardProps) {
   const theme = useTheme();
   return (
     <>

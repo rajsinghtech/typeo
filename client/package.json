@@ -47,7 +47,9 @@
     "build": "react-scripts build",
     "test": "jest",
     "test:watch": "jest --watch",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint": "eslint --fix src",
+    "lint:ci": "eslint src"
   },
   "browserslist": {
     "production": [

@@ -1,9 +1,6 @@
-import React, { useState } from "react";
-import { useHistory } from "react-router-dom";
+import React from "react";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
 import { Link } from "react-router-dom";
 import MuiLink from "@mui/material/Link";
 import Grid from "@mui/material/Grid";
@@ -13,7 +10,6 @@ import Typography from "@mui/material/Typography";
 import Collapse from "@mui/material/Collapse";
 import { styled } from "@mui/system";
 import Container from "@mui/material/Container";
-import Card from "@mui/material/Card";
 import { StyledTextField, SuccessAlert, ErrorAlert, GridCard } from "../common";
 
 const StyledDiv = styled("div")(({ theme }) => ({

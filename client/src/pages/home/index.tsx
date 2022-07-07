@@ -1,36 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import ReactGA from "react-ga";
-import { useHistory } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
 import Grid from "@mui/material/Grid";
 import SoloGame from "../../components/game/types/SoloGame";
 import LeaderboardComponent from "../../components/leaderboard/Leaderboard";
 import { getLeaderboards } from "../../api/rest/leaderboard";
-import {
-  Leaderboard,
-  LeaderboardSchema,
-} from "../../constants/schemas/leaderboard";
-import HomeProfile from "../../components/profile/display/HomeProfile";
-import { Box } from "@mui/material";
 
-interface HomeProps {
-  location?: {
-    state: {
-      online?: boolean;
-    };
-  };
-}
 
-export default function Home(props: HomeProps) {
-  const { currentUser, logout } = useAuth();
-  const [test, setTest] = useState<string>("");
+export default function Home() {
   const [dailyLeaderboard, setDailyLeaderboard] = useState<
     { place: number; name: string; accuracy: number; wpm: number }[]
   >([]);
   const [allTimeLeaderboard, setAllTimeLeaderboard] = useState<
     { place: number; name: string; accuracy: number; wpm: number }[]
   >([]);
-  const history = useHistory();
 
   React.useEffect(() => {
     let isMounted = true;

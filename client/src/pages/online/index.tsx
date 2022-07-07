@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React /*, { useState}*/ from "react";
 import ReactGA from "react-ga";
-import { useHistory } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
+// import { useHistory } from "react-router-dom";
+// import { useAuth } from "../../contexts/AuthContext";
 import Grid from "@mui/material/Grid";
 import FFAGame from "../../components/game/types/FFAGame";
 
 export default function Online() {
-  const { currentUser, logout } = useAuth();
+  /* const { currentUser, logout } = useAuth();
   const [test, setTest] = useState<string>("");
   const history = useHistory();
+  */
 
   React.useEffect(() => {
     ReactGA.event({

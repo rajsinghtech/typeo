@@ -18,24 +18,18 @@ import MenuItem from "@mui/material/MenuItem";
 import ListItem from "@mui/material/ListItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import InboxIcon from "@mui/icons-material/MoveToInbox";
-import Badge from "@mui/material/Badge";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import MailIcon from "@mui/icons-material/Mail";
-import KeyboardIcon from "@mui/icons-material/Keyboard";
 import GroupsIcon from "@mui/icons-material/Groups";
 import PeopleIcon from "@mui/icons-material/People";
-import NotificationsIcon from "@mui/icons-material/Notifications";
 import HomeIcon from "@mui/icons-material/Home";
-import BarChartIcon from "@mui/icons-material/BarChart";
 import QueryStatsIcon from "@mui/icons-material/QueryStats";
-import MoreIcon from "@mui/icons-material/MoreVert";
 import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
 import { useSocketContext } from "../../contexts/SocketContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { useHistory } from "react-router-dom";
-import { Button, Tooltip, Typography } from "@mui/material";
+import { Tooltip, Typography } from "@mui/material";
 
 const drawerWidth = 260;
 
@@ -110,6 +104,7 @@ const Drawer = styled(MuiDrawer, {
 }));
 
 interface MiniDrawerProps {
+  // TODO: Add a proper type for this
   children?: any;
 }
 
@@ -118,7 +113,6 @@ export default function MiniDrawer(props: MiniDrawerProps) {
   const { currentUser, isLoggedIn, logout } = useAuth();
   const history = useHistory();
   const location = useLocation();
-  const { socket } = useSocketContext();
   const [open, setOpen] = React.useState(false);
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -249,7 +243,7 @@ export default function MiniDrawer(props: MiniDrawerProps) {
             {isLoggedIn ? (
               <Box>
                 <MenuItem onClick={UpdateProfile} sx={{ minWidth: 50, m: 0.2 }}>
-                  <Typography>UpdateProfile</Typography>
+                  <Typography>Update Profile</Typography>
                 </MenuItem>
                 <MenuItem onClick={Logout} sx={{ minWidth: 50, m: 0.2 }}>
                   <Typography>Logout</Typography>
@@ -285,7 +279,7 @@ export default function MiniDrawer(props: MiniDrawerProps) {
             { name: "Stats", icon: <QueryStatsIcon />, click: Stats },
             { name: "Friends", icon: <PeopleIcon />, click: Friends },
             { name: "Inbox", icon: <MailIcon />, click: Inbox },
-          ].map((val, index) => (
+          ].map((val) => (
             <Tooltip
               title={
                 ["Friends", "Inbox", "Find Online Match"].includes(val.name) ? (

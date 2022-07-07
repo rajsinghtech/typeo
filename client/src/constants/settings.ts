@@ -9,6 +9,9 @@ export interface GameSettings {
     };
     strict?: boolean;
   };
+  defender: {
+    difficulty: Difficulty;
+  };
   display: {
     smoothFollower: boolean;
     followerStyle: FollowerTypes;
@@ -18,6 +21,8 @@ export interface GameSettings {
   };
   online: boolean;
 }
+
+export type Difficulty = "easy" | "medium" | "hard" | "impossible";
 
 export enum FollowerTypes {
   DEFAULT,
@@ -29,13 +34,15 @@ export enum GameTypes {
   TIMED,
   WORDS,
   ERRORS,
+  DEFENDER,
 }
 
-export const GameTypeNames = ["Timed", "Words", "Errors"];
+export const GameTypeNames = ["Timed", "Words", "Errors", "Defender"];
 export const GameTypeAmounts = [
   [5, 15, 30, 60, 120],
   [5, 10, 20, 50, 100],
   [1, 2, 3, 4, 5],
+  [],
 ];
 
 export enum TextTypes {
@@ -54,6 +61,9 @@ export const DefaultGameSettings: GameSettings = {
     practice: { isPractice: false, practiceStrings: [] },
     strict: false,
   },
+  defender: {
+    difficulty: "easy",
+  },
   display: {
     smoothFollower: true,
     followerSpeed: 0.1,
@@ -71,6 +81,9 @@ export const DefaultOnlineGameSettings: GameSettings = {
     amount: 50,
     practice: { isPractice: false, practiceStrings: [] },
     strict: true,
+  },
+  defender: {
+    difficulty: "easy",
   },
   display: {
     smoothFollower: true,

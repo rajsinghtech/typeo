@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import ReactGA from "react-ga";
 import { Grid } from "@mui/material";
 import UpdateProfileComponent from "../../components/profile/update-profile";
