@@ -708,7 +708,7 @@ const Enemy = React.memo(function EnemyComponent({
       animationSpeed = 15;
       break;
     case "impossible":
-      animationSpeed = 3;
+      animationSpeed = 10;
       break;
     default:
       break;
