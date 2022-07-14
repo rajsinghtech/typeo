@@ -1,9 +1,9 @@
 import React from "react";
-import { RaceSchema } from "../constants/schemas/race";
-import { CharacterData } from "../constants/race";
-import { RaceStats, Timeframes } from "../constants/stats";
-import { useAuth } from "./AuthContext";
-import { db } from "../firebase";
+import { RaceSchema } from "constants/schemas/race";
+import { CharacterData } from "constants/race";
+import { RaceStats, Timeframes } from "constants/stats";
+import { useAuth } from "contexts/AuthContext";
+import { db } from "config/firebase";
 import {
   query,
   collection,
@@ -33,7 +33,7 @@ export function useStats(): ContextStats {
   return React.useContext(StatContext);
 }
 
-export const StatsProvider = ({ children }: { children: any }) => {
+export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
   const { currentUser, isLoggedIn } = useAuth();
   const [races, setRaces] = React.useState<RaceSchema[]>([]);
 

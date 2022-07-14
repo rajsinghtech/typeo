@@ -1,19 +1,14 @@
 import React from "react";
+import { Placement, TextVariant } from "constants/common";
 import { useTheme } from "@mui/system";
 import { styled } from "@mui/material/styles";
 import Alert from "@mui/material/Alert";
-import {
-  Card,
-  TextField,
-  Typography,
-  Tooltip,
-} from "@mui/material";
-import { Placement, TextVariant } from "../constants/common";
+import { Card, TextField, Typography, Tooltip } from "@mui/material";
 
 type DefaultProps = {
   fontSize?: string;
-  children?: any;
-  [x: string]: any;
+  children?: React.ReactNode;
+  [x: string]: unknown;
 };
 
 export const StyledTextField = (props: DefaultProps) => {
@@ -75,11 +70,20 @@ interface GridCardProps {
   textalign?: string;
   color?: string;
   sx?: any;
-  children?: any;
-  [x: string]: any;
+  children?: React.ReactNode;
+  [x: string]: unknown;
 }
 
-export const GridCard = (props: GridCardProps) => {
+export const GridCard = ({
+  refObject,
+  padding,
+  accent,
+  textalign,
+  color,
+  sx,
+  children,
+  ...rest
+}: GridCardProps) => {
   // const BorderCard = styled(ElevatedCard)(({ theme }) => ({
   //   padding: props.spacing || "4px",
   //   background: theme.palette.background.paper,
@@ -91,17 +95,16 @@ export const GridCard = (props: GridCardProps) => {
 
   const styles = {
     card: {
-      padding: props.padding || theme.spacing(2),
-      textAlign: props.textalign || "left",
-      backgroundColor: props.color || theme.palette.background.paper,
+      padding: padding || theme.spacing(2),
+      textAlign: textalign || "left",
+      backgroundColor: color || theme.palette.background.paper,
       backgroundImage: "none",
       color: theme.palette.text.secondary,
       borderRadius: "3px",
-      borderLeft: props.accent ? "2px solid white" : "none",
+      borderLeft: accent ? "2px solid white" : "none",
     },
   };
 
-  const { refObject, accent, sx, ...rest } = props;
   return (
     <Card
       ref={refObject}
@@ -109,7 +112,7 @@ export const GridCard = (props: GridCardProps) => {
       {...rest}
       sx={{ ...styles.card, ...sx }}
     >
-      {props.children}
+      {children}
     </Card>
   );
 };
@@ -120,7 +123,7 @@ interface HoverableTextProps {
   placement?: Placement;
   variant?: TextVariant;
   sx?: any;
-  [x: string]: any;
+  [x: string]: unknown;
 }
 export const HoverableText = ({
   text,

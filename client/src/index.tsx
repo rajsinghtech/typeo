@@ -1,20 +1,20 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import ReactGA from "react-ga";
-import { AuthProvider } from "./contexts/AuthContext";
-import Router from "./Router";
+import Router from "config/Router";
+import { AuthProvider } from "contexts/AuthContext";
+import { GameSettingsProvider } from "contexts/GameSettings";
+import { SocketProvider } from "contexts/SocketContext";
+import { StatsProvider } from "contexts/StatsContext";
+import { SnackbarProvider } from "notistack";
+import CssBaseline from "@mui/material/CssBaseline";
 import {
   ThemeProvider,
   createTheme,
   responsiveFontSizes,
 } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
-import { GameSettingsProvider } from "./contexts/GameSettings";
-import { SocketProvider } from "./contexts/SocketContext";
-import { SnackbarProvider } from "notistack";
-import { StatsProvider } from "./contexts/StatsContext";
 
-const TRACKING_ID = "UA-230352416-1"; // YOUR_OWN_TRACKING_ID
+const TRACKING_ID = "UA-230352416-1";
 ReactGA.initialize(TRACKING_ID);
 
 let theme = createTheme({

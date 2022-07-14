@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import ReactGA from "react-ga";
+import SoloGame from "pages/home/components/solo-game";
+import LeaderboardComponent from "components/leaderboard";
+import { getLeaderboards } from "api/rest/leaderboard";
 import Grid from "@mui/material/Grid";
-import SoloGame from "../../components/game/types/SoloGame";
-import LeaderboardComponent from "../../components/leaderboard/Leaderboard";
-import { getLeaderboards } from "../../api/rest/leaderboard";
-
 
 export default function Home() {
   const [dailyLeaderboard, setDailyLeaderboard] = useState<
