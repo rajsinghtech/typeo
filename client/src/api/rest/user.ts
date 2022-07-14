@@ -1,8 +1,8 @@
 import axios from "axios";
 import { User } from "firebase/auth";
-import { GuestUser } from "../../contexts/AuthContext";
-import { generateAuthHeader } from "..";
-import { API_URL } from "../../constants/api";
+import { GuestUser } from "contexts/AuthContext";
+import { generateAuthHeader } from "api";
+import { API_URL } from "constants/api";
 
 export const createUser = async (
   currentUser: User | GuestUser,

@@ -1,12 +1,9 @@
-import React from "react";
 import axios from "axios";
-import { CharacterData } from "../../constants/race";
-import { ResultsData } from "../../constants/race";
-import { RaceStats } from "../../constants/stats";
-import { generateAuthHeader } from "..";
+import { ResultsData } from "constants/race";
+import { generateAuthHeader } from "api";
 import { User } from "firebase/auth";
-import { GuestUser } from "../../contexts/AuthContext";
-import { API_URL } from "../../constants/api";
+import { GuestUser } from "contexts/AuthContext";
+import { API_URL } from "constants/api";
 
 interface PassageResponse {
   passage: string;

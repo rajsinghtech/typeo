@@ -1,5 +1,5 @@
 import { User } from "firebase/auth";
-import { GuestUser } from "../contexts/AuthContext";
+import { GuestUser } from "contexts/AuthContext";
 
 export const generateAuthHeader = async (currentUser: User | GuestUser) => {
   if (currentUser.email === "null") return null;

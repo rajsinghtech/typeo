@@ -1,11 +1,10 @@
-import Home from "./home";
-import Online from "./online";
-import Signup from "./signup";
-import Login from "./login";
-import ForgotPassword from "./forgot-password";
-import UpdateProfile from "./update-profile";
-import Inbox from "./inbox";
-import Stats from "./stats";
+import Home from "pages/home";
+import Online from "pages/online";
+import Signup from "pages/signup";
+import Login from "pages/login";
+import ForgotPassword from "pages/forgot-password";
+import UpdateProfile from "pages/update-profile";
+import Stats from "pages/stats";
 
 export default {
   Home,
@@ -14,6 +13,5 @@ export default {
   Login,
   ForgotPassword,
   UpdateProfile,
-  Inbox,
   Stats,
 };

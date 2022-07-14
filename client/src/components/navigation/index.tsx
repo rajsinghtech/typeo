@@ -1,23 +1,12 @@
 import React from "react";
-import { styled, useTheme, Theme, CSSObject } from "@mui/material/styles";
-import MuiDrawer from "@mui/material/Drawer";
-import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import { Link, useLocation } from "react-router-dom";
-import MuiLink from "@mui/material/Link";
-import Toolbar from "@mui/material/Toolbar";
-import List from "@mui/material/List";
-import CssBaseline from "@mui/material/CssBaseline";
-import Box from "@mui/material/Box";
-import Divider from "@mui/material/Divider";
-import IconButton from "@mui/material/IconButton";
+import { useAuth } from "contexts/AuthContext";
+import { useHistory } from "react-router-dom";
+import { styled, useTheme, Theme, CSSObject } from "@mui/material/styles";
+import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
-import ListItem from "@mui/material/ListItem";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import MailIcon from "@mui/icons-material/Mail";
 import GroupsIcon from "@mui/icons-material/Groups";
@@ -26,10 +15,23 @@ import HomeIcon from "@mui/icons-material/Home";
 import QueryStatsIcon from "@mui/icons-material/QueryStats";
 import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
-import { useSocketContext } from "../../contexts/SocketContext";
-import { useAuth } from "../../contexts/AuthContext";
-import { useHistory } from "react-router-dom";
-import { Tooltip, Typography } from "@mui/material";
+import {
+  Drawer as MuiDrawer,
+  Typography,
+  Tooltip,
+  Link as MuiLink,
+  Toolbar,
+  List,
+  CssBaseline,
+  Box,
+  Divider,
+  IconButton,
+  Menu,
+  MenuItem,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+} from "@mui/material";
 
 const drawerWidth = 260;
 
@@ -105,7 +107,7 @@ const Drawer = styled(MuiDrawer, {
 
 interface MiniDrawerProps {
   // TODO: Add a proper type for this
-  children?: any;
+  children?: React.ReactNode;
 }
 
 export default function MiniDrawer(props: MiniDrawerProps) {

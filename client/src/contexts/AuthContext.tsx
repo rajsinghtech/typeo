@@ -8,7 +8,7 @@ import {
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
 } from "firebase/auth";
-import { auth } from "../firebase";
+import { auth } from "config/firebase";
 import { v4 as uuidv4 } from "uuid";
 
 export interface GuestUser {
@@ -31,6 +31,7 @@ interface Auth {
   resetPassword: (email: string) => Promise<void>;
 }
 
+// eslint-disable-next-line
 const instanceOfFireBaseUser = (object: any): object is User => {
   return object.email !== "null";
 };
@@ -50,7 +51,7 @@ export function useAuth(): Auth {
 }
 
 interface AuthProviderProps {
-  children: any;
+  children: React.ReactNode;
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
