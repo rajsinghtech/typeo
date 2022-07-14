@@ -1,5 +1,5 @@
 import { Timestamp } from "firebase/firestore";
-import { CharacterData } from "../race";
+import { CharacterData } from "constants/race";
 
 export interface RaceSchema {
   passage: string;

@@ -1,5 +1,5 @@
-import { TextTypes } from "./settings";
-import practiceWords from "./practiceWords";
+import { TextTypes } from "constants/settings";
+import practiceWords from "constants/practiceWords";
 
 export const Passages = [
   "Specialized uniforms, such as nun and priest garb, can be most helpful. Check out your local uniform store for a wide range of clothes that will get you in, and especially out, of all kinds of stores.",
@@ -215,7 +215,7 @@ export const getPassage = (
   }
 };
 
-function shuffle(array: any[]) {
+function shuffle(array: unknown[]) {
   let currentIndex = array.length,
     randomIndex;
 

@@ -1,13 +1,9 @@
-import React from "react";
 import axios from "axios";
-import { generateAuthHeader } from "..";
+import { generateAuthHeader } from "api";
 import { User } from "firebase/auth";
-import { GuestUser, useAuth } from "../../contexts/AuthContext";
-import { RaceStats, StatsStructure, Timeframes } from "../../constants/stats";
-import { RaceSchema } from "../../constants/schemas/race";
-import { unstable_batchedUpdates } from "react-dom";
-import { CharacterData } from "../../constants/race";
-import { API_URL } from "../../constants/api";
+import { GuestUser } from "contexts/AuthContext";
+import { RaceSchema } from "constants/schemas/race";
+import { API_URL } from "constants/api";
 
 export const getPlayerStats = async (
   currentUser: User | GuestUser,

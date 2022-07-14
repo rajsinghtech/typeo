@@ -1,9 +1,9 @@
 import React from "react";
 import { Socket } from "socket.io-client";
 import { io } from "socket.io-client";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "contexts/AuthContext";
 import { User } from "firebase/auth";
-import { API_URL } from "../constants/api";
+import { API_URL } from "constants/api";
 
 interface S_Context {
   socket: Socket;
@@ -19,7 +19,7 @@ export function useSocketContext() {
   return React.useContext(SocketContext);
 }
 
-export function SocketProvider({ children }: { children: any }) {
+export function SocketProvider({ children }: { children: React.ReactNode }) {
   const { currentUser, isLoggedIn } = useAuth();
   const [socket] = React.useState<Socket>(initialSocket);
 

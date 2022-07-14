@@ -2,8 +2,8 @@ import React /*, { useState}*/ from "react";
 import ReactGA from "react-ga";
 // import { useHistory } from "react-router-dom";
 // import { useAuth } from "../../contexts/AuthContext";
+import FFAGame from "pages/online/components/ffa-game";
 import Grid from "@mui/material/Grid";
-import FFAGame from "../../components/game/types/FFAGame";
 
 export default function Online() {
   /* const { currentUser, logout } = useAuth();

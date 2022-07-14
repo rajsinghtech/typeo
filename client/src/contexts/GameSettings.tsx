@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import { GameSettings, DefaultGameSettings } from "../constants/settings";
+import { GameSettings, DefaultGameSettings } from "constants/settings";
 
 interface ContextGameSettings {
   gameSettings: GameSettings;
@@ -18,7 +18,7 @@ export function useGameSettings(): ContextGameSettings {
 }
 
 interface ProviderProps {
-  children: any;
+  children: React.ReactNode;
 }
 
 export function GameSettingsProvider({ children }: ProviderProps) {
