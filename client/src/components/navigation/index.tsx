@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
+import logo from "./typeologo.png";
 import { useAuth } from "contexts/AuthContext";
 import { useHistory } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
@@ -61,7 +62,7 @@ const DrawerToggle = ({ children }: { children: React.ReactNode }) => {
           alignItems="center"
         >
           <Box sx={{ cursor: "pointer" }} onClick={OpenHome}>
-            <img width="135px" height="36px" src="typeologo.png" />
+            <img width="135px" height="36px" src={logo} />
           </Box>
           <Button onClick={() => setOpen((prevOpen) => !prevOpen)}>
             <MenuIcon fontSize="large" />
@@ -156,12 +157,7 @@ function MiniDrawer({ children }: NavigationProps) {
           height="100%"
         >
           <Box sx={{ cursor: "pointer" }} onClick={OpenHome}>
-            <img
-              width="135px"
-              height="36px"
-              src="typeologo.png"
-              loading="lazy"
-            />
+            <img width="135px" height="36px" src={logo} />
           </Box>
           <Divider sx={{ my: theme.spacing(2) }} />
           <Button variant="contained">
