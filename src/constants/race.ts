@@ -13,9 +13,10 @@ export interface WPMData {
 
 export interface ResultsData {
   passage: string;
-  dataPoints: Array<WPMData>;
+  startTime: number;
+  dataPoints: WPMData[];
   accuracy: number;
-  characters: { correct: number; incorrect: number };
-  testType: { name: string; amount?: number };
+  characters: { correct: number; incorrect: number; total: number };
+  testType: { name: string; amount?: number; textType: string };
   characterDataPoints: CharacterData[];
 }

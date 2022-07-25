@@ -1,9 +1,13 @@
 import React from "react";
 import ReactGA from "react-ga";
 import { Line } from "react-chartjs-2";
-import StatSection from "pages/stats/components/stat-section";
 import { RaceSchema } from "constants/schemas/race";
-import { StatsStructure, Timeframes } from "constants/stats";
+import {
+  DefaultStatFilters,
+  StatFilters,
+  StatsStructure,
+  Timeframes,
+} from "constants/stats";
 import { useAuth } from "contexts/AuthContext";
 import StatKeyboard from "components/stats/stat-keyboard";
 import MissedSequences from "components/stats/missed-sequences";
@@ -17,17 +21,16 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
-import {
-  FormControl,
-  Grid,
-  InputLabel,
-  MenuItem,
-  Box,
-  useTheme,
-  Theme,
-  Typography,
-} from "@mui/material";
+import { getMultiSelectUpdate, GridCard } from "components/common";
+import Filters from "pages/stats/components/filters";
+import StatCard from "pages/stats/components/stat-card";
+import { GameTypeNames, GameTypes, TextTypeNames } from "constants/settings";
+import { SelectChangeEvent } from "@mui/material/Select";
+import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
+import InsightsIcon from "@mui/icons-material/Insights";
+import ModeStandbyIcon from "@mui/icons-material/ModeStandby";
+import TimelineIcon from "@mui/icons-material/Timeline";
+import { Grid, Box, useTheme, Theme, Typography } from "@mui/material";
 
 ChartJS.register(TimeScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -54,18 +57,13 @@ export default function Stats() {
 }
 
 function StatsComponent() {
-  const [statTimeframe, setStatTimeframe] = React.useState<number>(
-    Timeframes.LAST_100
-  );
-  const [graphTimeframe, setGraphTimeframe] = React.useState<number>(
-    Timeframes.LAST_100
-  );
+  const [statFilters, setStatFilters] =
+    React.useState<StatFilters>(DefaultStatFilters);
 
   const [baseStats, setBaseStats] = React.useState<StatsStructure>({
     averages: {
       wpm: 0,
       accuracy: 0,
-      mostMissedCharacter: "None",
     },
     best: {
       wpm: 0,
@@ -78,20 +76,37 @@ function StatsComponent() {
   const { isLoggedIn } = useAuth();
   const theme = useTheme();
 
-  const handleStatTimeframeChange = (event: SelectChangeEvent) => {
+  const handleTimeframeChange = (event: SelectChangeEvent) => {
     const newTimeframe = parseInt(event.target.value);
-    setStatTimeframe(newTimeframe);
-    setBaseStats(getBaseStats(newTimeframe));
+    setStatFilters((prevStatFilters) => {
+      return { ...prevStatFilters, timeframe: newTimeframe };
+    });
   };
 
-  const handleGraphTimeframeChange = (event: SelectChangeEvent) => {
-    const newTimeframe = parseInt(event.target.value);
-    setGraphTimeframe(newTimeframe);
+  const handleGameModeChange = (event: SelectChangeEvent) => {
+    const changeValue: string | string[] = event.target.value;
+    const newGameMode = getMultiSelectUpdate(
+      changeValue,
+      GameTypeNames.slice(0, GameTypeNames.length - 1)
+    );
+
+    setStatFilters((prevStatFilters) => {
+      return { ...prevStatFilters, gameMode: newGameMode };
+    });
+  };
+
+  const handleTextTypeChange = (event: SelectChangeEvent) => {
+    const changeValue: string | string[] = event.target.value;
+    const newTextType = getMultiSelectUpdate(changeValue, TextTypeNames);
+
+    setStatFilters((prevStatFilters) => {
+      return { ...prevStatFilters, textType: newTextType };
+    });
   };
 
   React.useEffect(() => {
-    setBaseStats(getBaseStats(statTimeframe));
-  }, [statTimeframe, races]);
+    setBaseStats(getBaseStats(statFilters));
+  }, [statFilters, getBaseStats]);
 
   if (!isLoggedIn)
     return (
@@ -109,69 +124,73 @@ function StatsComponent() {
 
   return (
     <>
-      <Grid container spacing={3}>
-        <Grid item xs={6}>
-          <FormControl variant="standard" sx={{ minWidth: 200 }}>
-            <InputLabel id="averages-timeframe-label">Timeframe</InputLabel>
-            <Select
-              label="Timeframe"
-              labelId="averages-timeframe-label"
-              value={`${statTimeframe}`}
-              onChange={handleStatTimeframeChange}
-            >
-              <MenuItem value={Timeframes.ALL_TIME}>All Time</MenuItem>
-              <MenuItem value={Timeframes.LAST_100}>Last 100 Races</MenuItem>
-              <MenuItem value={Timeframes.LAST_50}>Last 50 Races</MenuItem>
-              <MenuItem value={Timeframes.LAST_25}>Last 25 Races</MenuItem>
-              <MenuItem value={Timeframes.LAST_10}>Last 10 Races</MenuItem>
-            </Select>
-          </FormControl>
-          <StatSection title="Averages" data={baseStats?.averages} />
-          <StatSection title="Best Race" data={baseStats?.best} />
-
-          <Box my={3}>
-            <MissedSequences />
+      <Grid container spacing={3} alignItems="flex-start">
+        <Grid item xs={12}>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            gap={3}
+          >
+            <Box display="flex" justifyContent="flex-start" gap={3}>
+              <StatCard
+                title={"Best WPM"}
+                stat={baseStats.best.wpm}
+                icon={<WorkspacePremiumIcon color="warning" />}
+              />
+              <StatCard
+                title={"Average WPM"}
+                stat={baseStats.averages.wpm}
+                icon={<InsightsIcon color="success" />}
+              />
+              <StatCard
+                title={"Accuracy"}
+                stat={baseStats.averages.accuracy}
+                icon={<ModeStandbyIcon color="error" />}
+              />
+            </Box>
+            <GridCard>
+              <Filters
+                statFilters={statFilters}
+                handleTimeframeChange={handleTimeframeChange}
+                handleGameModeChange={handleGameModeChange}
+                handleTextTypeChange={handleTextTypeChange}
+              />
+            </GridCard>
           </Box>
         </Grid>
+        <Grid item xs={12}>
+          <GridCard>
+            <Box display="flex" justifyContent="flex-start" gap={2}>
+              <TimelineIcon color="secondary" />
+              <Typography variant="subtitle1">Past Results</Typography>
+            </Box>
+            <Line
+              style={{ maxHeight: 350 }}
+              data={generateGraphDataFromRaces(races, statFilters, theme)}
+              options={{
+                scales: {
+                  xAxes: {
+                    type: "time",
+                    ticks: {
+                      maxTicksLimit: 30,
+                    },
+                  },
+                  yAxes: {
+                    ticks: {
+                      maxTicksLimit: 20,
+                    },
+                  },
+                },
+              }}
+            />
+          </GridCard>
+        </Grid>
         <Grid item xs={6}>
-          <FormControl variant="standard" sx={{ minWidth: 200 }}>
-            <InputLabel id="graph-timeframe-label">Timeframe</InputLabel>
-            <Select
-              label="Timeframe"
-              labelId="graph-timeframe-label"
-              value={`${graphTimeframe}`}
-              onChange={handleGraphTimeframeChange}
-            >
-              <MenuItem value={Timeframes.ALL_TIME}>All Time</MenuItem>
-              <MenuItem value={Timeframes.LAST_100}>Last 100 Races</MenuItem>
-              <MenuItem value={Timeframes.LAST_50}>Last 50 Races</MenuItem>
-              <MenuItem value={Timeframes.LAST_25}>Last 25 Races</MenuItem>
-              <MenuItem value={Timeframes.LAST_10}>Last 10 Races</MenuItem>
-            </Select>
-          </FormControl>
-          <Line
-            style={{ paddingBottom: 20 }}
-            data={generateGraphDataFromRaces(races, graphTimeframe, theme)}
-            options={{
-              scales: {
-                xAxes: {
-                  type: "time",
-                  ticks: {
-                    maxTicksLimit: 30,
-                  },
-                },
-                yAxes: {
-                  ticks: {
-                    maxTicksLimit: 20,
-                  },
-                },
-              },
-            }}
-          />
-
-          <Box my={3}>
-            <StatKeyboard title="Key Speed" />
-          </Box>
+          <MissedSequences filters={statFilters} />
+        </Grid>
+        <Grid item xs={6}>
+          <StatKeyboard title="Key Speed" filters={statFilters} />
         </Grid>
       </Grid>
     </>
@@ -180,10 +199,21 @@ function StatsComponent() {
 
 const generateGraphDataFromRaces = (
   races: Array<RaceSchema>,
-  timeframe: number,
+  statFilters: StatFilters,
   theme: Theme
 ) => {
-  const filteredRaces = races.slice(-timeframe).filter((race) => race.wpm > 3);
+  const filteredRaces = races.slice(-statFilters.timeframe).filter((race) => {
+    return (
+      race.wpm > 3 &&
+      statFilters.gameMode.includes(
+        GameTypeNames.indexOf(race.testType.name)
+      ) &&
+      statFilters.textType.includes(
+        TextTypeNames.indexOf(race.testType.textType)
+      )
+    );
+  });
+
   const graphData = {
     labels: filteredRaces.map((race) => race.timestamp.toMillis()),
 

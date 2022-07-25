@@ -53,22 +53,20 @@ export default React.memo(function SpeedProgress({ wpm }: SpeedProgressProps) {
 
   const Display = React.useMemo(() => {
     return (
-      <Grid item xs={2}>
-        <Box
-          sx={{
-            height: "100%",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <Typography>{"WPM "}</Typography>
-          <Typography ref={textRef} variant="h4">
-            0
-          </Typography>
-        </Box>
-      </Grid>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "row", md: "column" },
+          justifyContent: "center",
+          alignItems: "center",
+          gap: { xs: 2, md: 0 },
+        }}
+      >
+        <Typography>{"WPM "}</Typography>
+        <Typography ref={textRef} variant="h5">
+          0
+        </Typography>
+      </Box>
     );
   }, []);
 

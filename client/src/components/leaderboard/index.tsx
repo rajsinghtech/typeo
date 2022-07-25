@@ -58,7 +58,7 @@ export default function Leaderboard({ title, players }: LeaderboardProps) {
       ) : null}
       <Typography>Timed, 30 Seconds, Any Text Type</Typography>
       <Typography fontSize="small">(Must be Signed In)</Typography>
-      <GridCard sx={{ my: 2 }} color="grey.900">
+      <GridCard sx={{ my: 2 }} color="background.default" noBorder>
         <Grid container spacing={0}>
           <Grid item xs={2}>
             <Typography>{"Place"}</Typography>

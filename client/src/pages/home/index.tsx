@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import ReactGA from "react-ga";
 import SoloGame from "pages/home/components/solo-game";
+import Header from "pages/home/components/header";
 import LeaderboardComponent from "components/leaderboard";
 import { getLeaderboards } from "api/rest/leaderboard";
 import Grid from "@mui/material/Grid";
+import { Divider } from "@mui/material";
 
 export default function Home() {
   const [dailyLeaderboard, setDailyLeaderboard] = useState<
@@ -55,9 +57,7 @@ export default function Home() {
           </Box>
         </Grid> */}
         <Grid item xs={12}>
-          <Grid container spacing={3}>
-            <SoloGame />
-          </Grid>
+          <SoloGame />
         </Grid>
         {/* <Grid item xs={1.5}>
           <Button onClick={logout}>Logout</Button>
@@ -79,19 +79,12 @@ export default function Home() {
         </Button>
         </Grid> */}
       </Grid>
-      <Grid container spacing={3} mt={15}>
-        <Grid item xs={1}></Grid>
-        <Grid item xl={4} lg={5} xs={10}>
+      <Grid container spacing={3} mt={1}>
+        <Grid item xs={12} sm={6}>
           <LeaderboardComponent title="Daily" players={dailyLeaderboard} />
         </Grid>
-        <Grid
-          item
-          xl={2}
-          xs={1}
-          display={{ lg: "none", xl: "inline-block" }}
-        ></Grid>
-        <Grid item xs={1} display={{ xs: "inline-block", lg: "none" }}></Grid>
-        <Grid item xl={4} lg={5} xs={10}>
+
+        <Grid item xs={12} sm={6}>
           <LeaderboardComponent title="All Time" players={allTimeLeaderboard} />
         </Grid>
       </Grid>

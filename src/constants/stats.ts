@@ -6,7 +6,6 @@ export interface StatsStructure {
 export interface RaceStats {
   wpm: number;
   accuracy: number;
-  mostMissedCharacter: string;
 }
 
 export enum Timeframes {

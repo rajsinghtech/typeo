@@ -1,7 +1,7 @@
 import React from "react";
 import { RaceSchema } from "constants/schemas/race";
 import { CharacterData } from "constants/race";
-import { RaceStats, Timeframes } from "constants/stats";
+import { RaceStats, StatFilters, Timeframes } from "constants/stats";
 import { useAuth } from "contexts/AuthContext";
 import { db } from "config/firebase";
 import {
@@ -11,12 +11,16 @@ import {
   limit,
   orderBy,
 } from "firebase/firestore";
+import { GameTypeNames, TextTypeNames } from "constants/settings";
 
 interface ContextStats {
   races: RaceSchema[];
-  getBaseStats: (timeframe: number) => { averages: RaceStats; best: RaceStats };
-  getKeySpeeds: (timeframe: number) => number[];
-  getMissedSequences: (timeframe: number) => { [x: string]: number };
+  getBaseStats: (filters: StatFilters) => {
+    averages: RaceStats;
+    best: RaceStats;
+  };
+  getKeySpeeds: (filters: StatFilters) => number[];
+  getMissedSequences: (filters: StatFilters) => { [x: string]: number };
 }
 
 const StatContext = React.createContext<ContextStats>({
@@ -37,11 +41,10 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
   const { currentUser, isLoggedIn } = useAuth();
   const [races, setRaces] = React.useState<RaceSchema[]>([]);
 
-  const getBaseStats = (timeframe: number) => {
+  const getBaseStats = (filters: StatFilters) => {
     const averages: RaceStats = {
       wpm: 0,
       accuracy: 0,
-      mostMissedCharacter: "None",
     };
 
     let best: RaceStats = {
@@ -49,10 +52,7 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
       accuracy: 0,
     };
 
-    const statRaces = races.slice(-timeframe);
-
-    const mostMissedCharacterMap = new Map<string, number>();
-    let maxMissedCharacterCount = 0;
+    const statRaces = filterRaces(races, filters);
 
     for (const race of statRaces) {
       if (race.wpm > best.wpm) {
@@ -62,35 +62,17 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
 
       averages.wpm += race.wpm;
       averages.accuracy += race.accuracy;
-
-      // Most Missed Character Calculation
-      const missedCharacter = getMosedMissedCharacter(
-        race.characterDataPoints,
-        race.passage
-      );
-      if (missedCharacter !== "None") {
-        const newCharacterCount =
-          (mostMissedCharacterMap.get(missedCharacter) || 0) + 1;
-        mostMissedCharacterMap.set(missedCharacter, newCharacterCount);
-
-        if (newCharacterCount > maxMissedCharacterCount) {
-          averages.mostMissedCharacter = missedCharacter;
-          maxMissedCharacterCount = newCharacterCount;
-        }
-      }
     }
 
     averages.wpm /= statRaces.length || 1;
     averages.accuracy /= statRaces.length | 1;
 
-    if (averages.mostMissedCharacter === " ")
-      averages.mostMissedCharacter = "Space";
-
     return { averages, best };
   };
 
-  const getKeySpeeds = (timeframe: number) => {
-    const keySpeedRaces = races.slice(-timeframe);
+  const getKeySpeeds = (filters: StatFilters) => {
+    const keySpeedRaces = filterRaces(races, filters);
+
     const averageCharacterSpeeds = new Array(26).fill(0);
     const averageCharacterSpeedCount = new Array(26).fill(0);
 
@@ -111,8 +93,8 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
     );
   };
 
-  const getMissedSequences = (timeframe: number) => {
-    const missedSequenceRaces = races.slice(-timeframe);
+  const getMissedSequences = (filters: StatFilters) => {
+    const missedSequenceRaces = filterRaces(races, filters);
 
     const missedTwoLetterSequences = {};
 
@@ -168,34 +150,6 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
   return <StatContext.Provider value={value}>{children}</StatContext.Provider>;
 };
 
-export const getMosedMissedCharacter = (
-  characterDataPoints: CharacterData[],
-  passage: string
-) => {
-  let mostMissedCharacter = "None";
-  if (!characterDataPoints) return mostMissedCharacter;
-
-  const characterMap = new Map<string, number>();
-  let maxCount = 0;
-  let compoundError = false;
-  for (const element of characterDataPoints) {
-    if (!element.isCorrect && !compoundError) {
-      const character = passage[element.charIndex - 1];
-      const newCharacterCount = (characterMap.get(character) || 0) + 1;
-      characterMap.set(character, newCharacterCount);
-
-      if (newCharacterCount > maxCount) {
-        mostMissedCharacter = character;
-        maxCount = newCharacterCount;
-      }
-    } else if (element.isCorrect && compoundError) {
-      compoundError = false;
-    }
-  }
-
-  return mostMissedCharacter;
-};
-
 export const getCharacterSpeed = (characterDataPoints: CharacterData[]) => {
   const characterSpeeds = new Array(26).fill(0);
   if (!characterDataPoints) return characterSpeeds;
@@ -246,4 +200,19 @@ export const getMissedCharacterSequences = (
   }
 
   return missedSequences;
+};
+
+const filterRaces = (
+  races: RaceSchema[],
+  filters: StatFilters
+): RaceSchema[] => {
+  const filteredRaces = races.slice(-filters.timeframe).filter((race) => {
+    return (
+      race.wpm > 3 &&
+      filters.gameMode.includes(GameTypeNames.indexOf(race.testType.name)) &&
+      filters.textType.includes(TextTypeNames.indexOf(race.testType.textType))
+    );
+  });
+
+  return filteredRaces;
 };

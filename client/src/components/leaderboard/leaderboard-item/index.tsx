@@ -25,7 +25,7 @@ export default function LeaderboardItem({
   wpm,
 }: LeaderboardItemProps) {
   return (
-    <GridCard sx={{ my: 2 }} color={getPlaceColor(place)}>
+    <GridCard sx={{ my: 2 }} color={getPlaceColor(place)} noBorder>
       <Grid container columnSpacing={1}>
         <Grid item xs={2}>
           <Typography
@@ -57,9 +57,9 @@ export default function LeaderboardItem({
 const getPlaceColor = (place: number) => {
   switch (place) {
     case 1:
-      return "primary.main";
+      return "info.main";
     case 2:
-      return "error.main";
+      return "primary.main";
     case 3:
       return "warning.main";
 

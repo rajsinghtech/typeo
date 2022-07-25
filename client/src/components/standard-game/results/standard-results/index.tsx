@@ -157,13 +157,18 @@ export default function Results({
           onClose(false);
         }}
         maxWidth="lg"
+        PaperProps={{ sx: { borderRadius: "7px" } }}
       >
         <Box
           p={3}
           textAlign="center"
-          sx={{ overflowX: "hidden", overflowY: "scroll" }}
+          sx={{
+            overflowX: "hidden",
+            overflowY: "scroll",
+          }}
         >
           <GridCard
+            noBorder
             sx={{
               marginBottom: 3,
             }}
@@ -219,6 +224,7 @@ export default function Results({
             <Box textAlign="center">
               <Button
                 variant="contained"
+                color="info"
                 onClick={() => {
                   onClose(false);
                 }}
@@ -238,7 +244,7 @@ export default function Results({
             </Box>
           </GridCard>
           {graphData ? (
-            <GridCard>
+            <GridCard noBorder>
               <Box height="50vh" width="50vw">
                 <Chart
                   data={graphData}
@@ -269,7 +275,7 @@ export default function Results({
             </GridCard>
           ) : null}
           <Box mt={3}>
-            <StatKeyboard data={keyData} title="Key Speed" />
+            <StatKeyboard data={keyData} title="Key Speed" noBorder />
           </Box>
           <Box mt={3}>
             <MissedSequences
@@ -278,6 +284,7 @@ export default function Results({
                 characterDataPoints,
                 passage
               )}
+              noBorder
             />
           </Box>
         </Box>

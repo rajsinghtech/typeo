@@ -1,30 +1,30 @@
 import React from "react";
 import { GridCard } from "components/common";
 import { useTheme } from "@mui/system";
-import { Divider, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 
 interface StatCardProps {
   title: string;
   subtitle?: string;
   stat: number | string;
+  icon: React.ReactNode;
 }
 
-export default function StatCard({ title, stat }: StatCardProps) {
+export default function StatCard({ title, stat, icon }: StatCardProps) {
   const theme = useTheme();
   return (
     <>
       <GridCard
-        textalign="center"
-        color={theme.palette.background.default}
-        sx={{ height: "100%" }}
+        padding="12px"
+        sx={{ display: "flex", gap: "15px", paddingRight: "25px" }}
       >
-        <Typography variant="h6" padding={1} sx={{ overflowWrap: "normal" }}>
-          {title}
-        </Typography>
-        <Divider />
-        <Typography variant="h5" color="secondary" paddingTop={3} bottom={0}>
-          {typeof stat === "number" ? stat.toFixed(1) : stat}
-        </Typography>
+        <Box sx={{ alignSelf: "center" }}>{icon}</Box>
+        <Box>
+          <Typography variant="subtitle1">{title}</Typography>
+          <Typography variant="h5" color="secondary">
+            {typeof stat === "number" ? stat.toFixed(1) : stat}
+          </Typography>
+        </Box>
       </GridCard>
     </>
   );

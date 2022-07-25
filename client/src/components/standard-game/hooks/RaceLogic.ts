@@ -639,9 +639,10 @@ const IncrementSeconds = (
   settings: GameSettings,
   currentUser: User | GuestUser
 ): RaceState => {
-  raceState = UpdateWPM(raceState, settings);
+  let newRaceState = { ...raceState };
+  newRaceState = UpdateWPM(raceState, settings);
   if (settings.gameInfo.type === GameTypes.TIMED) {
-    raceState.amount = raceState.amount - 1;
+    newRaceState.amount = raceState.amount - 1;
   }
   if (raceState.secondsRunning >= 150) {
     // enqueueSnackbar("Race Timeout : 150 Seconds", {
@@ -651,10 +652,10 @@ const IncrementSeconds = (
     //     horizontal: "right",
     //   },
     // });
-    return OnEndRace(raceState, settings, currentUser);
+    return OnEndRace(newRaceState, settings, currentUser);
   }
   return {
-    ...raceState,
+    ...newRaceState,
     secondsRunning: raceState.secondsRunning + 1,
   };
 };
