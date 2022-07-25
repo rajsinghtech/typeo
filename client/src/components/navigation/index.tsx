@@ -26,9 +26,6 @@ interface NavigationProps {
 }
 
 export default function Navigation({ children }: NavigationProps) {
-  const [open, setOpen] = React.useState<boolean>(false);
-  const theme = useTheme();
-
   const FullDisplay = React.useMemo(() => {
     return (
       <Box display={{ xs: "none", md: "inherit" }}>
@@ -37,8 +34,20 @@ export default function Navigation({ children }: NavigationProps) {
     );
   }, []);
 
-  const DrawerToggle = React.useMemo(() => {
-    return (
+  return (
+    <>
+      {FullDisplay}
+      <DrawerToggle>{children}</DrawerToggle>
+    </>
+  );
+}
+
+const DrawerToggle = ({ children }: { children: React.ReactNode }) => {
+  const [open, setOpen] = React.useState<boolean>(false);
+
+  return (
+    <>
+      <DrawerDisplay open={open} setOpen={setOpen} />
       <Box display={{ xs: "block", md: "none" }}>
         <Box
           m={2}
@@ -46,26 +55,22 @@ export default function Navigation({ children }: NavigationProps) {
           justifyContent="space-between"
           alignItems="center"
         >
+          <LogoDisplay />
           <Button onClick={() => setOpen((prevOpen) => !prevOpen)}>
             <MenuIcon fontSize="large" />
           </Button>
-          <LogoDisplay />
         </Box>
-        <Box p={5} pt={0}>
-          {children}
-        </Box>
+        {React.useMemo(() => {
+          return (
+            <Box p={5} pt={0}>
+              {children}
+            </Box>
+          );
+        }, [])}
       </Box>
-    );
-  }, []);
-
-  return (
-    <>
-      {FullDisplay}
-      {DrawerToggle}
-      <DrawerDisplay open={open} setOpen={setOpen} />
     </>
   );
-}
+};
 
 const DrawerDisplay = ({
   open,
@@ -76,7 +81,7 @@ const DrawerDisplay = ({
 }) => {
   return (
     <Drawer
-      anchor="left"
+      anchor="right"
       open={open}
       onClose={() => setOpen(false)}
       sx={{
@@ -243,14 +248,10 @@ const LogoDisplay = () => {
 
   return (
     <Box
-      width="135px"
-      height="36px"
-      sx={{
-        cursor: "pointer",
-        backgroundImage: "url(typeologo.png)",
-        backgroundSize: "contain",
-      }}
+      sx={{ cursor: "pointer", backgroundImage: "url(typeologo.png)" }}
       onClick={OpenHome}
-    />
+    >
+      <img width="135px" height="36px" src="typeologo.png" />
+    </Box>
   );
 };

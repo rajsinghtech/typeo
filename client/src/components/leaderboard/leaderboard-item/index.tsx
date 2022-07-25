@@ -32,16 +32,21 @@ export default function LeaderboardItem({
             variant={place < 4 ? "h4" : "body1"}
             color={place === 1 ? "gold" : "secondary"}
           >
+            {place}
             {place === 1 ? (
               <EmojiEventsIcon fontSize="large" sx={{ pt: 1 }} />
             ) : null}
-            {place}
           </Typography>
         </Grid>
         <Grid item xs={6} position="relative" overflow="hidden">
           <Typography sx={itemStyle}>{name.substring(0, 15)}</Typography>
         </Grid>
-        <Grid item xs={2} position="relative">
+        <Grid
+          item
+          xs={2}
+          position="relative"
+          visibility={{ xs: "hidden", md: "visible" }}
+        >
           <Typography sx={itemStyle}>{accuracy.toFixed(1)}%</Typography>
         </Grid>
         <Grid item xs={2} position="relative">
@@ -64,6 +69,6 @@ const getPlaceColor = (place: number) => {
       return "warning.main";
 
     default:
-      return "background.default";
+      return "#393C49";
   }
 };

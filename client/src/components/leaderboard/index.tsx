@@ -66,7 +66,7 @@ export default function Leaderboard({ title, players }: LeaderboardProps) {
           <Grid item xs={6}>
             <Typography>{"Name"}</Typography>
           </Grid>
-          <Grid item xs={2}>
+          <Grid item xs={2} visibility={{ xs: "hidden", md: "visible" }}>
             <Typography>{"Accuracy"}</Typography>
           </Grid>
           <Grid item xs={2} position="relative">

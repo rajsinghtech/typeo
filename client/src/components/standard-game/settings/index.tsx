@@ -88,7 +88,7 @@ export default function Settings() {
   return (
     <Box
       display="flex"
-      flexDirection={{ xs: "row", lg: "column" }}
+      flexDirection={{ xs: "column", vs: "row", lg: "column" }}
       justifyContent="center"
       gap={3}
     >
