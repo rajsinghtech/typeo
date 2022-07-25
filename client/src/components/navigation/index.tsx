@@ -60,10 +60,7 @@ const DrawerToggle = ({ children }: { children: React.ReactNode }) => {
           justifyContent="space-between"
           alignItems="center"
         >
-          <Box
-            sx={{ cursor: "pointer", backgroundImage: "url(typeologo.png)" }}
-            onClick={OpenHome}
-          >
+          <Box sx={{ cursor: "pointer" }} onClick={OpenHome}>
             <img width="135px" height="36px" src="typeologo.png" />
           </Box>
           <Button onClick={() => setOpen((prevOpen) => !prevOpen)}>
@@ -158,11 +155,13 @@ function MiniDrawer({ children }: NavigationProps) {
           p={theme.spacing(3, 3, 1, 3)}
           height="100%"
         >
-          <Box
-            sx={{ cursor: "pointer", backgroundImage: "url(typeologo.png)" }}
-            onClick={OpenHome}
-          >
-            <img width="135px" height="36px" src="typeologo.png" />
+          <Box sx={{ cursor: "pointer" }} onClick={OpenHome}>
+            <img
+              width="135px"
+              height="36px"
+              src="typeologo.png"
+              loading="lazy"
+            />
           </Box>
           <Divider sx={{ my: theme.spacing(2) }} />
           <Button variant="contained">
