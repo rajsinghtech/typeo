@@ -19,7 +19,6 @@ import {
   ListItemText,
   Button,
   Drawer,
-  useMediaQuery,
 } from "@mui/material";
 
 interface NavigationProps {
@@ -29,20 +28,6 @@ interface NavigationProps {
 export default function Navigation({ children }: NavigationProps) {
   const [open, setOpen] = React.useState<boolean>(false);
   const theme = useTheme();
-
-  const vsScreenSize = useMediaQuery(theme.breakpoints.up("vs"));
-  const smScreenSize = useMediaQuery(theme.breakpoints.up("sm"));
-  const mdScreenSize = useMediaQuery(theme.breakpoints.up("md"));
-  const lgScreenSize = useMediaQuery(theme.breakpoints.up("lg"));
-  const xlScreenSize = useMediaQuery(theme.breakpoints.up("xl"));
-
-  let screenSize = "xs";
-
-  if (xlScreenSize) screenSize = "xl";
-  else if (lgScreenSize) screenSize = "lg";
-  else if (mdScreenSize) screenSize = "md";
-  else if (smScreenSize) screenSize = "sm";
-  else if (vsScreenSize) screenSize = "vs";
 
   const FullDisplay = React.useMemo(() => {
     return (
@@ -56,19 +41,17 @@ export default function Navigation({ children }: NavigationProps) {
     return (
       <Box display={{ xs: "block", md: "none" }}>
         <Box
-          position="fixed"
+          m={2}
           display="flex"
+          justifyContent="space-between"
           alignItems="center"
-          top={20}
-          left={20}
-          zIndex={999}
         >
           <Button onClick={() => setOpen((prevOpen) => !prevOpen)}>
             <MenuIcon fontSize="large" />
           </Button>
           <LogoDisplay />
         </Box>
-        <Box p={5} pt={{ xs: 10, md: 0 }}>
+        <Box p={5} pt={0}>
           {children}
         </Box>
       </Box>
@@ -77,9 +60,6 @@ export default function Navigation({ children }: NavigationProps) {
 
   return (
     <>
-      {/* <Box position="absolute" zIndex={9999} top={20} left={20}>
-        <Typography variant="h1">{screenSize}</Typography>
-      </Box> */}
       {FullDisplay}
       {DrawerToggle}
       <DrawerDisplay open={open} setOpen={setOpen} />
@@ -262,8 +242,15 @@ const LogoDisplay = () => {
   };
 
   return (
-    <Box sx={{ cursor: "pointer" }} onClick={OpenHome}>
-      <img width="135px" height="36px" src="%PUBLIC_URL%/typeologo.png" />
-    </Box>
+    <Box
+      width="135px"
+      height="36px"
+      sx={{
+        cursor: "pointer",
+        backgroundImage: "url(typeologo.png)",
+        backgroundSize: "contain",
+      }}
+      onClick={OpenHome}
+    />
   );
 };
