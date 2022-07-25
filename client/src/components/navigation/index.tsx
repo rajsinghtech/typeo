@@ -44,6 +44,11 @@ export default function Navigation({ children }: NavigationProps) {
 
 const DrawerToggle = ({ children }: { children: React.ReactNode }) => {
   const [open, setOpen] = React.useState<boolean>(false);
+  const history = useHistory();
+
+  const OpenHome = () => {
+    history.push("/");
+  };
 
   return (
     <>
@@ -55,7 +60,12 @@ const DrawerToggle = ({ children }: { children: React.ReactNode }) => {
           justifyContent="space-between"
           alignItems="center"
         >
-          <LogoDisplay />
+          <Box
+            sx={{ cursor: "pointer", backgroundImage: "url(typeologo.png)" }}
+            onClick={OpenHome}
+          >
+            <img width="135px" height="36px" src="typeologo.png" />
+          </Box>
           <Button onClick={() => setOpen((prevOpen) => !prevOpen)}>
             <MenuIcon fontSize="large" />
           </Button>
@@ -128,6 +138,10 @@ function MiniDrawer({ children }: NavigationProps) {
     history.push("/stats");
   };
 
+  const OpenHome = () => {
+    history.push("/");
+  };
+
   return (
     <>
       <Box
@@ -144,7 +158,12 @@ function MiniDrawer({ children }: NavigationProps) {
           p={theme.spacing(3, 3, 1, 3)}
           height="100%"
         >
-          <LogoDisplay />
+          <Box
+            sx={{ cursor: "pointer", backgroundImage: "url(typeologo.png)" }}
+            onClick={OpenHome}
+          >
+            <img width="135px" height="36px" src="typeologo.png" />
+          </Box>
           <Divider sx={{ my: theme.spacing(2) }} />
           <Button variant="contained">
             <span
@@ -238,20 +257,3 @@ function MiniDrawer({ children }: NavigationProps) {
     </>
   );
 }
-
-const LogoDisplay = () => {
-  const history = useHistory();
-
-  const OpenHome = () => {
-    history.push("/");
-  };
-
-  return (
-    <Box
-      sx={{ cursor: "pointer", backgroundImage: "url(typeologo.png)" }}
-      onClick={OpenHome}
-    >
-      <img width="135px" height="36px" src="typeologo.png" />
-    </Box>
-  );
-};
