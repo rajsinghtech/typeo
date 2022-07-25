@@ -263,7 +263,7 @@ const LogoDisplay = () => {
 
   return (
     <Box sx={{ cursor: "pointer" }} onClick={OpenHome}>
-      <img width="135px" height="36px" src="public/typeologo.png" />
+      <img width="135px" height="36px" src="%PUBLIC_URL%/typeologo.png" />
     </Box>
   );
 };
