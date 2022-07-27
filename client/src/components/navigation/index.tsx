@@ -176,7 +176,18 @@ function MiniDrawer({ close, children }: MiniDrawerProps) {
             <img width="135px" height="36px" src={logo} />
           </Box>
           <Divider sx={{ my: theme.spacing(2) }} />
-          <Button variant="contained">
+          <Button
+            onClick={() => {
+              const win = window.open(
+                "https://discord.gg/eWkxwfDenv",
+                "_blank"
+              );
+              if (win != null) {
+                win.focus();
+              }
+            }}
+            variant="contained"
+          >
             <span
               className="iconify"
               style={{ fontSize: "20px", lineHeight: "28px" }}
