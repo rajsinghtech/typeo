@@ -157,12 +157,12 @@ export default function StatKeyboard({
             <SpeedIcon color="secondary" />
             <Typography variant="subtitle1">{title}</Typography>
           </Box>
-          {!filters ? (
+          {/* {!filters ? (
             <TimeframeSelect
               timeframe={timeframe}
               handleTimeframeChange={handleTimeframeChange}
             />
-          ) : null}
+          ) : null} */}
         </Box>
         <Box>
           {["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"].map((val) => (

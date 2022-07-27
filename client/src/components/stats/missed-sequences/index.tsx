@@ -176,12 +176,12 @@ export default function MissedSequences({
             <Typography variant="subtitle1">Missed Sequences</Typography>
           </Box>
 
-          {!filters ? (
+          {/* {!filters ? (
             <TimeframeSelect
               timeframe={timeframe}
               handleTimeframeChange={handleTimeframeChange}
             />
-          ) : null}
+          ) : null} */}
         </Box>
         {missedSequenceData && missedSequenceData.labels.length > 0 ? (
           <Bar

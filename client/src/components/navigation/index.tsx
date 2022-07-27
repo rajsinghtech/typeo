@@ -10,6 +10,7 @@ import BarChartIcon from "@mui/icons-material/BarChart";
 import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
 import MenuIcon from "@mui/icons-material/Menu";
+import PersonIcon from "@mui/icons-material/Person";
 import {
   Typography,
   List,
@@ -30,7 +31,7 @@ export default function Navigation({ children }: NavigationProps) {
   const FullDisplay = React.useMemo(() => {
     return (
       <Box display={{ xs: "none", md: "inherit" }}>
-        <MiniDrawer>{children}</MiniDrawer>
+        <MiniDrawer close={() => null}>{children}</MiniDrawer>
       </Box>
     );
   }, []);
@@ -100,20 +101,26 @@ const DrawerDisplay = ({
         },
       }}
     >
-      <MiniDrawer />
+      <MiniDrawer close={() => setOpen(false)} />
     </Drawer>
   );
 };
 
 const drawerWidth = 260;
 
-function MiniDrawer({ children }: NavigationProps) {
+interface MiniDrawerProps {
+  close: () => void;
+  children?: React.ReactNode;
+}
+
+function MiniDrawer({ close, children }: MiniDrawerProps) {
   const theme = useTheme();
   const { isLoggedIn, logout } = useAuth();
   const history = useHistory();
   const location = useLocation();
 
   const Login = () => {
+    close();
     history.push("/login");
   };
 
@@ -124,19 +131,28 @@ function MiniDrawer({ children }: NavigationProps) {
   };
 
   const Home = () => {
+    close();
     history.push("/");
   };
 
   const FindMatch = () => {
+    close();
     if (location.pathname === "/online") history.go(0);
     else history.push("/online");
   };
 
   const Stats = () => {
+    close();
     history.push("/stats");
   };
 
+  const UpdateProfile = () => {
+    close();
+    history.push("/update-profile");
+  };
+
   const OpenHome = () => {
+    close();
     history.push("/");
   };
 
@@ -175,7 +191,7 @@ function MiniDrawer({ children }: NavigationProps) {
             {[
               { name: "Home", icon: <HomeIcon />, click: Home },
               {
-                name: "Find Match",
+                name: "Muliplayer (Disabled)",
                 icon: <GroupsIcon />,
                 click: FindMatch,
               },
@@ -184,37 +200,46 @@ function MiniDrawer({ children }: NavigationProps) {
                 icon: <BarChartIcon />,
                 click: Stats,
               },
-            ].map((val) => (
-              <ListItem
-                key={val.name}
-                button
-                sx={{
-                  paddingX: theme.spacing(1),
-                  marginY: theme.spacing(2),
-                  borderRadius: "10px",
-                  "&:hover, &:focus": {
-                    backgroundColor: "background.default",
-                    color: "primary.main",
-                    "& .MuiListItemIcon-root": {
+              {
+                name: "Update Profile",
+                icon: <PersonIcon />,
+                click: UpdateProfile,
+              },
+            ].map((val) => {
+              if (!isLoggedIn && val.name === "Update Profile") return null;
+              return (
+                <ListItem
+                  key={val.name}
+                  disabled={val.name === "Muliplayer (Disabled)"}
+                  button
+                  sx={{
+                    paddingX: theme.spacing(1),
+                    marginY: theme.spacing(2),
+                    borderRadius: "10px",
+                    "&:hover, &:focus": {
+                      backgroundColor: "background.default",
                       color: "primary.main",
+                      "& .MuiListItemIcon-root": {
+                        color: "primary.main",
+                      },
                     },
-                  },
-                }}
-                onClick={
-                  ["Friends", "Inbox", "Find Online Match"].includes(val.name)
-                    ? () => {
-                        null;
-                      }
-                    : val.click
-                }
-              >
-                <ListItemIcon>{val.icon}</ListItemIcon>
-                <ListItemText
-                  primary={val.name}
-                  primaryTypographyProps={{ fontSize: 15 }}
-                />
-              </ListItem>
-            ))}
+                  }}
+                  onClick={
+                    ["Friends", "Inbox", "Find Online Match"].includes(val.name)
+                      ? () => {
+                          null;
+                        }
+                      : val.click
+                  }
+                >
+                  <ListItemIcon>{val.icon}</ListItemIcon>
+                  <ListItemText
+                    primary={val.name}
+                    primaryTypographyProps={{ fontSize: 15 }}
+                  />
+                </ListItem>
+              );
+            })}
           </List>
           <Box flexGrow={1} />
           <Divider />

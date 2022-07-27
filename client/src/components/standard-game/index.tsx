@@ -7,7 +7,7 @@ import { useAuth } from "contexts/AuthContext";
 import Results from "components/standard-game/results/standard-results";
 import { MAX_INPUT_LENGTH, ResultsData } from "constants/race";
 import { OnlineRaceData } from "pages/online/components/ffa-game";
-import { HomeProfile } from "pages/home/components/profile-display";
+import { HeaderMobile } from "pages/home/components/header";
 import useRaceLogic, {
   RaceState,
 } from "components/standard-game/hooks/RaceLogic";
@@ -187,7 +187,7 @@ export default function StandardGame({
             alignItems: { xs: "flex-end", md: "center" },
             textAlign: "center",
             gap: 3,
-            py: { xs: 1, md: 2 },
+            py: { xs: 0, md: 2 },
             px: 0,
           }}
         >
@@ -208,7 +208,7 @@ export default function StandardGame({
               </Typography>
             </GridCard>
           </Box>
-          {!mdScreenSize && !xsScreenSize ? <HomeProfile /> : null}
+          {!mdScreenSize ? <HeaderMobile /> : null}
           {settings.display.showWPM ? (
             <Box width="15%">
               <GridCard

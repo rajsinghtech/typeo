@@ -42,11 +42,7 @@ export default function Header() {
   return (
     <Box display="flex" justifyContent="center" alignItems="center" gap={1}>
       <SettingsDialog open={settingsOpen} setOpen={setSettingsOpen} />
-      <Box
-        width="10%"
-        display={{ xs: "none", md: "flex" }}
-        justifyContent="flex-end"
-      >
+      <Box width="10%" justifyContent="flex-end" display="flex">
         <Tooltip title="Stats" placement="top">
           <IconButton onClick={OpenStats}>
             <BarChartIcon />
@@ -59,7 +55,7 @@ export default function Header() {
         </Tooltip>
       </Box>
       <HomeProfile />
-      <Box width="10%" display={{ xs: "none", md: "block" }}>
+      <Box width="10%" display="flex">
         <Tooltip title="Test Settings" placement="top">
           <IconButton onClick={OpenSettings}>
             <SettingsIcon />
@@ -76,6 +72,91 @@ export default function Header() {
             </IconButton>
           )}
         </Tooltip>
+      </Box>
+    </Box>
+  );
+}
+
+export function HeaderMobile() {
+  const [settingsOpen, setSettingsOpen] = React.useState(false);
+
+  const { isLoggedIn, logout } = useAuth();
+
+  const history = useHistory();
+
+  const OpenStats = () => {
+    history.push("/stats");
+  };
+
+  const OpenUpdateProfile = () => {
+    history.push("/update-profile");
+  };
+
+  const OpenSettings = () => {
+    setSettingsOpen(true);
+  };
+
+  const Login = () => {
+    history.push("/login");
+  };
+
+  const Logout = async () => {
+    await logout();
+    history.push("/");
+    history.go(0);
+  };
+
+  return (
+    <Box
+      display="flex"
+      flexDirection="column"
+      justifyContent="center"
+      alignItems="center"
+      gap={1}
+    >
+      <SettingsDialog open={settingsOpen} setOpen={setSettingsOpen} />
+      <Box display="flex">
+        <Tooltip
+          title="Stats"
+          placement="top"
+          sx={{ display: { xs: "none", vs: "inline-flex" } }}
+        >
+          <IconButton onClick={OpenStats}>
+            <BarChartIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip
+          title="Profile"
+          placement="top"
+          sx={{ display: { xs: "none", vs: "inline-flex" } }}
+        >
+          <IconButton onClick={OpenUpdateProfile}>
+            <PersonIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Test Settings" placement="top">
+          <IconButton onClick={OpenSettings}>
+            <SettingsIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip
+          title={isLoggedIn ? "Logout" : "Login"}
+          placement="top"
+          sx={{ display: { xs: "none", vs: "inline-flex" } }}
+        >
+          {isLoggedIn ? (
+            <IconButton onClick={Logout}>
+              <LogoutIcon />
+            </IconButton>
+          ) : (
+            <IconButton onClick={Login}>
+              <LoginIcon />
+            </IconButton>
+          )}
+        </Tooltip>
+      </Box>
+      <Box display={{ xs: "none", vs: "block" }}>
+        <HomeProfile />
       </Box>
     </Box>
   );

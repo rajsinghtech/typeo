@@ -16,17 +16,25 @@ export default function SoloGame() {
   const theme = useTheme();
   const mdScreenSize = useMediaQuery(theme.breakpoints.up("md"));
 
+  const DefenderMode = gameSettings.gameInfo.type === GameTypes.DEFENDER;
+
   return (
     <Grid container spacing={3}>
-      <Grid item xs={12} lg={10} alignSelf="flex-end">
+      <Grid item xs={12} lg={DefenderMode ? 12 : 10} alignSelf="flex-end">
         <Grid container spacing={3}>
           <Grid item display={{ xs: "none", md: "block" }} md={1.25} xl={1} />
-          {mdScreenSize ? (
-            <Grid item xs={12} md={10.75} xl={11} alignSelf="flex-start">
+          {mdScreenSize || DefenderMode ? (
+            <Grid
+              item
+              xs={12}
+              md={DefenderMode ? 12 : 10.75}
+              xl={DefenderMode ? 12 : 11}
+              alignSelf="flex-start"
+            >
               <Header />
             </Grid>
           ) : null}
-          {gameSettings.gameInfo.type === GameTypes.DEFENDER ? (
+          {DefenderMode ? (
             <Defender />
           ) : (
             <StandardGame
@@ -36,7 +44,7 @@ export default function SoloGame() {
           )}
         </Grid>
       </Grid>
-      <Grid item xs={12} lg={2} alignSelf="flex-end">
+      <Grid item xs={12} lg={DefenderMode ? 12 : 2} alignSelf="flex-end">
         <Settings />
       </Grid>
       {isPractice ? <PracticeBox /> : null}

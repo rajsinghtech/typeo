@@ -19,6 +19,8 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 
 const GameTypeIcons = [
@@ -88,7 +90,12 @@ export default function Settings() {
   return (
     <Box
       display="flex"
-      flexDirection={{ xs: "column", vs: "row", lg: "column" }}
+      flexDirection={{
+        xs: "column",
+        vs: "row",
+        lg:
+          gameSettings.gameInfo.type === GameTypes.DEFENDER ? "row" : "column",
+      }}
       justifyContent="center"
       gap={3}
     >
@@ -238,6 +245,9 @@ interface SettingsDialogProps {
 
 export const SettingsDialog = ({ open, setOpen }: SettingsDialogProps) => {
   const { gameSettings, setGameSettings } = useGameSettings();
+
+  const theme = useTheme();
+  const vsScreenSize = useMediaQuery(theme.breakpoints.up("vs"));
   const OnStrictChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.checked;
     setGameSettings({
@@ -276,6 +286,7 @@ export const SettingsDialog = ({ open, setOpen }: SettingsDialogProps) => {
       display: { ...gameSettings.display, showProfile },
     });
   };
+
   return (
     <Dialog
       open={open}
@@ -310,6 +321,7 @@ export const SettingsDialog = ({ open, setOpen }: SettingsDialogProps) => {
             >
               <ToggleButtonGroup
                 color="primary"
+                orientation={vsScreenSize ? "horizontal" : "vertical"}
                 value={gameSettings.display.followerStyle}
                 onChange={SetFollowerStyle}
                 exclusive
