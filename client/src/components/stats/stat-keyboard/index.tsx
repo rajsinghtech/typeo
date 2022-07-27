@@ -1,15 +1,13 @@
 import React from "react";
 import { GridCard } from "components/common";
 import { useGameSettings } from "contexts/GameSettings";
-import { Timeframes } from "constants/stats";
+import { DefaultStatFilters, StatFilters, Timeframes } from "constants/stats";
 import { useStats } from "contexts/StatsContext";
+import TimeframeSelect from "components/stats/timeframe-select";
+import SpeedIcon from "@mui/icons-material/Speed";
 import {
   Box,
   Button,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
   SelectChangeEvent,
   Tooltip,
   Typography,
@@ -18,13 +16,17 @@ import {
 interface StatKeyboardProps {
   title: string;
   data?: number[];
+  filters?: StatFilters;
   interactive?: boolean;
+  noBorder?: boolean;
 }
 
 export default function StatKeyboard({
   title,
   data,
+  filters,
   interactive,
+  noBorder,
 }: StatKeyboardProps) {
   const [timeframe, setTimeframe] = React.useState<number>(Timeframes.LAST_100);
   const [keySpeeds, setKeySpeeds] = React.useState<number[]>(
@@ -67,13 +69,15 @@ export default function StatKeyboard({
 
   React.useEffect(() => {
     if (data) return;
-    const newKeySpeeds = getKeySpeeds(timeframe);
+    const newKeySpeeds = getKeySpeeds(
+      filters || { ...DefaultStatFilters, timeframe }
+    );
     const filteredSpeeds = newKeySpeeds.filter((wpm) => wpm !== 0);
 
     setKeySpeeds(newKeySpeeds);
     setMin(Math.min(...filteredSpeeds));
     setMax(Math.min(Math.max(...filteredSpeeds), 220));
-  }, [timeframe, getKeySpeeds]);
+  }, [filters, timeframe, getKeySpeeds]);
 
   const KeyboardButton = ({
     keyboardKey,
@@ -92,32 +96,35 @@ export default function StatKeyboard({
       >
         <Button
           variant="outlined"
-          color={inPracticeStrings ? "primary" : "secondary"}
+          color="secondary"
           id={keyboardKey}
           sx={{
-            minHeight: 50,
-            minWidth: 50,
-            m: 1,
+            position: "relative",
+            minWidth: "6%",
+            padding: 0,
+            paddingTop: "6%",
+            height: 0,
+            m: { xs: 0.5, vs: 0.9 },
             textTransform: "none",
             borderColor: keySpeed
               ? calculateKeySpeedColor(keySpeed, min, max, 1)
               : "inherit",
-            borderWidth: inPracticeStrings ? 3 : 1,
+            borderWidth: 1,
             backgroundColor: keySpeed
               ? inPracticeStrings
-                ? "secondary.main"
+                ? "primary.main"
                 : calculateKeySpeedColor(keySpeed, min, max, 0.3)
               : "inherit",
             "&:hover": {
               backgroundColor: keySpeed
                 ? inPracticeStrings
-                  ? "secondary.main"
+                  ? "primary.main"
                   : calculateKeySpeedColor(keySpeed, min, max, 0.3)
                 : "inherit",
               borderColor: keySpeed
                 ? calculateKeySpeedColor(keySpeed, min, max, 1)
                 : "inherit",
-              borderWidth: inPracticeStrings ? 3 : 1,
+              borderWidth: 1,
               opacity: 0.8,
             },
           }}
@@ -127,7 +134,16 @@ export default function StatKeyboard({
               : () => null
           }
         >
-          <Typography>{keyboardKey}</Typography>
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+            }}
+          >
+            <Typography>{keyboardKey}</Typography>
+          </Box>
         </Button>
       </Tooltip>
     );
@@ -135,27 +151,19 @@ export default function StatKeyboard({
 
   return (
     <>
-      {!data ? (
-        <FormControl variant="standard" sx={{ minWidth: 200, mb: 3 }}>
-          <InputLabel id="keyspeed-timeframe-label">Timeframe</InputLabel>
-          <Select
-            label="Timeframe"
-            labelId="keyspeed-timeframe-label"
-            value={`${timeframe}`}
-            onChange={handleTimeframeChange}
-          >
-            <MenuItem value={Timeframes.ALL_TIME}>All Time</MenuItem>
-            <MenuItem value={Timeframes.LAST_100}>Last 100 Races</MenuItem>
-            <MenuItem value={Timeframes.LAST_50}>Last 50 Races</MenuItem>
-            <MenuItem value={Timeframes.LAST_25}>Last 25 Races</MenuItem>
-            <MenuItem value={Timeframes.LAST_10}>Last 10 Races</MenuItem>
-          </Select>
-        </FormControl>
-      ) : null}
-      <GridCard sx={{ textAlign: "center" }}>
-        <Typography variant="h5" pb={2}>
-          {title}
-        </Typography>
+      <GridCard noBorder={noBorder} sx={{ textAlign: "center" }}>
+        <Box display="flex" justifyContent="space-between" mb={2}>
+          <Box display="flex" gap={2}>
+            <SpeedIcon color="secondary" />
+            <Typography variant="subtitle1">{title}</Typography>
+          </Box>
+          {/* {!filters ? (
+            <TimeframeSelect
+              timeframe={timeframe}
+              handleTimeframeChange={handleTimeframeChange}
+            />
+          ) : null} */}
+        </Box>
         <Box>
           {["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"].map((val) => (
             <KeyboardButton

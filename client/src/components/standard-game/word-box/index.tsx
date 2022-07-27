@@ -5,7 +5,7 @@ import { Box } from "@mui/material";
 const StyledTextArea = styled("div")(() => ({
   position: "relative",
   display: "inline-block",
-  fontSize: "20pt",
+  fontSize: { xs: "16pt", sm: "18pt", lg: "20pt" },
   lineHeight: "0.95em",
 }));
 
@@ -29,12 +29,12 @@ export default React.memo(function WordBox({
   let char_count = 0;
   return (
     <Box
-      mx={5}
-      mt={5}
+      mx={{ xs: 2, sm: 3, md: 5 }}
+      mt={{ xs: 2, sm: 3, md: 5 }}
       mb={1}
       overflow="hidden"
       height="8.1em"
-      fontSize="20pt"
+      fontSize={{ xs: "16pt", sm: "18pt", lg: "20pt" }}
       textAlign={textAlign || "left"}
     >
       <StyledTextArea ref={boxRef}>

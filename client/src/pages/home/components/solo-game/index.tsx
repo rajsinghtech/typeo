@@ -2,11 +2,11 @@ import React from "react";
 import StandardGame from "components/standard-game";
 import { useGameSettings } from "contexts/GameSettings";
 import PracticeBox from "components/standard-game/practice-box";
-import HomeProfile from "pages/home/components/profile-display";
+import Header from "pages/home/components/header";
 import Settings from "components/standard-game/settings";
 import Defender from "components/defender";
 import { GameTypes } from "constants/settings";
-import { Box, Grid } from "@mui/material";
+import { Grid, useMediaQuery, useTheme } from "@mui/material";
 
 export default function SoloGame() {
   const { gameSettings } = useGameSettings();
@@ -14,16 +14,28 @@ export default function SoloGame() {
   const { isPractice, practiceStrings } = gameSettings.gameInfo.practice;
   const isDefenderMode = gameSettings.gameInfo.type === GameTypes.DEFENDER;
 
+  const theme = useTheme();
+  const mdScreenSize = useMediaQuery(theme.breakpoints.up("md"));
+
+  const DefenderMode = gameSettings.gameInfo.type === GameTypes.DEFENDER;
+
   return (
-    <>
-      <Grid item xs={1.5}>
-        <Box mt={12}>
-          {gameSettings.display.showProfile ? <HomeProfile /> : null}
-        </Box>
-      </Grid>
-      <Grid item xs={isDefenderMode ? 9 : 7.5}>
+    <Grid container spacing={3}>
+      <Grid item xs={12} lg={DefenderMode ? 12 : 10} alignSelf="flex-end">
         <Grid container spacing={3}>
-          {isDefenderMode ? (
+          <Grid item display={{ xs: "none", md: "block" }} md={1.25} xl={1} />
+          {mdScreenSize || DefenderMode ? (
+            <Grid
+              item
+              xs={12}
+              md={DefenderMode ? 12 : 10.75}
+              xl={DefenderMode ? 12 : 11}
+              alignSelf="flex-start"
+            >
+              <Header />
+            </Grid>
+          ) : null}
+          {DefenderMode ? (
             <Defender />
           ) : (
             <StandardGame
@@ -33,12 +45,10 @@ export default function SoloGame() {
           )}
         </Grid>
       </Grid>
-      <Grid item xs={isDefenderMode ? 1.5 : 3}>
-        <Box mt={0}>
-          <Settings />
-        </Box>
+      <Grid item xs={12} lg={DefenderMode ? 12 : 2} alignSelf="flex-end">
+        <Settings />
       </Grid>
       {isPractice ? <PracticeBox /> : null}
-    </>
+    </Grid>
   );
 }

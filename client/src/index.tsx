@@ -14,6 +14,17 @@ import {
   responsiveFontSizes,
 } from "@mui/material/styles";
 
+declare module "@mui/material/styles" {
+  interface BreakpointOverrides {
+    xs: true;
+    vs: true;
+    sm: true;
+    md: true;
+    lg: true;
+    xl: true;
+  }
+}
+
 const TRACKING_ID = "UA-230352416-1";
 ReactGA.initialize(TRACKING_ID);
 
@@ -21,26 +32,23 @@ let theme = createTheme({
   palette: {
     mode: "dark",
     primary: {
-      main: "#0288d1",
-      light: "#03a94f",
-      dark: "#01579b",
+      main: "#F9252B",
     },
     secondary: {
       main: "#ffffff",
-      light: "#ffffff",
-      dark: "#b0b0b0",
       // second: "#e25048",
       // third: "#8fcf39",
       // highlight: "rgba(255,0,0,0.8)",
     },
+    info: {
+      main: "#2D7FE5",
+    },
     error: {
-      main: "#eb1c24",
-      light: "#ff0000",
-      dark: "#ff0000",
+      main: "#ff1212",
     },
     background: {
-      default: "#37474f",
-      paper: "#263238",
+      default: "#181B24",
+      paper: "#242635",
       //incorrect: "rgba(255,0,0,0.25)",
     },
     grey: {
@@ -62,6 +70,16 @@ let theme = createTheme({
     fontFamily: ['"Overpass"', "sans-serif"].join(","),
     body1: {
       letterSpacing: "0.1rem",
+    },
+  },
+  breakpoints: {
+    values: {
+      xs: 0,
+      vs: 600,
+      sm: 900,
+      md: 1325,
+      lg: 1500,
+      xl: 1600,
     },
   },
   components: {

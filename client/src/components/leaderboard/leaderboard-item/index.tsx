@@ -1,22 +1,22 @@
 import React from "react";
 import { GridCard } from "components/common";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import { Grid, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
+
+const styles = {
+  section: {
+    display: "flex",
+    alignItems: "center",
+    gap: 3,
+  },
+};
 
 interface LeaderboardItemProps {
-  place: number;
+  place: number | string;
   name: string;
-  accuracy: number;
-  wpm: number;
+  accuracy: number | string;
+  wpm: number | string;
 }
-
-const itemStyle = {
-  position: "absolute",
-  margin: 0,
-  transform: "translateY(-50%)",
-  top: "50%",
-  color: "secondary.main",
-};
 
 export default function LeaderboardItem({
   place,
@@ -25,45 +25,71 @@ export default function LeaderboardItem({
   wpm,
 }: LeaderboardItemProps) {
   return (
-    <GridCard sx={{ my: 2 }} color={getPlaceColor(place)}>
-      <Grid container columnSpacing={1}>
-        <Grid item xs={2}>
+    <GridCard sx={{ my: 2 }} color={getPlaceColor(place)} noBorder>
+      <Box display="flex" justifyContent="space-between" alignItems="center">
+        <Box sx={styles.section} minWidth={0}>
+          {place === 1 ? (
+            <EmojiEventsIcon
+              sx={{
+                color: "gold",
+                fontSize: { xs: "25px", vs: "35px" },
+              }}
+            />
+          ) : (
+            <Typography
+              variant={place < 4 ? "h4" : "body1"}
+              color={
+                place === 1
+                  ? "gold"
+                  : typeof place === "number"
+                  ? "secondary"
+                  : "inherit"
+              }
+            >
+              {place}
+            </Typography>
+          )}
+
           <Typography
-            variant={place < 4 ? "h4" : "body1"}
-            color={place === 1 ? "gold" : "secondary"}
+            color={typeof place === "number" ? "text.primary" : "inherit"}
+            whiteSpace="nowrap"
+            textOverflow="ellipsis"
+            overflow="hidden"
+            minWidth={0}
           >
-            {place === 1 ? (
-              <EmojiEventsIcon fontSize="large" sx={{ pt: 1 }} />
-            ) : null}
-            {place}
+            {name}
           </Typography>
-        </Grid>
-        <Grid item xs={6} position="relative" overflow="hidden">
-          <Typography sx={itemStyle}>{name.substring(0, 15)}</Typography>
-        </Grid>
-        <Grid item xs={2} position="relative">
-          <Typography sx={itemStyle}>{accuracy.toFixed(1)}%</Typography>
-        </Grid>
-        <Grid item xs={2} position="relative">
-          <Typography sx={itemStyle} right={0}>
-            {wpm.toFixed(1)}
+        </Box>
+        <Box sx={styles.section}>
+          <Typography
+            color={typeof place === "number" ? "text.primary" : "inherit"}
+            display={{ xs: "none", vs: "block" }}
+          >
+            {typeof accuracy === "number"
+              ? `${accuracy.toFixed(1)}%`
+              : accuracy}
           </Typography>
-        </Grid>
-      </Grid>
+          <Typography
+            color={typeof place === "number" ? "text.primary" : "inherit"}
+          >
+            {typeof wpm === "number" ? wpm.toFixed(1) : wpm}
+          </Typography>
+        </Box>
+      </Box>
     </GridCard>
   );
 }
 
-const getPlaceColor = (place: number) => {
+const getPlaceColor = (place: number | string) => {
+  if (typeof place === "string") return "background.default";
   switch (place) {
     case 1:
-      return "primary.main";
+      return "info.main";
     case 2:
-      return "error.main";
+      return "primary.main";
     case 3:
       return "warning.main";
-
     default:
-      return "background.default";
+      return "#393C49";
   }
 };

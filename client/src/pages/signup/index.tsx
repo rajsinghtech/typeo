@@ -14,11 +14,11 @@ export default function Signup() {
   }, []);
   return (
     <Grid container spacing={3}>
-      <Grid item xs={2}></Grid>
-      <Grid item xs={8}>
+      <Grid item xs={0} sm={2} lg={3}></Grid>
+      <Grid item xs={12} sm={8} lg={6}>
         <SignupComponent />
       </Grid>
-      <Grid item xs={2}></Grid>
+      <Grid item xs={0} sm={2} lg={3}></Grid>
     </Grid>
   );
 }
@@ -47,10 +47,18 @@ function SignupComponent() {
     const password = target.password.value;
     const passwordConfirm = target.passwordConfirm.value;
 
-    const regex = /^[a-zA-Z0-9_.-]*$/;
-    if (!regex.test(username) || !username || username.length > 15) {
+    if (!username || username.length > 20) {
       setErrorOpen(true);
-      setError("Invalid Username");
+      setError("Username must be less than 20 characters");
+      return;
+    }
+
+    const regex = /^[a-zA-Z0-9_.-]*$/;
+    if (!regex.test(username)) {
+      setErrorOpen(true);
+      setError(
+        "Username can only contain letters, numbers, underscore, period, and dash"
+      );
       return;
     }
 

@@ -1,3 +1,5 @@
+import { GameTypeNames, TextTypeNames } from "./settings";
+
 export interface StatsStructure {
   averages: RaceStats;
   best: RaceStats;
@@ -6,7 +8,6 @@ export interface StatsStructure {
 export interface RaceStats {
   wpm: number;
   accuracy: number;
-  mostMissedCharacter?: string;
 }
 
 export enum Timeframes {
@@ -16,3 +17,15 @@ export enum Timeframes {
   LAST_25 = 25,
   LAST_10 = 10,
 }
+
+export interface StatFilters {
+  timeframe: number;
+  gameMode: number[];
+  textType: number[];
+}
+
+export const DefaultStatFilters = {
+  timeframe: Timeframes.LAST_100,
+  gameMode: GameTypeNames.slice(0, GameTypeNames.length - 1).map((_, i) => i),
+  textType: TextTypeNames.map((_, i) => i),
+};
