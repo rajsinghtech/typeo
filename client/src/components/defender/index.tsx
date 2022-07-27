@@ -1,42 +1,26 @@
 import React from "react";
 import { GridCard } from "components/common";
 import WordBox from "components/standard-game/word-box";
-import { useGameSettings } from "contexts/GameSettings";
-import { Difficulty } from "constants/settings";
-import {
-  DefenderStateReducerActions,
-  EnemyType,
-  EnemyVariant,
-  EXPLOSION_TIME,
-  ParticleType,
-  useDefenderLogic,
-} from "./hooks/DefenderLogic";
-import RocketIcon from "@mui/icons-material/Rocket";
+import StartMenu from "components/defender/start-menu";
+import GameOver from "components/defender/game-over";
+import PlayerRocket from "components/defender/player-rocket";
+import Enemy, { EnemyType } from "components/defender/enemy";
+import Bullet from "components/defender/bullet";
+import Explosion from "components/defender/explosion";
+import { useDefenderLogic } from "./hooks/DefenderLogic";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
-import {
-  Box,
-  Button,
-  Grid,
-  keyframes,
-  LinearProgress,
-  ToggleButton,
-  ToggleButtonGroup,
-  Typography,
-  useTheme,
-  useMediaQuery,
-} from "@mui/material";
+import { Box, Grid, keyframes, Typography, useTheme, useMediaQuery } from "@mui/material";
 
-const PATH_WIDTH = "36px";
-const BORDER_WIDTH = "2px";
+export const PATH_WIDTH = "36px";
+export const BORDER_WIDTH = "2px";
 
-const PATH_OFFSET_TOP_PERCENTAGE = 15;
+export const PATH_OFFSET_TOP_PERCENTAGE = 15;
 
-type Status = "menu" | "running" | "finished";
+export type DefenderStatus = "menu" | "running" | "finished";
 
 export default function Defender() {
-  const [status, setStatus] = React.useState<Status>("menu");
+  const [status, setStatus] = React.useState<DefenderStatus>("menu");
   const [resultScore, setResultScore] = React.useState<number>(0);
 
   return (
@@ -67,130 +51,8 @@ export default function Defender() {
   );
 }
 
-const StartMenu = ({
-  setStatus,
-}: {
-  setStatus: React.Dispatch<React.SetStateAction<Status>>;
-}) => {
-  const { gameSettings, setGameSettings } = useGameSettings();
-
-  const theme = useTheme();
-  const vsScreenSize = useMediaQuery(theme.breakpoints.up("vs"));
-
-  const SetDifficulty = (_: unknown, newDifficulty: Difficulty) => {
-    setGameSettings({
-      ...gameSettings,
-      defender: { ...gameSettings.defender, difficulty: newDifficulty },
-    });
-  };
-
-  return (
-    <Box
-      display="flex"
-      flexDirection="column"
-      justifyContent="center"
-      width="100%"
-      height="100%"
-      alignItems="center"
-      textAlign="center"
-      gap={5}
-      px={1}
-    >
-      <Typography variant="h1" color="text.primary">
-        Defender
-      </Typography>
-      <Typography variant="subtitle1">
-        Tip: There is a bonus round every 7 levels
-      </Typography>
-      <ToggleButtonGroup
-        value={gameSettings.defender.difficulty}
-        orientation={vsScreenSize ? "horizontal" : "vertical"}
-        exclusive
-        onChange={SetDifficulty}
-      >
-        <ToggleButton value="easy" color="success">
-          Easy
-        </ToggleButton>
-        <ToggleButton value="medium" color="primary">
-          Medium
-        </ToggleButton>
-        <ToggleButton value="hard" color="warning">
-          Hard
-        </ToggleButton>
-        <ToggleButton value="impossible" color="error">
-          Impossible
-        </ToggleButton>
-      </ToggleButtonGroup>
-      <Button
-        variant="outlined"
-        color="secondary"
-        sx={{ mt: 2 }}
-        onClick={() => setStatus("running")}
-      >
-        Start
-      </Button>
-    </Box>
-  );
-};
-
-interface GameOverProps {
-  score: number;
-  setStatus: React.Dispatch<React.SetStateAction<Status>>;
-}
-
-const GameOver = ({ score, setStatus }: GameOverProps) => {
-  const [highscore, setHighscore] = React.useState<number>(0);
-
-  React.useEffect(() => {
-    let newHighscore = score;
-    const storedHighscore = localStorage.getItem("defender_highscore");
-    if (storedHighscore) {
-      const parsedHighscore = parseInt(storedHighscore);
-      if (score > parsedHighscore) {
-        localStorage.setItem("defender_highscore", `${score}`);
-        newHighscore = score;
-      } else {
-        newHighscore = parsedHighscore;
-      }
-    } else {
-      localStorage.setItem("defender_highscore", `${score}`);
-    }
-    setHighscore(newHighscore);
-  }, []);
-
-  return (
-    <Box
-      display="flex"
-      flexDirection="column"
-      justifyContent="center"
-      width="100%"
-      height="100%"
-      alignItems="center"
-      gap={1}
-    >
-      <Typography variant="h2" color="text.primary">
-        Game Over
-      </Typography>
-      <Typography variant="h6">Score</Typography>
-      <Typography variant="h3" color="warning.main">
-        {score.toFixed(0)}
-      </Typography>
-      <Typography variant="h6">Highscore</Typography>
-      <Typography variant="h3">{highscore.toFixed(0)}</Typography>
-      <Button
-        variant="outlined"
-        color="secondary"
-        sx={{ mt: 2 }}
-        onClick={() => setStatus("menu")}
-      >
-        Play Again
-      </Button>
-    </Box>
-  );
-};
-
 interface DefenderComponentProps {
-  setStatus: React.Dispatch<React.SetStateAction<Status>>;
+  setStatus: React.Dispatch<React.SetStateAction<DefenderStatus>>;
   setResultScore: React.Dispatch<React.SetStateAction<number>>;
 }
 
@@ -414,25 +276,6 @@ const DefenderComponent = ({
           </Box>
         );
       }, [defenderState.currentEnemyUID])}
-      {/* {React.useMemo(() => {
-        return (
-          <Box
-            key={`errors_${defenderState.errors}`}
-            position="absolute"
-            width="100%"
-            height="100%"
-            sx={{
-              animation: `${keyframes`
-              0% {
-                background-color: rgba(255, 0, 0, 0.1)
-              }
-              100% {
-                background-color: transparent
-              }`} 2s`,
-            }}
-          ></Box>
-        );
-      }, [defenderState.errors])} */}
       {focusMessageOpen ? (
         <GridCard
           sx={{
@@ -450,21 +293,24 @@ const DefenderComponent = ({
           </Typography>
         </GridCard>
       ) : null}
-      {/* {defenderState.enemies.length > 0 ? (
-        <Follower raceState={defenderState.raceState} wbRef={wbRef} />
-      ) : null} */}
       {React.useMemo(() => {
         return (
           <Box ref={enemyBoxRef} width="100%">
             {defenderState.enemies.map(
               ({ type, charactersTyped, text, uid, delay }) => {
+                const targeted = defenderState.currentEnemyUID === uid;
                 return (
                   <Enemy
                     key={`enemy_${uid}`}
+                    uid={uid}
                     type={type}
                     text={text}
-                    charactersTyped={charactersTyped}
-                    targeted={defenderState.currentEnemyUID === uid}
+                    charactersTyped={
+                      targeted
+                        ? defenderState.raceState.currentCharIndex
+                        : charactersTyped
+                    }
+                    targeted={targeted}
                     delay={delay}
                     dispatch={defenderStateDispatch}
                   />
@@ -473,7 +319,11 @@ const DefenderComponent = ({
             )}
           </Box>
         );
-      }, [defenderState.enemies, defenderState.currentEnemyUID])}
+      }, [
+        defenderState.enemies,
+        defenderState.currentEnemyUID,
+        defenderState.raceState.currentCharIndex,
+      ])}
       {React.useMemo(() => {
         return (
           <>
@@ -536,11 +386,14 @@ const DefenderComponent = ({
       {React.useMemo(() => {
         return (
           <>
-            <Typography
+            <Box
               key={defenderState.level}
-              variant="h6"
               sx={{
                 position: "absolute",
+                width: "100%",
+                justifyContent: "center",
+                display: "flex",
+                gap: 1,
                 top: "4%",
                 left: "50%",
                 transform: "translateX(-50%)",
@@ -557,7 +410,22 @@ const DefenderComponent = ({
                   }
                   `} 5s ease-out`,
               }}
-            >{`Level ${defenderState.level}`}</Typography>
+            >
+              <Typography variant="h6">
+                {`Level ${defenderState.level}`}
+              </Typography>
+              {defenderState.level % 7 === 0 ? (
+                <>
+                  <Typography variant="h6">| Bonus Level</Typography>
+                  <Typography variant="h6" color="warning.main">
+                    | 2x Points | 2x Multiplie |
+                  </Typography>
+                  <Typography variant="h6" color="success.main">
+                    No Penalties
+                  </Typography>
+                </>
+              ) : null}
+            </Box>
             <Box sx={{ position: "absolute", right: 40, bottom: 25 }}>
               <FavoriteIcon
                 color="error"
@@ -573,213 +441,6 @@ const DefenderComponent = ({
     </>
   );
 };
-
-interface PlayerRocketProps {
-  shipRotation: number;
-}
-
-const PlayerRocket = ({ shipRotation }: PlayerRocketProps) => {
-  return (
-    <Box
-      position="absolute"
-      textAlign="center"
-      width="100%"
-      top="80%"
-      sx={{ transform: `rotate(${shipRotation}deg)` }}
-    >
-      <RocketIcon fontSize="large" color="primary" />
-    </Box>
-  );
-};
-
-const BULLET_TIME = 350;
-
-interface BulletProps {
-  offsetLeft: number;
-  uid: string;
-  enemyBoxRef: React.RefObject<HTMLDivElement>;
-  dispatch: React.Dispatch<DefenderStateReducerActions>;
-}
-
-const Bullet = React.memo(function BulletComponent({
-  offsetLeft,
-  uid,
-  enemyBoxRef,
-  dispatch,
-}: BulletProps) {
-  return (
-    <Box
-      sx={{
-        position: "absolute",
-        width: "100%",
-        height: "100%",
-        transform: "translate(50%, 82%)",
-        animation: `${keyframes`
-    0% {
-      transform: translate(50%, 82%)
-    }
-    100% {
-      transform: translate(calc(4% + ${offsetLeft}px), ${
-          PATH_OFFSET_TOP_PERCENTAGE + 3
-        }%)
-    }
-    `} ${BULLET_TIME}ms linear`,
-      }}
-      onAnimationEnd={() =>
-        dispatch({ type: "bulletHit", bulletUID: uid, enemyBoxRef })
-      }
-    >
-      <Box
-        sx={{ boxShadow: `0 0 4px 2px rgba(227, 252, 3, 1)` }}
-        bgcolor="white"
-        width="4px"
-        height="4px"
-        borderRadius="50%"
-      ></Box>
-    </Box>
-  );
-});
-
-const Explosion = React.memo(function ExplosionComponent({
-  offsetLeft,
-  particleData,
-}: {
-  offsetLeft: number;
-  particleData: ParticleType[];
-}) {
-  return (
-    <>
-      {particleData.map(({ x, y, color }, index) => {
-        return (
-          <Box
-            key={`p${index}_${x}_${y}`}
-            sx={{
-              opacity: 0,
-              animation: `${keyframes`
-          0% {
-            opacity: 1;
-            top: ${PATH_OFFSET_TOP_PERCENTAGE + 3}%;
-            left: ${offsetLeft}px;
-          }
-          100% {
-            opacity: 0;
-            top: calc(${PATH_OFFSET_TOP_PERCENTAGE + 3}% + ${y}px);
-            left: ${offsetLeft + x}px;
-          }`} ${EXPLOSION_TIME}ms cubic-bezier(0, 0.87, 0.49, 0.9)`,
-              boxShadow: `0 0 5px 2px ${color}`,
-            }}
-            position="absolute"
-            bgcolor="rgba(255, 255, 255, 0.8)"
-            top={`calc(50% + ${y}px)`}
-            left={`calc(50% + ${x}px)`}
-            width="7px"
-            height="7px"
-            borderRadius="50%"
-          ></Box>
-        );
-      })}
-    </>
-  );
-});
-
-interface EnemyProps {
-  type: EnemyVariant;
-  text: string;
-  charactersTyped: number;
-  targeted: boolean;
-  delay: number;
-  dispatch: React.Dispatch<DefenderStateReducerActions>;
-}
-
-const Enemy = React.memo(function EnemyComponent({
-  type,
-  text,
-  charactersTyped,
-  targeted,
-  delay,
-  dispatch,
-}: EnemyProps) {
-  const { gameSettings } = useGameSettings();
-  let animationSpeed = 25;
-  switch (gameSettings.defender.difficulty) {
-    case "easy":
-      animationSpeed = 28;
-      break;
-    case "medium":
-      animationSpeed = 23;
-      break;
-    case "hard":
-      animationSpeed = 15;
-      break;
-    case "impossible":
-      animationSpeed = 10;
-      break;
-    default:
-      break;
-  }
-  return (
-    <Box
-      sx={{
-        position: "absolute",
-        width: "100%",
-        animation: `${moveEnemy} ${animationSpeed}s linear`,
-        animationDelay: `${delay}s`,
-        left: 0,
-        top: `${PATH_OFFSET_TOP_PERCENTAGE}%`,
-        transform: "translateX(105%)",
-      }}
-      onAnimationEnd={() =>
-        dispatch({ type: "dealDamage", damage: text.split(" ").length })
-      }
-    >
-      <Box
-        sx={{
-          position: "relative",
-          boxShadow: `0 0 4px 1px ${type.color}`,
-          width: "16px",
-          height: "16px",
-          borderRadius: type.shape === "circle" ? "50%" : 0,
-          transform: "translateY(10px)",
-          outline: `1px solid ${type.color}`,
-          zIndex: 1,
-        }}
-      >
-        {charactersTyped > 0 ? (
-          <LinearProgress
-            variant="determinate"
-            value={(1 - charactersTyped / text.length) * 100}
-            sx={{
-              position: "absolute",
-              width: "100%",
-              top: -20,
-              ".MuiLinearProgress-bar": { transitionDuration: "75ms" },
-            }}
-          />
-        ) : null}
-        {targeted ? (
-          <ArrowDropUpIcon
-            color="warning"
-            fontSize="medium"
-            sx={{
-              position: "absolute",
-              top: 25,
-              left: "50%",
-              transform: "translateX(-50%)",
-            }}
-          />
-        ) : null}
-      </Box>
-    </Box>
-  );
-});
-
-const moveEnemy = keyframes`
-  0% {
-    transform: translateX(0%);
-  }
-  100% {
-    transform: translateX(100%);
-  }`;
 
 interface PathSectionProps {
   vertical?: boolean;
@@ -803,25 +464,3 @@ const PathSection = ({ vertical, length, top, left }: PathSectionProps) => {
     ></Box>
   );
 };
-
-// interface PathCornerProps {
-//   orientation: 0 | 1 | 2 | 3; // 0 - top, right; 1 - right, bottom; 2 - bottom, left; 3 - left, top
-//   top: string | number;
-//   left: string | number;
-// }
-
-// const PathCorner = ({ orientation, top, left }: PathCornerProps) => {
-//   return (
-//     <Box
-//       sx={{ transform: `rotate(${orientation * 90}deg)` }}
-//       position="absolute"
-//       top={top}
-//       left={left}
-//       width={PATH_WIDTH}
-//       height={PATH_WIDTH}
-//       borderTop={`${BORDER_WIDTH} solid gray`}
-//       borderRight={`${BORDER_WIDTH} solid gray`}
-//       zIndex={999}
-//     ></Box>
-//   );
-// };
