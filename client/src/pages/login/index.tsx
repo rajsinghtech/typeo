@@ -14,11 +14,11 @@ export default function Login() {
   }, []);
   return (
     <Grid container spacing={3}>
-      <Grid item xs={2}></Grid>
-      <Grid item xs={8}>
+      <Grid item xs={0} sm={2} lg={3}></Grid>
+      <Grid item xs={12} sm={8} lg={6}>
         <LoginComponent />
       </Grid>
-      <Grid item xs={2}></Grid>
+      <Grid item xs={0} sm={2} lg={3}></Grid>
     </Grid>
   );
 }

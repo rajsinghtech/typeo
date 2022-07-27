@@ -1,34 +1,71 @@
 import React from "react";
-import { Timeframes } from "constants/stats";
+import { DefaultStatFilters, Timeframes } from "constants/stats";
 import { useAuth } from "contexts/AuthContext";
 import { useStats } from "contexts/StatsContext";
 import { GridCard } from "components/common";
-import { Divider, Typography } from "@mui/material";
+import {
+  Box,
+  Divider,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 
-export default function HomeProfile() {
-  const { isLoggedIn } = useAuth();
+export function HomeProfile() {
+  const { currentUser, isLoggedIn } = useAuth();
 
   const { getBaseStats } = useStats();
 
-  const baseStats = getBaseStats(Timeframes.LAST_100);
+  const baseStats = getBaseStats(DefaultStatFilters);
+
+  const theme = useTheme();
+  const smScreenSize = useMediaQuery(theme.breakpoints.up("sm"));
 
   return (
-    <GridCard accent>
-      <Divider sx={{ my: 1 }} />
-      {isLoggedIn ? (
-        <>
-          <Typography my={1}>{"Average WPM"}</Typography>
-          <Typography color="secondary.main">
-            {baseStats.averages.wpm.toFixed(1)}
-          </Typography>
-          <Typography my={1}>{"Best WPM"}</Typography>
-          <Typography color="secondary.main">
-            {baseStats.best.wpm.toFixed(1)}
-          </Typography>
-        </>
+    <>
+      {smScreenSize ? (
+        <GridCard padding="10px">
+          {isLoggedIn ? (
+            <Box display="flex" gap={1}>
+              <Typography color="primary.main">
+                {currentUser.displayName?.toUpperCase() || ""}
+              </Typography>
+              <Divider orientation="vertical" flexItem />
+              <Typography>{"Average WPM"}</Typography>
+              <Typography color="secondary.main">
+                {baseStats.averages.wpm.toFixed(1)}
+              </Typography>
+              <Divider orientation="vertical" flexItem />
+              <Typography>{"Best WPM"}</Typography>
+              <Typography color="secondary.main">
+                {baseStats.best.wpm.toFixed(1)}
+              </Typography>
+            </Box>
+          ) : (
+            <Typography>Login for stats</Typography>
+          )}
+        </GridCard>
       ) : (
-        <Typography>Login for stats</Typography>
+        <HomeProfileMobile />
       )}
-    </GridCard>
+    </>
   );
 }
+
+export const HomeProfileMobile = React.memo(
+  function HomeProfileMobileComponent() {
+    const { currentUser, isLoggedIn } = useAuth();
+
+    return (
+      <GridCard padding="10px">
+        {isLoggedIn ? (
+          <Typography color="primary.main">
+            {currentUser.displayName?.toUpperCase() || ""}
+          </Typography>
+        ) : (
+          <Typography>Login for stats</Typography>
+        )}
+      </GridCard>
+    );
+  }
+);

@@ -1,16 +1,21 @@
 import React from "react";
 import { getPassage } from "constants/passages";
-import { TextTypes } from "constants/settings";
+import { Difficulty, TextTypes } from "constants/settings";
 import { RaceStateSubset } from "components/standard-game/hooks/RaceLogic";
+import {
+  EnemyType,
+  EnemyVariant,
+  ENEMY_VARIANTS,
+} from "components/defender/enemy";
+import {
+  ExplosionType,
+  EXPLOSION_TIME,
+  PARTICLE_COLORS,
+} from "components/defender/explosion";
 import { v4 as uuidv4 } from "uuid";
+import { useGameSettings } from "contexts/GameSettings";
 
-export const EXPLOSION_TIME = 1200;
-
-const PARTICLE_COLORS = [
-  "rgba(255, 0, 0, 0.5)",
-  "rgba(0, 255, 0, 0.5)",
-  "rgba(0, 0, 255, 0.5)",
-];
+const BONUS_ROUND = 7;
 
 interface DefenderState {
   level: number;
@@ -48,43 +53,6 @@ const InitialDefenderState: DefenderState = {
   isFinished: false,
 };
 
-export interface EnemyType {
-  type: EnemyVariant;
-  raceState: RaceStateSubset;
-  charactersTyped: number;
-  text: string;
-  uid: string;
-  delay: number;
-}
-
-export interface EnemyVariant {
-  shape: "square" | "circle";
-  color: string;
-  numWords: number;
-}
-
-const EnemyTypes: EnemyVariant[] = [
-  { shape: "square", color: "lawngreen", numWords: 2 },
-  { shape: "square", color: "cyan", numWords: 4 },
-  { shape: "square", color: "purple", numWords: 6 },
-  { shape: "circle", color: "lawngreen", numWords: 10 },
-  { shape: "circle", color: "cyan", numWords: 12 },
-  { shape: "circle", color: "purple", numWords: 14 },
-  { shape: "square", color: "red", numWords: 25 },
-];
-
-export interface ParticleType {
-  x: number;
-  y: number;
-  color: string;
-}
-
-interface ExplosionType {
-  offsetLeft: number;
-  uid: string;
-  particleData: ParticleType[];
-}
-
 const getCurrentEnemyIndex = (defenderState: DefenderState): number => {
   return defenderState.enemies.findIndex(
     (enemy) => enemy.uid === defenderState.currentEnemyUID
@@ -101,36 +69,51 @@ const createEnemyData = (type: EnemyVariant, delay: number): EnemyType => {
     uid: uuidv4(),
     text,
     delay,
+    isReachable: true,
   };
 };
 
-const StartNewRound = (defenderState: DefenderState): DefenderState => {
+const StartNewRound = (
+  defenderState: DefenderState,
+  difficulty: Difficulty
+): DefenderState => {
   const newEnemies = [];
   let currentEnemyUID = "";
 
-  if (defenderState.level === 1) {
+  const difficulties = ["easy", "medium", "hard", "impossible"];
+  const bonusRounds = Math.floor(defenderState.level / BONUS_ROUND);
+  const difficultyLevel =
+    defenderState.level + difficulties.indexOf(difficulty) - bonusRounds;
+  if (difficultyLevel === 1) {
     for (let i = 0; i < 6; i++) {
-      const enemyData = createEnemyData(EnemyTypes[0], i);
+      const enemyData = createEnemyData(ENEMY_VARIANTS[0], i * 1.5);
+      if (!currentEnemyUID) {
+        currentEnemyUID = enemyData.uid;
+      }
+      newEnemies.push(enemyData);
+    }
+  } else if (defenderState.level % BONUS_ROUND === 0) {
+    for (let i = 0; i < 15; i++) {
+      const enemyData = createEnemyData(ENEMY_VARIANTS[i % 3], i * 1.5);
       if (!currentEnemyUID) {
         currentEnemyUID = enemyData.uid;
       }
       newEnemies.push(enemyData);
     }
   } else {
-    const enemyAmountIncrease = Math.floor(defenderState.level / 3);
+    const enemyAmountIncrease = Math.floor(difficultyLevel / 3);
     const numEnemies = enemyAmountIncrease + 6;
 
-    const enemyLevelIncrease = Math.floor((defenderState.level - 1) / 4);
-    const hardEnemyPercentage = Math.min(
-      ((defenderState.level - 1) % 4) / 4,
-      1
-    );
+    const enemyLevelIncrease = Math.floor((difficultyLevel - 1) / 4);
+    const hardEnemyPercentage = Math.min(((difficultyLevel - 1) % 4) / 4, 1);
     const numHardEnemies = Math.floor(hardEnemyPercentage * numEnemies);
 
     for (let i = 0; i < numHardEnemies; i++) {
       const enemyData = createEnemyData(
-        EnemyTypes[Math.min(enemyLevelIncrease + 1, EnemyTypes.length - 1)],
-        i
+        ENEMY_VARIANTS[
+          Math.min(enemyLevelIncrease + 1, ENEMY_VARIANTS.length - 1)
+        ],
+        i * 1.5
       );
       if (!currentEnemyUID) {
         currentEnemyUID = enemyData.uid;
@@ -140,8 +123,8 @@ const StartNewRound = (defenderState: DefenderState): DefenderState => {
 
     for (let i = numHardEnemies; i < numEnemies; i++) {
       const enemyData = createEnemyData(
-        EnemyTypes[Math.min(enemyLevelIncrease, EnemyTypes.length - 1)],
-        i
+        ENEMY_VARIANTS[Math.min(enemyLevelIncrease, ENEMY_VARIANTS.length - 1)],
+        i * 1.5
       );
       if (!currentEnemyUID) {
         currentEnemyUID = enemyData.uid;
@@ -208,43 +191,6 @@ const SpawnBullet = (
   return newDefenderState;
 };
 
-const OnBulletHit = (
-  defenderState: DefenderState,
-  bulletUID: string,
-  enemyBoxRef: React.RefObject<HTMLDivElement>
-): DefenderState => {
-  let newDefenderState = { ...defenderState };
-
-  const bulletIndex = newDefenderState.bullets.findIndex(
-    (bullet) => bullet.uid === bulletUID
-  );
-  const enemyIndex = defenderState.enemies.findIndex(
-    (enemy) => enemy.uid === defenderState.bullets[bulletIndex].targetUID
-  );
-  if (newDefenderState.enemies[enemyIndex]) {
-    const newEnemies = [...newDefenderState.enemies];
-    newEnemies[enemyIndex].charactersTyped++;
-
-    if (
-      newDefenderState.enemies[enemyIndex].charactersTyped >=
-      newDefenderState.enemies[enemyIndex].text.length
-    ) {
-      newDefenderState = SpawnExplosion(
-        defenderState,
-        getEnemyOffsetLeft(enemyIndex, enemyBoxRef),
-        true
-      );
-      newEnemies.splice(enemyIndex, 1);
-    }
-    newDefenderState.enemies = newEnemies;
-  }
-
-  const newBullets = [...defenderState.bullets];
-  newBullets.splice(bulletIndex, 1);
-  newDefenderState.bullets = newBullets;
-  return newDefenderState;
-};
-
 const Shoot = (
   defenderState: DefenderState,
   offsetLeft: number,
@@ -282,50 +228,94 @@ const Shoot = (
   return newDefenderState;
 };
 
-const DealDamage = (
-  defenderState: DefenderState,
-  damage: number
+const moveToNextAvailableEnemy = (
+  defenderState: DefenderState
 ): DefenderState => {
-  const newHealth = Math.max(defenderState.health - damage, 0);
-  if (newHealth === 0) {
-    return { ...defenderState, health: 0, isFinished: true };
-  } else {
-    const newEnemies = defenderState.enemies.slice(1);
-    let newCurrentEnemyUID = defenderState.currentEnemyUID;
-    let newRaceState = defenderState.raceState;
-    if (defenderState.currentEnemyUID === defenderState.enemies[0]?.uid) {
-      newCurrentEnemyUID = newEnemies[0]?.uid || "";
-      newRaceState = newEnemies[0]?.raceState || { ...InitialRaceState };
+  let newCurrentEnemyUID = "";
+  let newRaceState = { ...InitialRaceState };
+  for (const enemy of defenderState.enemies) {
+    if (
+      enemy.raceState.currentCharIndex < enemy.text.length &&
+      enemy.isReachable
+    ) {
+      newCurrentEnemyUID = enemy.uid;
+      newRaceState = { ...enemy.raceState };
+      break;
     }
-    return {
-      ...defenderState,
-      enemies: newEnemies,
-      health: newHealth,
-      currentEnemyUID: newCurrentEnemyUID,
-      raceState: newRaceState,
-    };
   }
-};
 
-const ChangeCurrentEnemy = (
-  defenderState: DefenderState,
-  changeAmount: number
-): DefenderState => {
-  if (!defenderState.currentEnemyUID) return { ...defenderState };
-  let newCurrentEnemyUID = defenderState.currentEnemyUID;
-  let newRaceState = defenderState.raceState;
-  const currentEnemyIndex = getCurrentEnemyIndex(defenderState);
-  const newCurrentEnemy =
-    defenderState.enemies[currentEnemyIndex + changeAmount];
-  if (newCurrentEnemy) {
-    newCurrentEnemyUID = newCurrentEnemy.uid;
-    newRaceState = newCurrentEnemy.raceState;
-  }
   return {
     ...defenderState,
     currentEnemyUID: newCurrentEnemyUID,
     raceState: newRaceState,
   };
+};
+
+const OnBulletHit = (
+  defenderState: DefenderState,
+  bulletUID: string,
+  enemyBoxRef: React.RefObject<HTMLDivElement>
+): DefenderState => {
+  let newDefenderState = { ...defenderState };
+
+  const bulletIndex = newDefenderState.bullets.findIndex(
+    (bullet) => bullet.uid === bulletUID
+  );
+  const enemyIndex = defenderState.enemies.findIndex(
+    (enemy) => enemy.uid === defenderState.bullets[bulletIndex].targetUID
+  );
+  if (newDefenderState.enemies[enemyIndex]) {
+    const newEnemies = [...newDefenderState.enemies];
+    newEnemies[enemyIndex].charactersTyped++;
+
+    if (
+      newDefenderState.enemies[enemyIndex].charactersTyped >=
+      newDefenderState.enemies[enemyIndex].text.length
+    ) {
+      newDefenderState = SpawnExplosion(
+        defenderState,
+        getEnemyOffsetLeft(enemyIndex, enemyBoxRef),
+        true
+      );
+      newDefenderState.health += 1;
+      newEnemies.splice(enemyIndex, 1);
+    }
+    newDefenderState.enemies = newEnemies;
+  }
+
+  const newBullets = [...defenderState.bullets];
+  newBullets.splice(bulletIndex, 1);
+  newDefenderState.bullets = newBullets;
+  return newDefenderState;
+};
+
+const TakeDamage = (
+  defenderState: DefenderState,
+  enemyUID: string,
+  damage: number
+): DefenderState => {
+  const newHealth =
+    defenderState.level % BONUS_ROUND === 0
+      ? defenderState.health
+      : Math.max(defenderState.health - damage, 0);
+  if (newHealth === 0) {
+    return { ...defenderState, health: 0, isFinished: true };
+  } else {
+    const newDefenderState = { ...defenderState };
+    const newEnemies = [...defenderState.enemies];
+    const enemyIndex = defenderState.enemies.findIndex(
+      (enemy) => enemy.uid === enemyUID
+    );
+    newEnemies.splice(enemyIndex, 1);
+    newDefenderState.enemies = newEnemies;
+    newDefenderState.health = newHealth;
+    if (
+      defenderState.currentEnemyUID === defenderState.enemies[enemyIndex]?.uid
+    ) {
+      return moveToNextAvailableEnemy(newDefenderState);
+    }
+    return newDefenderState;
+  }
 };
 
 const RemoveExplosion = (defenderState: DefenderState): DefenderState => {
@@ -354,7 +344,6 @@ const KeyDown = (
 ): DefenderState => {
   let newDefenderState = { ...defenderState };
   if (defenderState.isFinished) return newDefenderState;
-  if (event.ctrlKey) return ChangeCurrentEnemy(newDefenderState, 1);
   const key = event.key;
   const currentEnemyIndex = getCurrentEnemyIndex(defenderState);
   const currentEnemy = defenderState.enemies[currentEnemyIndex];
@@ -369,8 +358,11 @@ const KeyDown = (
 
       newDefenderState.raceState = newRaceState;
       newDefenderState.enemies[currentEnemyIndex].raceState = newRaceState;
-      newDefenderState.score += 5 * defenderState.multiplier;
-      newDefenderState.multiplier += 0.05;
+
+      const bonusRound = defenderState.level % BONUS_ROUND === 0;
+      newDefenderState.score +=
+        5 * defenderState.multiplier * (bonusRound ? 2 : 1);
+      newDefenderState.multiplier += bonusRound ? 0.1 : 0.05;
 
       const currentEnemyOffsetLeft = getEnemyOffsetLeft(
         currentEnemyIndex,
@@ -383,7 +375,8 @@ const KeyDown = (
         enemyBoxRef.current?.offsetWidth || 0
       );
     } else if (key.length === 1) {
-      newDefenderState.multiplier = 1;
+      if (defenderState.level % BONUS_ROUND !== 0)
+        newDefenderState.multiplier = 1;
       newDefenderState.errors += 1;
     }
   }
@@ -400,6 +393,7 @@ interface KeyDownAction {
 
 interface StartNewRoundAction {
   type: "startNewRound";
+  difficulty: Difficulty;
 }
 
 interface IncreaseLevelAction {
@@ -412,8 +406,9 @@ interface BulletHitAction {
   enemyBoxRef: React.RefObject<HTMLDivElement>;
 }
 
-interface DealDamageAction {
-  type: "dealDamage";
+interface TakeDamageAction {
+  type: "takeDamage";
+  enemyUID: string;
   damage: number;
 }
 
@@ -426,7 +421,7 @@ export type DefenderStateReducerActions =
   | StartNewRoundAction
   | IncreaseLevelAction
   | BulletHitAction
-  | DealDamageAction
+  | TakeDamageAction
   | RemoveExplosionAction;
 
 const DefenderStateReducer = (
@@ -437,13 +432,13 @@ const DefenderStateReducer = (
     case "keydown":
       return KeyDown(state, action.event, action.enemyBoxRef);
     case "startNewRound":
-      return StartNewRound(state);
+      return StartNewRound(state, action.difficulty);
     case "increaseLevel":
       return IncreaseLevel(state);
     case "bulletHit":
       return OnBulletHit(state, action.bulletUID, action.enemyBoxRef);
-    case "dealDamage":
-      return DealDamage(state, action.damage);
+    case "takeDamage":
+      return TakeDamage(state, action.enemyUID, action.damage);
     case "removeExplosion":
       return RemoveExplosion(state);
     default:
@@ -457,6 +452,9 @@ export const useDefenderLogic = () => {
     InitialDefenderState
   );
 
+  const { gameSettings } = useGameSettings();
+  const difficulty = gameSettings.defender.difficulty;
+
   React.useEffect(() => {
     if (defenderState.enemies.length === 0 && !defenderState.isFinished) {
       setTimeout(
@@ -466,7 +464,7 @@ export const useDefenderLogic = () => {
         defenderState.level === 0 ? 0 : 500
       );
       setTimeout(() => {
-        defenderStateDispatch({ type: "startNewRound" });
+        defenderStateDispatch({ type: "startNewRound", difficulty });
       }, 3000);
     }
   }, [defenderState.enemies]);

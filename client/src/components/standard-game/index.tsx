@@ -7,31 +7,22 @@ import { useAuth } from "contexts/AuthContext";
 import Results from "components/standard-game/results/standard-results";
 import { MAX_INPUT_LENGTH, ResultsData } from "constants/race";
 import { OnlineRaceData } from "pages/online/components/ffa-game";
+import { HeaderMobile } from "pages/home/components/header";
 import useRaceLogic, {
   RaceState,
 } from "components/standard-game/hooks/RaceLogic";
 import SpeedProgress from "components/standard-game/feedback/speed-progress";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import {
-  Card,
+  Box,
   Grid,
   IconButton,
   Theme,
   Typography,
+  useMediaQuery,
   useTheme,
 } from "@mui/material";
 
-const styles = {
-  amountCard: {
-    display: "inline-block",
-    textAlign: "center",
-    padding: "10px",
-    paddingLeft: "13px",
-    paddingTop: "15px",
-    backgroundColor: "rgba(255, 255, 255, 0.15)",
-  },
-};
-// TODO: Add a type for value
 const usePreviousRaceState = (value: RaceState): RaceState | undefined => {
   const ref = React.useRef<RaceState>();
   React.useEffect(() => {
@@ -180,21 +171,75 @@ export default function StandardGame({
     );
   }, [settings, raceState.isRaceFinished]);
 
+  const mdScreenSize = useMediaQuery(theme.breakpoints.up("md"));
+  const xsScreenSize = useMediaQuery(theme.breakpoints.down("vs"));
+
   const AmountDisplay = React.useMemo(() => {
     return (
-      <Grid item xs={settings.display.showWPM ? 8 : 12} textAlign="center">
-        <Card sx={styles.amountCard} elevation={15}>
-          <Typography variant="h4">{raceState.amount}</Typography>
-        </Card>
+      <Grid item xs={12} md={1.25} xl={1}>
+        <GridCard
+          noStyle={!mdScreenSize}
+          sx={{
+            display: "flex",
+            height: "100%",
+            justifyContent: "space-between",
+            flexDirection: { xs: "row", md: "column" },
+            alignItems: { xs: "flex-end", md: "center" },
+            textAlign: "center",
+            gap: 3,
+            py: { xs: 0, md: 2 },
+            px: 0,
+          }}
+        >
+          <Box
+            width={{ xs: "15%", md: "75%" }}
+            sx={{ borderBottom: { xs: "none", md: "1px solid #696969" } }}
+            pb={{ xs: 0, md: 2 }}
+          >
+            <GridCard
+              noStyle={mdScreenSize}
+              textalign="center"
+              sx={{
+                width: { xs: "fit-content", md: "100%" },
+              }}
+            >
+              <Typography variant="h5" color="primary.main">
+                {raceState.amount}
+              </Typography>
+            </GridCard>
+          </Box>
+          {!mdScreenSize ? <HeaderMobile /> : null}
+          {settings.display.showWPM ? (
+            <Box width="15%">
+              <GridCard
+                noStyle={mdScreenSize}
+                sx={{
+                  width: { xs: "fit-content", md: "100%" },
+                  float: "right",
+                }}
+              >
+                <SpeedProgress wpm={raceState.statState.wpm} />
+              </GridCard>
+            </Box>
+          ) : null}
+        </GridCard>
       </Grid>
     );
-  }, [raceState.amount, settings.display.showWPM]);
+  }, [
+    raceState.amount,
+    settings.display.showWPM,
+    raceState.statState.wpm,
+    mdScreenSize,
+    xsScreenSize,
+  ]);
 
   const MainDisplay = React.useMemo(() => {
     return (
       <Grid
         item
         xs={12}
+        md={10.75}
+        xl={11}
         sx={{ userSelect: "none" }}
         onClick={() => {
           if (inputRef.current) {
@@ -255,6 +300,7 @@ export default function StandardGame({
             <>
               {focusMessageOpen ? (
                 <GridCard
+                  noBorder
                   sx={{
                     position: "absolute",
                     width: "100%",
@@ -321,9 +367,6 @@ export default function StandardGame({
         wbRef={wbRef}
         raceState={raceState}
       />
-      {settings.display.showWPM ? (
-        <SpeedProgress wpm={raceState.statState.wpm} />
-      ) : null}
       {AmountDisplay}
       {MainDisplay}
     </>

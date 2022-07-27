@@ -4,7 +4,9 @@ import { BarChartData } from "constants/graphs";
 import { GridCard } from "components/common";
 import { useGameSettings } from "contexts/GameSettings";
 import { useStats } from "contexts/StatsContext";
-import { Timeframes } from "constants/stats";
+import { DefaultStatFilters, StatFilters, Timeframes } from "constants/stats";
+import TimeframeSelect from "components/stats/timeframe-select";
+import SortByAlphaIcon from "@mui/icons-material/SortByAlpha";
 import {
   Chart as ChartJS,
   BarController,
@@ -20,16 +22,7 @@ import {
 } from "chart.js";
 import CloseIcon from "@mui/icons-material/Close";
 
-import {
-  Box,
-  Button,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  SelectChangeEvent,
-  Typography,
-} from "@mui/material";
+import { Box, Button, SelectChangeEvent, Typography } from "@mui/material";
 
 ChartJS.register(
   BarController,
@@ -72,14 +65,16 @@ const defaultBackgroundColors = [
 
 interface MissedsequencesProps {
   missedSequences?: { [x: string]: number };
-  responsiveChart?: boolean;
+  filters?: StatFilters;
   interactive?: boolean;
+  noBorder?: boolean;
 }
 
 export default function MissedSequences({
   missedSequences,
-  responsiveChart,
+  filters,
   interactive,
+  noBorder,
 }: MissedsequencesProps) {
   const [timeframe, setTimeframe] = React.useState<number>(Timeframes.LAST_100);
   const [missedSequenceData, setMissedSequenceData] =
@@ -121,7 +116,8 @@ export default function MissedSequences({
   React.useEffect(() => {
     // Missed sequences
     const missedSequencesEntries = Object.entries(
-      missedSequences || getMissedSequences(timeframe)
+      missedSequences ||
+        getMissedSequences(filters || { ...DefaultStatFilters, timeframe })
     )
       .sort((a, b) => b[1] - a[1])
       .slice(0, 20);
@@ -151,28 +147,11 @@ export default function MissedSequences({
         },
       ],
     });
-  }, [timeframe, getMissedSequences]);
+  }, [timeframe, filters, getMissedSequences]);
 
   return (
     <>
-      {!missedSequences ? (
-        <FormControl variant="standard" sx={{ minWidth: 200, mb: 3 }}>
-          <InputLabel id="missedsequence-timeframe-label">Timeframe</InputLabel>
-          <Select
-            label="Timeframe"
-            labelId="missedsequence-timeframe-label"
-            value={`${timeframe}`}
-            onChange={handleTimeframeChange}
-          >
-            <MenuItem value={Timeframes.ALL_TIME}>All Time</MenuItem>
-            <MenuItem value={Timeframes.LAST_100}>Last 100 Races</MenuItem>
-            <MenuItem value={Timeframes.LAST_50}>Last 50 Races</MenuItem>
-            <MenuItem value={Timeframes.LAST_25}>Last 25 Races</MenuItem>
-            <MenuItem value={Timeframes.LAST_10}>Last 10 Races</MenuItem>
-          </Select>
-        </FormControl>
-      ) : null}
-      <GridCard sx={{ textAlign: "center" }}>
+      <GridCard noBorder={noBorder} sx={{ textAlign: "center" }}>
         {interactive ? (
           <Box textAlign="left">
             {gameSettings.gameInfo.practice.practiceStrings
@@ -191,10 +170,21 @@ export default function MissedSequences({
               ))}
           </Box>
         ) : null}
-        <Typography variant="h5">Missed Sequences</Typography>
+        <Box display="flex" justifyContent="space-between" mb={2}>
+          <Box display="flex" gap={2}>
+            <SortByAlphaIcon color="secondary" />
+            <Typography variant="subtitle1">Missed Sequences</Typography>
+          </Box>
+
+          {/* {!filters ? (
+            <TimeframeSelect
+              timeframe={timeframe}
+              handleTimeframeChange={handleTimeframeChange}
+            />
+          ) : null} */}
+        </Box>
         {missedSequenceData && missedSequenceData.labels.length > 0 ? (
           <Bar
-            width={responsiveChart === false ? "600px" : "inherit"}
             data={missedSequenceData}
             options={{
               onClick: (event, element) => {
@@ -204,9 +194,6 @@ export default function MissedSequences({
 
                   togglePracticeStringsValue(elementIndex);
                 }
-              },
-              animation: {
-                duration: interactive ? 0 : 1200,
               },
               plugins: {
                 legend: {
@@ -221,6 +208,11 @@ export default function MissedSequences({
                         return value;
                       }
                     },
+                  },
+                },
+                xAxes: {
+                  ticks: {
+                    autoSkip: false,
                   },
                 },
               },
