@@ -43,14 +43,10 @@ export default function Stats() {
   }, []);
   return (
     <>
-      <Grid container spacing={3} marginTop={2}>
-        <Grid item xs={0.5}></Grid>
-        <Grid item xs={11}>
-          <Grid container spacing={3}>
-            <StatsComponent />
-          </Grid>
+      <Grid container spacing={0}>
+        <Grid item xs={12}>
+          <StatsComponent />
         </Grid>
-        <Grid item xs={0.5}></Grid>
       </Grid>
     </>
   );
@@ -126,13 +122,34 @@ function StatsComponent() {
     <>
       <Grid container spacing={3} alignItems="flex-start">
         <Grid item xs={12}>
+          <GridCard
+            sx={{
+              display: { xs: "block", lg: "none" },
+              width: "fit-content",
+              margin: "auto",
+            }}
+          >
+            <Filters
+              statFilters={statFilters}
+              handleTimeframeChange={handleTimeframeChange}
+              handleGameModeChange={handleGameModeChange}
+              handleTextTypeChange={handleTextTypeChange}
+            />
+          </GridCard>
+        </Grid>
+        <Grid item xs={12}>
           <Box
             display="flex"
-            justifyContent="space-between"
-            alignItems="center"
+            justifyContent={{ xs: "center", lg: "space-between" }}
+            alignItems="flex-end"
             gap={3}
           >
-            <Box display="flex" justifyContent="flex-start" gap={3}>
+            <Box
+              display="flex"
+              flexWrap="wrap"
+              justifyContent={{ xs: "center", sm: "flex-start" }}
+              gap={3}
+            >
               <StatCard
                 title={"Best WPM"}
                 stat={baseStats.best.wpm}
@@ -149,7 +166,7 @@ function StatsComponent() {
                 icon={<ModeStandbyIcon color="error" />}
               />
             </Box>
-            <GridCard>
+            <GridCard sx={{ display: { xs: "none", lg: "block" } }}>
               <Filters
                 statFilters={statFilters}
                 handleTimeframeChange={handleTimeframeChange}
@@ -186,10 +203,10 @@ function StatsComponent() {
             />
           </GridCard>
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={12} sm={6}>
           <MissedSequences filters={statFilters} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={12} sm={6}>
           <StatKeyboard title="Key Speed" filters={statFilters} />
         </Grid>
       </Grid>

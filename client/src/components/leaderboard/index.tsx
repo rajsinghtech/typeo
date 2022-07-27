@@ -58,22 +58,12 @@ export default function Leaderboard({ title, players }: LeaderboardProps) {
       ) : null}
       <Typography>Timed, 30 Seconds, Any Text Type</Typography>
       <Typography fontSize="small">(Must be Signed In)</Typography>
-      <GridCard sx={{ my: 2 }} color="background.default" noBorder>
-        <Grid container spacing={0}>
-          <Grid item xs={2}>
-            <Typography>{"Place"}</Typography>
-          </Grid>
-          <Grid item xs={6}>
-            <Typography>{"Name"}</Typography>
-          </Grid>
-          <Grid item xs={2} visibility={{ xs: "hidden", md: "visible" }}>
-            <Typography>{"Accuracy"}</Typography>
-          </Grid>
-          <Grid item xs={2} position="relative">
-            <Typography textAlign="right">{"WPM"}</Typography>
-          </Grid>
-        </Grid>
-      </GridCard>
+      <LeaderboardItem
+        place="Place"
+        name="Name"
+        accuracy="Accuracy"
+        wpm="WPM"
+      />
       {players.map(({ place, name, accuracy, wpm }) => (
         <LeaderboardItem
           key={`${place}_${name}`}

@@ -403,6 +403,7 @@ const OnChange = (
 ): RaceState => {
   const inputVal = event.target.value;
   const inputRef = event.target as HTMLInputElement;
+  console.log(inputVal);
 
   // Handle multi-character deletion
   // prettier-ignore
@@ -631,6 +632,7 @@ const OnKeyDown = (
 
   newRaceState.prevInput = inputVal;
   newRaceState.prevKey = key;
+
   return newRaceState;
 };
 

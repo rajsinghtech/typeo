@@ -47,10 +47,18 @@ function SignupComponent() {
     const password = target.password.value;
     const passwordConfirm = target.passwordConfirm.value;
 
-    const regex = /^[a-zA-Z0-9_.-]*$/;
-    if (!regex.test(username) || !username || username.length > 15) {
+    if (!username || username.length > 20) {
       setErrorOpen(true);
-      setError("Invalid Username");
+      setError("Username must be less than 20 characters");
+      return;
+    }
+
+    const regex = /^[a-zA-Z0-9_.-]*$/;
+    if (!regex.test(username)) {
+      setErrorOpen(true);
+      setError(
+        "Username can only contain letters, numbers, underscore, period, and dash"
+      );
       return;
     }
 

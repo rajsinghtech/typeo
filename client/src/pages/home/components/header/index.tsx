@@ -2,13 +2,19 @@ import React from "react";
 import { useHistory } from "react-router-dom";
 import { HomeProfile } from "pages/home/components/profile-display";
 import { SettingsDialog } from "components/standard-game/settings";
+import { useAuth } from "contexts/AuthContext";
 import SettingsIcon from "@mui/icons-material/Settings";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import PersonIcon from "@mui/icons-material/Person";
 import { Box, IconButton, Tooltip } from "@mui/material";
+import LogoutIcon from "@mui/icons-material/Logout";
+import LoginIcon from "@mui/icons-material/Login";
 
 export default function Header() {
   const [settingsOpen, setSettingsOpen] = React.useState(false);
+
+  const { isLoggedIn, logout } = useAuth();
+
   const history = useHistory();
 
   const OpenStats = () => {
@@ -21,6 +27,16 @@ export default function Header() {
 
   const OpenSettings = () => {
     setSettingsOpen(true);
+  };
+
+  const Login = () => {
+    history.push("/login");
+  };
+
+  const Logout = async () => {
+    await logout();
+    history.push("/");
+    history.go(0);
   };
 
   return (
@@ -48,6 +64,17 @@ export default function Header() {
           <IconButton onClick={OpenSettings}>
             <SettingsIcon />
           </IconButton>
+        </Tooltip>
+        <Tooltip title={isLoggedIn ? "Logout" : "Login"} placement="top">
+          {isLoggedIn ? (
+            <IconButton onClick={Logout}>
+              <LogoutIcon />
+            </IconButton>
+          ) : (
+            <IconButton onClick={Login}>
+              <LoginIcon />
+            </IconButton>
+          )}
         </Tooltip>
       </Box>
     </Box>

@@ -16,7 +16,14 @@ export default function StatCard({ title, stat, icon }: StatCardProps) {
     <>
       <GridCard
         padding="12px"
-        sx={{ display: "flex", gap: "15px", paddingRight: "25px" }}
+        sx={{
+          display: "flex",
+          gap: "15px",
+          paddingRight: "25px",
+          justifyContent: "center",
+          alignItems: "center",
+          width: { xs: "100%", vs: "fit-content" },
+        }}
       >
         <Box sx={{ alignSelf: "center" }}>{icon}</Box>
         <Box>

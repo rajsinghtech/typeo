@@ -225,7 +225,7 @@ export const MultipleSelectMenu = ({
   label,
 }: MultipleSelectMenuProps) => {
   return (
-    <FormControl sx={{ width: "150px" }}>
+    <FormControl sx={{ width: { xs: "100%", sm: "150px" } }}>
       {label ? <InputLabel>{label}</InputLabel> : null}
       <Select
         multiple

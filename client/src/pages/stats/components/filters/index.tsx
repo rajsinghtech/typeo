@@ -20,7 +20,14 @@ export default function Filters({
   handleTextTypeChange,
 }: FiltersProps) {
   return (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: { xs: "column", sm: "row" },
+        alignItems: "center",
+        gap: 2,
+      }}
+    >
       <FilterAltIcon />
       <TimeframeSelect
         timeframe={statFilters.timeframe}

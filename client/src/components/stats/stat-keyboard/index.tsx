@@ -104,7 +104,7 @@ export default function StatKeyboard({
             padding: 0,
             paddingTop: "6%",
             height: 0,
-            m: 1,
+            m: { xs: 0.5, vs: 0.9 },
             textTransform: "none",
             borderColor: keySpeed
               ? calculateKeySpeedColor(keySpeed, min, max, 1)
