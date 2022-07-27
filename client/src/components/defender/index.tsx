@@ -10,7 +10,7 @@ import Explosion from "components/defender/explosion";
 import { useDefenderLogic } from "./hooks/DefenderLogic";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import { Box, Grid, keyframes, Typography, useTheme, useMediaQuery } from "@mui/material";
+import { Box, Grid, keyframes, Typography, useTheme } from "@mui/material";
 
 export const PATH_WIDTH = "36px";
 export const BORDER_WIDTH = "2px";

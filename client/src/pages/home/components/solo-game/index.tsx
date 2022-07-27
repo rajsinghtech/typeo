@@ -2,7 +2,7 @@ import React from "react";
 import StandardGame from "components/standard-game";
 import { useGameSettings } from "contexts/GameSettings";
 import PracticeBox from "components/standard-game/practice-box";
-import Header from "pages/home/components/header";
+import Header, { HeaderMobile } from "pages/home/components/header";
 import Settings from "components/standard-game/settings";
 import Defender from "components/defender";
 import { GameTypes } from "constants/settings";
@@ -15,6 +15,7 @@ export default function SoloGame() {
   const isDefenderMode = gameSettings.gameInfo.type === GameTypes.DEFENDER;
 
   const theme = useTheme();
+  const vsScreenSize = useMediaQuery(theme.breakpoints.up("vs"));
   const mdScreenSize = useMediaQuery(theme.breakpoints.up("md"));
 
   const DefenderMode = gameSettings.gameInfo.type === GameTypes.DEFENDER;
@@ -32,7 +33,7 @@ export default function SoloGame() {
               xl={DefenderMode ? 12 : 11}
               alignSelf="flex-start"
             >
-              <Header />
+              {vsScreenSize ? <Header /> : <HeaderMobile />}
             </Grid>
           ) : null}
           {DefenderMode ? (

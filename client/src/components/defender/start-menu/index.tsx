@@ -8,6 +8,8 @@ import {
   ToggleButtonGroup,
   ToggleButton,
   Button,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 
 export default function StartMenu({
@@ -17,6 +19,8 @@ export default function StartMenu({
 }) {
   const { gameSettings, setGameSettings } = useGameSettings();
 
+  const theme = useTheme();
+  const vsScreenSize = useMediaQuery(theme.breakpoints.up("vs"));
   const SetDifficulty = (_: unknown, newDifficulty: Difficulty) => {
     setGameSettings({
       ...gameSettings,
@@ -32,16 +36,19 @@ export default function StartMenu({
       width="100%"
       height="100%"
       alignItems="center"
+      textAlign="center"
       gap={5}
+      px={1}
     >
       <Typography variant="h1" color="text.primary">
         Defender
       </Typography>
       <Typography variant="subtitle1">
-        Tip: Press CTRL to go to next enemy
+        Tip: There is a bonus round every 7th round
       </Typography>
       <ToggleButtonGroup
         value={gameSettings.defender.difficulty}
+        orientation={vsScreenSize ? "horizontal" : "vertical"}
         exclusive
         onChange={SetDifficulty}
       >

@@ -55,7 +55,6 @@ export function HomeProfile() {
 export const HomeProfileMobile = React.memo(
   function HomeProfileMobileComponent() {
     const { currentUser, isLoggedIn } = useAuth();
-    console.log("PROFILE UPDATING");
 
     return (
       <GridCard padding="10px">
@@ -64,7 +63,7 @@ export const HomeProfileMobile = React.memo(
             {currentUser.displayName?.toUpperCase() || ""}
           </Typography>
         ) : (
-          <Typography>Login</Typography>
+          <Typography>Login for stats</Typography>
         )}
       </GridCard>
     );
