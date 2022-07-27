@@ -12,6 +12,7 @@ export default function SoloGame() {
   const { gameSettings } = useGameSettings();
 
   const { isPractice, practiceStrings } = gameSettings.gameInfo.practice;
+  const isDefenderMode = gameSettings.gameInfo.type === GameTypes.DEFENDER;
 
   return (
     <>
@@ -20,9 +21,9 @@ export default function SoloGame() {
           {gameSettings.display.showProfile ? <HomeProfile /> : null}
         </Box>
       </Grid>
-      <Grid item xs={7.5}>
+      <Grid item xs={isDefenderMode ? 9 : 7.5}>
         <Grid container spacing={3}>
-          {gameSettings.gameInfo.type === GameTypes.DEFENDER ? (
+          {isDefenderMode ? (
             <Defender />
           ) : (
             <StandardGame
@@ -32,7 +33,7 @@ export default function SoloGame() {
           )}
         </Grid>
       </Grid>
-      <Grid item xs={3}>
+      <Grid item xs={isDefenderMode ? 1.5 : 3}>
         <Box mt={0}>
           <Settings />
         </Box>
