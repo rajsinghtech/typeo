@@ -298,14 +298,19 @@ const DefenderComponent = ({
           <Box ref={enemyBoxRef} width="100%">
             {defenderState.enemies.map(
               ({ type, charactersTyped, text, uid, delay }) => {
+                const targeted = defenderState.currentEnemyUID === uid;
                 return (
                   <Enemy
                     key={`enemy_${uid}`}
                     uid={uid}
                     type={type}
                     text={text}
-                    charactersTyped={charactersTyped}
-                    targeted={defenderState.currentEnemyUID === uid}
+                    charactersTyped={
+                      targeted
+                        ? defenderState.raceState.currentCharIndex
+                        : charactersTyped
+                    }
+                    targeted={targeted}
                     delay={delay}
                     dispatch={defenderStateDispatch}
                   />
@@ -314,7 +319,11 @@ const DefenderComponent = ({
             )}
           </Box>
         );
-      }, [defenderState.enemies, defenderState.currentEnemyUID])}
+      }, [
+        defenderState.enemies,
+        defenderState.currentEnemyUID,
+        defenderState.raceState.currentCharIndex,
+      ])}
       {React.useMemo(() => {
         return (
           <>
@@ -377,11 +386,14 @@ const DefenderComponent = ({
       {React.useMemo(() => {
         return (
           <>
-            <Typography
+            <Box
               key={defenderState.level}
-              variant="h6"
               sx={{
                 position: "absolute",
+                width: "100%",
+                justifyContent: "center",
+                display: "flex",
+                gap: 1,
                 top: "4%",
                 left: "50%",
                 transform: "translateX(-50%)",
@@ -398,7 +410,22 @@ const DefenderComponent = ({
                   }
                   `} 5s ease-out`,
               }}
-            >{`Level ${defenderState.level}`}</Typography>
+            >
+              <Typography variant="h6">
+                {`Level ${defenderState.level}`}
+              </Typography>
+              {defenderState.level % 7 === 0 ? (
+                <>
+                  <Typography variant="h6">| Bonus Level</Typography>
+                  <Typography variant="h6" color="warning.main">
+                    | 2x Points | 2x Multiplie |
+                  </Typography>
+                  <Typography variant="h6" color="success.main">
+                    No Penalties
+                  </Typography>
+                </>
+              ) : null}
+            </Box>
             <Box sx={{ position: "absolute", right: 40, bottom: 25 }}>
               <FavoriteIcon
                 color="error"

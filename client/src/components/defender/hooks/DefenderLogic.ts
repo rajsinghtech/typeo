@@ -15,6 +15,8 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { useGameSettings } from "contexts/GameSettings";
 
+const BONUS_ROUND = 7;
+
 interface DefenderState {
   level: number;
   score: number;
@@ -79,11 +81,20 @@ const StartNewRound = (
   let currentEnemyUID = "";
 
   const difficulties = ["easy", "medium", "hard", "impossible"];
+  const bonusRounds = Math.floor(defenderState.level / BONUS_ROUND);
   const difficultyLevel =
-    defenderState.level + difficulties.indexOf(difficulty);
+    defenderState.level + difficulties.indexOf(difficulty) - bonusRounds;
   if (difficultyLevel === 1) {
     for (let i = 0; i < 6; i++) {
       const enemyData = createEnemyData(ENEMY_VARIANTS[0], i * 1.5);
+      if (!currentEnemyUID) {
+        currentEnemyUID = enemyData.uid;
+      }
+      newEnemies.push(enemyData);
+    }
+  } else if (defenderState.level % BONUS_ROUND === 0) {
+    for (let i = 0; i < 15; i++) {
+      const enemyData = createEnemyData(ENEMY_VARIANTS[i % 3], i * 1.5);
       if (!currentEnemyUID) {
         currentEnemyUID = enemyData.uid;
       }
@@ -266,6 +277,7 @@ const OnBulletHit = (
         getEnemyOffsetLeft(enemyIndex, enemyBoxRef),
         true
       );
+      newDefenderState.health += 1;
       newEnemies.splice(enemyIndex, 1);
     }
     newDefenderState.enemies = newEnemies;
@@ -282,7 +294,10 @@ const TakeDamage = (
   enemyUID: string,
   damage: number
 ): DefenderState => {
-  const newHealth = Math.max(defenderState.health - damage, 0);
+  const newHealth =
+    defenderState.level % BONUS_ROUND === 0
+      ? defenderState.health
+      : Math.max(defenderState.health - damage, 0);
   if (newHealth === 0) {
     return { ...defenderState, health: 0, isFinished: true };
   } else {
@@ -343,8 +358,11 @@ const KeyDown = (
 
       newDefenderState.raceState = newRaceState;
       newDefenderState.enemies[currentEnemyIndex].raceState = newRaceState;
-      newDefenderState.score += 5 * defenderState.multiplier;
-      newDefenderState.multiplier += 0.05;
+
+      const bonusRound = defenderState.level % BONUS_ROUND === 0;
+      newDefenderState.score +=
+        5 * defenderState.multiplier * (bonusRound ? 2 : 1);
+      newDefenderState.multiplier += bonusRound ? 0.1 : 0.05;
 
       const currentEnemyOffsetLeft = getEnemyOffsetLeft(
         currentEnemyIndex,
@@ -357,7 +375,8 @@ const KeyDown = (
         enemyBoxRef.current?.offsetWidth || 0
       );
     } else if (key.length === 1) {
-      newDefenderState.multiplier = 1;
+      if (defenderState.level % BONUS_ROUND !== 0)
+        newDefenderState.multiplier = 1;
       newDefenderState.errors += 1;
     }
   }
