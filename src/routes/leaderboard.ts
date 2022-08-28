@@ -36,6 +36,7 @@ console.log(timeTolocalMidnight() / 1000 / 60 / 60);
 
 setInterval(
   () => {
+    console.log("REFRESHING FROM INTERVAL")
     daily_leaderboard = [];
     refreshLeaderboard("daily_leaderboard");
     initialCountdown = false;
