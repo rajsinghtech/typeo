@@ -41,10 +41,12 @@ export const addToLeaderboard = (
 };
 
 export const removeFromLeaderboard = (leaderboard: string, id: string) => {
+  console.log("REMOVE");
   db.collection(leaderboard).doc(id).delete();
 };
 
 export const refreshLeaderboard = (leaderboard: string) => {
+  console.log("REFRESH");
   db.collection(leaderboard)
     .listDocuments()
     .then((val) => {
