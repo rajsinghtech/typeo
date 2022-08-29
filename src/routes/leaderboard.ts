@@ -17,8 +17,6 @@ getLeaderboards().then(({ daily, allTime }) => {
   all_time_leaderboard = allTime.sort((a, b) => b.wpm - a.wpm);
 });
 
-let initialCountdown = true;
-
 function timeTolocalMidnight() {
   const date = new Date();
   const easternDate = new Date(
@@ -34,14 +32,19 @@ function timeTolocalMidnight() {
 
 console.log(timeTolocalMidnight() / 1000 / 60 / 60);
 
-setInterval(
+setTimeout(
   () => {
-    console.log("REFRESH FROM INTERVAL")
+    console.log("First Daily Refresh")
     daily_leaderboard = [];
     refreshLeaderboard("daily_leaderboard");
-    initialCountdown = false;
+
+    setInterval(() => {
+      console.log("Daily Refresh");
+      daily_leaderboard = [];
+      refreshLeaderboard("daily_leaderboard");
+    }, 86400000)
   },
-  initialCountdown ? timeTolocalMidnight() : 86400000
+   timeTolocalMidnight()
 );
 
 export const checkLeaderboard = (
