@@ -3,10 +3,15 @@ import {
   User,
   UserCredential,
   createUserWithEmailAndPassword,
+  getRedirectResult,
+  GoogleAuthProvider,
+  GithubAuthProvider,
   updateProfile as updateProfileFirebase,
   updateEmail,
   signInWithEmailAndPassword,
+  signInWithRedirect,
   sendPasswordResetEmail,
+  FacebookAuthProvider,
 } from "firebase/auth";
 import { auth } from "config/firebase";
 import { v4 as uuidv4 } from "uuid";
@@ -20,6 +25,9 @@ export interface GuestUser {
 interface Auth {
   currentUser: User | GuestUser;
   login: (email: string, password: string) => Promise<UserCredential | null>;
+  googleLogin: () => Promise<void>;
+  facebookLogin: () => Promise<void>;
+  githubLogin: () => Promise<void>;
   signup: (
     email: string,
     username: string,
@@ -39,6 +47,9 @@ const instanceOfFireBaseUser = (object: any): object is User => {
 const AuthContext = React.createContext<Auth>({
   currentUser: { displayName: "null", email: "null", uid: "null" },
   login: () => Promise.reject(null),
+  googleLogin: () => Promise.reject(null),
+  facebookLogin: () => Promise.reject(null),
+  githubLogin: () => Promise.reject(null),
   signup: () => Promise.reject(null),
   updateProfile: () => null,
   logout: () => Promise.reject(),
@@ -80,6 +91,34 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return signInWithEmailAndPassword(auth, email, password);
   };
 
+  const googleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+
+    await signInWithRedirect(auth, provider);
+
+    const result = await getRedirectResult(auth);
+    if (result) {
+      // This is the signed-in user
+      const user = result.user;
+      // This gives you a Facebook Access Token.
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      //const token = credential.accessToken;
+    }
+  };
+
+  const facebookLogin = async () => {
+    const provider = new FacebookAuthProvider();
+
+    await signInWithRedirect(auth, provider);
+  };
+
+  const githubLogin = async () => {
+    const provider = new GithubAuthProvider();
+    provider.addScope("read:user");
+
+    await signInWithRedirect(auth, provider);
+  };
+
   const updateProfile = async (email: string, username: string) => {
     if (isLoggedIn) {
       if (email !== currentUser.email) {
@@ -105,6 +144,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
+        getRedirectResult(auth).then((result) => {
+          if (result) {
+            // This is the signed-in user
+            const user = result.user;
+
+            if (!user.displayName) {
+              // @ts-expect-error asdklf;asdfkj
+              const screenName = result._tokenResponse?.screenName;
+              if (screenName) {
+                updateProfileFirebase(user, { displayName: screenName });
+              }
+            }
+          }
+        });
+        // This gives you a Facebook Access Token.
+        //const credential = GoogleAuthProvider.credentialFromResult(result);
+
+        //const token = credential.accessToken;
         setCurrentUser(user);
       }
       setLoading(false);
@@ -127,6 +184,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     currentUser,
     isLoggedIn,
     login,
+    googleLogin,
+    facebookLogin,
+    githubLogin,
     signup,
     updateProfile,
     logout,

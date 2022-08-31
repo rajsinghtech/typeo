@@ -1,5 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "contexts/AuthContext";
+import { getRedirectResult } from "firebase/auth";
+import { auth } from "config/firebase";
 import {
   StyledTextField,
   SuccessAlert,
@@ -8,6 +11,9 @@ import {
 } from "components/common";
 import { styled } from "@mui/system";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import GoogleIcon from "@mui/icons-material/Google";
+import FacebookIcon from "@mui/icons-material/Facebook";
+import GitHubIcon from "@mui/icons-material/GitHub";
 import {
   Avatar,
   Button,
@@ -16,6 +22,9 @@ import {
   Typography,
   Collapse,
   Container,
+  Stack,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 
 const StyledDiv = styled("div")(() => ({
@@ -54,6 +63,7 @@ interface ProfileComponentProps {
   signupLink?: boolean;
   loginLink?: boolean;
   forgotPasswordLink?: boolean;
+  alternateLogins?: boolean;
   fillDefaults?: {
     [x: string]: string | null;
   };
@@ -72,9 +82,15 @@ export default function ProfileComponent({
   signupLink,
   loginLink,
   forgotPasswordLink,
+  alternateLogins,
   fillDefaults,
   children,
 }: ProfileComponentProps) {
+  const theme = useTheme();
+  const xsScreenSize = useMediaQuery(theme.breakpoints.down("vs"));
+
+  const { googleLogin, facebookLogin, githubLogin } = useAuth();
+
   return (
     <Container component="main" maxWidth="sm">
       <GridCard sx={{ marginTop: 10 }}>
@@ -91,6 +107,53 @@ export default function ProfileComponent({
           <Collapse in={messageOpen}>
             <SuccessAlert severity="success">{message}</SuccessAlert>
           </Collapse>
+          {alternateLogins ? (
+            <Stack
+              spacing={2}
+              direction={xsScreenSize ? "column" : "row"}
+              width="100%"
+              mt={4}
+            >
+              {[
+                {
+                  name: "GOOGLE",
+                  icon: <GoogleIcon />,
+                  colors: ["white", "red", "#ffebeb"],
+                  click: googleLogin,
+                },
+                {
+                  name: "FACEBOOK",
+                  icon: <FacebookIcon />,
+                  colors: ["#4267B2", "white", "#5473b0"],
+                  click: facebookLogin,
+                },
+                {
+                  name: "GITHUB",
+                  icon: <GitHubIcon />,
+                  colors: ["#2e2e2e", "white", "#595959"],
+                  click: githubLogin,
+                },
+              ].map(({ name, icon, colors, click }) => {
+                return (
+                  <Button
+                    key={`alternate_${name}`}
+                    variant="contained"
+                    size="large"
+                    startIcon={xsScreenSize ? null : icon}
+                    sx={{
+                      flexGrow: 1,
+                      background: colors[0],
+                      color: colors[1],
+                      "&:hover": { background: colors[2] },
+                    }}
+                    onClick={click}
+                  >
+                    {xsScreenSize ? icon : name}
+                  </Button>
+                );
+              })}
+            </Stack>
+          ) : null}
           <StyledForm onSubmit={handleSubmit} noValidate>
             {fields.map((val, i) => {
               return (
