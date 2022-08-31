@@ -2,6 +2,8 @@ import React from "react";
 import { useHistory } from "react-router-dom";
 import ReactGA from "react-ga";
 import { useAuth } from "contexts/AuthContext";
+import { auth } from "config/firebase";
+import { getRedirectResult } from "firebase/auth";
 import ProfileComponent from "components/profile/profile-component";
 import Grid from "@mui/material/Grid";
 
@@ -87,6 +89,13 @@ function SignupComponent() {
     }
   };
 
+  React.useEffect(() => {
+    getRedirectResult(auth).catch((err) => {
+      setError("Could not login");
+      setErrorOpen(true);
+    });
+  }, []);
+
   return (
     <ProfileComponent
       name="Signup"
@@ -115,6 +124,7 @@ function SignupComponent() {
           autoComplete: "new-password",
         },
       ]}
+      alternateLogins
       loginLink
     ></ProfileComponent>
   );
