@@ -235,7 +235,6 @@ export const MultipleSelectMenu = ({
         value={value.map((val) => `${val}`)}
         renderValue={(selected) => {
           if (selected.length === options.length) return "All";
-          console.log(selected);
           //@ts-expect-error should be array here
           const selectedNames: string[] = selected.map(
             (val: string) =>

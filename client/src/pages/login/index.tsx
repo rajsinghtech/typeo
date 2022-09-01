@@ -93,9 +93,6 @@ function LoginComponent() {
       handleSubmit={handleSubmit}
       signupLink
       forgotPasswordLink
-    >
-      {" "}
-      <Button onClick={googleLogin}>Google Login</Button>
-    </ProfileComponent>
+    ></ProfileComponent>
   );
 }
