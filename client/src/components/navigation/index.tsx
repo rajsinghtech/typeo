@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import logo from "./typeologo.png";
 import { useAuth } from "contexts/AuthContext";
 import { useHistory } from "react-router-dom";
@@ -29,58 +29,41 @@ interface NavigationProps {
 }
 
 export default function Navigation({ children }: NavigationProps) {
-  const FullDisplay = React.useMemo(() => {
-    return (
-      <Box display={{ xs: "none", md: "inherit" }}>
-        <MiniDrawer close={() => null}>{children}</MiniDrawer>
-      </Box>
-    );
-  }, []);
-
-  return (
-    <>
-      {FullDisplay}
-      <DrawerToggle>{children}</DrawerToggle>
-    </>
-  );
-}
-
-const DrawerToggle = ({ children }: { children: React.ReactNode }) => {
-  const [open, setOpen] = React.useState<boolean>(false);
   const history = useHistory();
+
+  const [open, setOpen] = React.useState<boolean>(false);
 
   const OpenHome = () => {
     history.push("/");
   };
 
-  return (
-    <>
-      <DrawerDisplay open={open} setOpen={setOpen} />
-      <Box display={{ xs: "block", md: "none" }}>
-        <Box
-          m={2}
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-        >
-          <Box sx={{ cursor: "pointer" }} onClick={OpenHome}>
-            <img width="135px" height="36px" src={logo} />
-          </Box>
-          <Button onClick={() => setOpen((prevOpen) => !prevOpen)}>
-            <MenuIcon fontSize="large" />
-          </Button>
-        </Box>
-        {React.useMemo(() => {
-          return (
-            <Box p={5} pt={0}>
-              {children}
+  const FullDisplay = React.useMemo(() => {
+    return (
+      <Box>
+        <DrawerDisplay open={open} setOpen={setOpen} />
+        <Box display={{ xs: "block", md: "none" }}>
+          <Box
+            m={2}
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Box sx={{ cursor: "pointer" }} onClick={OpenHome}>
+              <img width="135px" height="36px" src={logo} />
             </Box>
-          );
-        }, [])}
+            <Button onClick={() => setOpen((prevOpen) => !prevOpen)}>
+              <MenuIcon fontSize="large" />
+            </Button>
+          </Box>
+        </Box>
+
+        <MiniDrawerMemo close={() => null}>{children}</MiniDrawerMemo>
       </Box>
-    </>
-  );
-};
+    );
+  }, [open]);
+
+  return <>{FullDisplay}</>;
+}
 
 const DrawerDisplay = ({
   open,
@@ -102,7 +85,7 @@ const DrawerDisplay = ({
         },
       }}
     >
-      <MiniDrawer close={() => setOpen(false)} />
+      <MiniDrawerMemo close={() => setOpen(false)} show />
     </Drawer>
   );
 };
@@ -111,10 +94,15 @@ const drawerWidth = 260;
 
 interface MiniDrawerProps {
   close: () => void;
+  show?: boolean;
   children?: React.ReactNode;
 }
 
-function MiniDrawer({ close, children }: MiniDrawerProps) {
+const MiniDrawerMemo = React.memo(function MiniDrawer({
+  close,
+  show,
+  children,
+}: MiniDrawerProps) {
   const theme = useTheme();
   const { isLoggedIn, logout } = useAuth();
   const history = useHistory();
@@ -165,6 +153,7 @@ function MiniDrawer({ close, children }: MiniDrawerProps) {
   return (
     <>
       <Box
+        display={show ? "inherit" : { xs: "none", md: "inherit" }}
         sx={{
           position: "fixed",
           height: "100%",
@@ -289,9 +278,9 @@ function MiniDrawer({ close, children }: MiniDrawerProps) {
           </List>
         </Box>
       </Box>
-      <Box p={5} marginLeft={`${drawerWidth}px`}>
+      <Box p={5} marginLeft={{ xs: 0, md: `${drawerWidth}px` }}>
         {children}
       </Box>
     </>
   );
-}
+});
