@@ -5,6 +5,7 @@ import Login from "pages/login";
 import ForgotPassword from "pages/forgot-password";
 import UpdateProfile from "pages/update-profile";
 import Stats from "pages/stats";
+import Improve from "pages/improve";
 
 export default {
   Home,
@@ -14,4 +15,5 @@ export default {
   ForgotPassword,
   UpdateProfile,
   Stats,
+  Improve,
 };

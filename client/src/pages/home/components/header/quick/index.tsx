@@ -48,19 +48,9 @@ export default function Header() {
             <BarChartIcon />
           </IconButton>
         </Tooltip>
-        <Tooltip title="Profile" placement="top">
-          <IconButton onClick={OpenUpdateProfile}>
-            <PersonIcon />
-          </IconButton>
-        </Tooltip>
       </Box>
       <HomeProfile />
       <Box width="10%" display="flex">
-        <Tooltip title="Test Settings" placement="top">
-          <IconButton onClick={OpenSettings}>
-            <SettingsIcon />
-          </IconButton>
-        </Tooltip>
         <Tooltip title={isLoggedIn ? "Logout" : "Login"} placement="top">
           {isLoggedIn ? (
             <IconButton onClick={Logout}>
@@ -126,17 +116,21 @@ export function HeaderMobile() {
           </IconButton>
         </Tooltip>
         <Tooltip
+          title="Settings"
+          placement="top"
+          sx={{ display: { xs: "none", vs: "inline-flex" } }}
+        >
+          <IconButton onClick={OpenSettings}>
+            <SettingsIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip
           title="Profile"
           placement="top"
           sx={{ display: { xs: "none", vs: "inline-flex" } }}
         >
           <IconButton onClick={OpenUpdateProfile}>
             <PersonIcon />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Test Settings" placement="top">
-          <IconButton onClick={OpenSettings}>
-            <SettingsIcon />
           </IconButton>
         </Tooltip>
         <Tooltip

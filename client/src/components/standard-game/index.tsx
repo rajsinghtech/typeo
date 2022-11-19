@@ -2,12 +2,12 @@ import React from "react";
 import { GridCard } from "components/common";
 import Follower from "components/standard-game/feedback/follower";
 import WordBox from "components/standard-game/word-box";
-import { GameSettings } from "constants/settings";
+import { GameSettings, RaceTypes } from "constants/settings";
 import { useAuth } from "contexts/AuthContext";
 import Results from "components/standard-game/results/standard-results";
 import { MAX_INPUT_LENGTH, ResultsData } from "constants/race";
 import { OnlineRaceData } from "pages/online/components/ffa-game";
-import { HeaderMobile } from "pages/home/components/header";
+import { HeaderMobile } from "pages/home/components/header/quick";
 import useRaceLogic, {
   RaceState,
 } from "components/standard-game/hooks/RaceLogic";
@@ -105,7 +105,7 @@ export default function StandardGame({
   React.useEffect(() => {
     if (raceState.isRaceFinished) {
       StyleReset();
-      if (settings.online) {
+      if (settings.raceType === RaceTypes.ONLINE) {
         setInputDisabled(true);
       }
     }
@@ -336,7 +336,7 @@ export default function StandardGame({
                 );
               })
             : null} */}
-          {!settings.online ? (
+          {settings.raceType !== RaceTypes.ONLINE ? (
             <IconButton
               color="secondary"
               onClick={() => Reset(false)}

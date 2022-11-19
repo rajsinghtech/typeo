@@ -1,7 +1,6 @@
 import React from "react";
 import { Placement, TextVariant } from "constants/common";
 import { v4 as uuidv4 } from "uuid";
-import { useTheme } from "@mui/system";
 import { styled } from "@mui/material/styles";
 import Alert from "@mui/material/Alert";
 import {
@@ -18,6 +17,8 @@ import {
   Box,
   Chip,
   InputLabel,
+  Switch,
+  useTheme,
 } from "@mui/material";
 
 type DefaultProps = {
@@ -176,6 +177,18 @@ export const HoverableText = ({
   );
 };
 
+interface StyledHeaderProps {
+  children: React.ReactNode;
+}
+
+export const StyledHeader = ({ children }: StyledHeaderProps) => {
+  return (
+    <Box padding={3} borderRadius={2} bgcolor="#212121">
+      {children}
+    </Box>
+  );
+};
+
 interface SelectMenuProps {
   value: number;
   handleValueChange: (event: SelectChangeEvent) => void;
@@ -292,6 +305,46 @@ export const getMultiSelectUpdate = (
   }
 
   return newValues;
+};
+
+export const StyledSwitch = (props: any) => {
+  const theme = useTheme();
+  return (
+    <Switch
+      {...props}
+      disableRipple
+      disableFocusRipple
+      sx={{
+        width: 80,
+        height: 50,
+        "& .MuiSwitch-switchBase": {
+          transitionDuration: "400ms",
+          "&.Mui-checked": {
+            transform: "translateX(27px)",
+            "& + .MuiSwitch-track": {
+              opacity: 1,
+            },
+            "&.Mui-disabled + .MuiSwitch-track": {
+              opacity: 0.5,
+            },
+          },
+        },
+        "& .MuiSwitch-switchBase:hover": {
+          backgroundColor: "transparent",
+        },
+        "& .MuiSwitch-track": {
+          borderRadius: 20,
+          transition: "background-color 500ms",
+        },
+        "& .MuiSwitch-thumb": {
+          color: "#fff",
+          width: 20,
+          height: 20,
+          transform: "translate(7px, 6px)",
+        },
+      }}
+    />
+  );
 };
 
 // interface DSnackbarProps {

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import ReactGA from "react-ga";
 import SoloGame from "pages/home/components/solo-game";
-import Header from "pages/home/components/header";
+import Header from "pages/home/components/header/quick";
 import LeaderboardComponent from "components/leaderboard";
 import { getLeaderboards } from "api/rest/leaderboard";
 import Grid from "@mui/material/Grid";

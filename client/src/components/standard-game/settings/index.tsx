@@ -75,18 +75,6 @@ export default function Settings() {
     setGameSettings({ ...gameSettings, textType: inTextType });
   };
 
-  const TogglePracticeMode = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const isPractice = event.target.checked;
-    const { practice, ...gameInfo } = gameSettings.gameInfo;
-    setGameSettings({
-      ...gameSettings,
-      gameInfo: {
-        ...gameInfo,
-        practice: { ...practice, isPractice },
-      },
-    });
-  };
-
   return (
     <Box
       display="flex"

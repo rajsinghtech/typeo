@@ -26,6 +26,7 @@ const Router = () => {
             path="/forgot-password"
             component={Pages.ForgotPassword}
           />
+          <Route exact path="/improvement" component={Pages.Improve} />
         </Switch>
       </Nav>
     </BrowserRouter>

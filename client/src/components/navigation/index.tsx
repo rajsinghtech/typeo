@@ -7,6 +7,7 @@ import { useTheme } from "@mui/material/styles";
 import GroupsIcon from "@mui/icons-material/Groups";
 import HomeIcon from "@mui/icons-material/Home";
 import BarChartIcon from "@mui/icons-material/BarChart";
+import InsightsIcon from "@mui/icons-material/Insights";
 import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -135,6 +136,11 @@ function MiniDrawer({ close, children }: MiniDrawerProps) {
     history.push("/");
   };
 
+  const Improve = () => {
+    close();
+    history.push("/improvement");
+  };
+
   const FindMatch = () => {
     close();
     if (location.pathname === "/online") history.go(0);
@@ -201,6 +207,7 @@ function MiniDrawer({ close, children }: MiniDrawerProps) {
           <List>
             {[
               { name: "Home", icon: <HomeIcon />, click: Home },
+              { name: "Improve", icon: <InsightsIcon />, click: Improve },
               {
                 name: "Muliplayer (Disabled)",
                 icon: <GroupsIcon />,

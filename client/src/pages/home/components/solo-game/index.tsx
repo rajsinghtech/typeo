@@ -2,7 +2,8 @@ import React from "react";
 import StandardGame from "components/standard-game";
 import { useGameSettings } from "contexts/GameSettings";
 import PracticeBox from "components/standard-game/practice-box";
-import Header, { HeaderMobile } from "pages/home/components/header";
+import Header, { HeaderMobile } from "pages/home/components/header/quick";
+import MainHeader from "pages/home/components/header/main";
 import Settings from "components/standard-game/settings";
 import Defender from "components/defender";
 import { GameTypes } from "constants/settings";
@@ -22,20 +23,11 @@ export default function SoloGame() {
 
   return (
     <Grid container spacing={3}>
-      <Grid item xs={12} lg={DefenderMode ? 12 : 10} alignSelf="flex-end">
-        <Grid container spacing={3}>
-          <Grid item display={{ xs: "none", md: "block" }} md={1.25} xl={1} />
-          {mdScreenSize || DefenderMode ? (
-            <Grid
-              item
-              xs={12}
-              md={DefenderMode ? 12 : 10.75}
-              xl={DefenderMode ? 12 : 11}
-              alignSelf="flex-start"
-            >
-              {vsScreenSize ? <Header /> : <HeaderMobile />}
-            </Grid>
-          ) : null}
+      <Grid item xs={12}>
+        <MainHeader />
+      </Grid>
+      <Grid item xs={12} lg={DefenderMode ? 12 : 10}>
+        <Grid container spacing={3} height="100%">
           {DefenderMode ? (
             <Defender />
           ) : (
@@ -46,7 +38,7 @@ export default function SoloGame() {
           )}
         </Grid>
       </Grid>
-      <Grid item xs={12} lg={DefenderMode ? 12 : 2} alignSelf="flex-end">
+      <Grid item xs={12} lg={DefenderMode ? 12 : 2}>
         <Settings />
       </Grid>
       {isPractice ? <PracticeBox /> : null}

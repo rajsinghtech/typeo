@@ -7,6 +7,7 @@ import {
   GameSettings,
   GameTypeNames,
   GameTypes,
+  RaceTypes,
   TextTypeNames,
 } from "constants/settings";
 import { GuestUser, useAuth } from "contexts/AuthContext";
@@ -471,7 +472,8 @@ const OnKeyDown = (
   let newRaceState = { ...raceState };
 
   if (!raceState.isRaceRunning && !raceState.isRaceFinished) {
-    if (!settings.online) newRaceState = OnStartRace(raceState);
+    if (settings.raceType !== RaceTypes.ONLINE)
+      newRaceState = OnStartRace(raceState);
   }
 
   if (raceState.isRaceFinished) return raceState;
@@ -847,7 +849,7 @@ export default function useRaceLogic({
   }, [raceState.wordsTyped]);
 
   React.useEffect(() => {
-    if (settings.online && testDisabled === false) {
+    if (settings.raceType === RaceTypes.ONLINE && testDisabled === false) {
       raceStateDispatch({ type: "startRace" });
     }
   }, [testDisabled]);
