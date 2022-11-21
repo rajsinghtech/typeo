@@ -84,7 +84,7 @@ export const DefaultImproveGameSettings: GameSettings = {
   textType: TextTypes.TOP_WORDS,
   gameInfo: {
     type: GameTypes.WORDS,
-    amount: 100,
+    amount: 5,
     practice: { isPractice: false, practiceStrings: [] },
     strict: false,
   },

@@ -11,6 +11,19 @@ export const saveRaceStats = async (uid: string, raceData: RaceSchema) => {
   });
 };
 
+export const saveImprovementRaceStats = async (
+  uid: string,
+  raceData: RaceSchema
+) => {
+  const userRaceCollectionDoc = db
+    .collection(`users/${uid}/improvement_races`)
+    .doc();
+  userRaceCollectionDoc.set({
+    ...raceData,
+    timestamp: FieldValue.serverTimestamp(),
+  });
+};
+
 // export const changeAllRaces = async () => {
 //   const users = await db
 //     .collection("users/Zi1dA18hkgNTDdZA6WLxLOjUcqc2/races")

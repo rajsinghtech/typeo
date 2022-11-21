@@ -67,6 +67,7 @@ const initialStatState: StatState = {
     characters: { correct: 0, incorrect: 0, total: 0 },
     testType: { name: "", textType: "" },
     characterDataPoints: [], // characterTrackingData
+    raceType: RaceTypes.DEFAULT,
   },
 };
 
@@ -240,6 +241,7 @@ const OnEndRace = (
         textType: TextTypeNames[settings.textType],
       },
       characterDataPoints: newRaceState.statState.characterTrackingData,
+      raceType: settings.raceType,
     },
   };
 

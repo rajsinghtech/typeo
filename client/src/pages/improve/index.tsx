@@ -1,5 +1,16 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "contexts/AuthContext";
+import { db } from "config/firebase";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
+} from "firebase/firestore";
 
 import { GridCard, ErrorAlert } from "components/common";
 import PlacementTests from "./steps/placement-tests";
@@ -16,15 +27,36 @@ import {
 } from "@mui/material";
 
 export default function Improve() {
-  const [activeStep, setActiveStep] = React.useState(1);
+  const [activeStep, setActiveStep] = React.useState(0);
 
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, currentUser } = useAuth();
+
+  const [completed, setCompleted] = useState(0);
 
   const handleStep = (step: number) => () => {
     if (isLoggedIn) {
       setActiveStep(step);
     }
   };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const q = query(
+      collection(db, "users", currentUser.uid, "improvement_races"),
+      limit(10),
+      orderBy("timestamp", "desc")
+    );
+    onSnapshot(q, { includeMetadataChanges: true }, (snapshot) => {
+      if (!isMounted || snapshot.docChanges().length <= 0) return;
+      console.log(snapshot.size);
+      setCompleted(snapshot.size);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <Box>

@@ -1,7 +1,11 @@
 import React from "react";
 import StandardGame from "components/standard-game";
 import RacersBox from "pages/online/components/RacersBox";
-import { DefaultOnlineGameSettings, MatchStatus } from "constants/settings";
+import {
+  DefaultOnlineGameSettings,
+  MatchStatus,
+  RaceTypes,
+} from "constants/settings";
 import { useSocketContext } from "contexts/SocketContext";
 import { useHistory } from "react-router-dom";
 import { useAuth } from "contexts/AuthContext";
@@ -74,6 +78,7 @@ export default function FFAGame() {
     characters: { correct: 0, incorrect: 0, total: 0 },
     testType: { name: "", amount: 0, textType: "" },
     characterDataPoints: [],
+    raceType: RaceTypes.ONLINE,
   });
 
   const [place, setPlace] = React.useState<number>(0);
