@@ -99,9 +99,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const result = await getRedirectResult(auth);
     if (result) {
       // This is the signed-in user
-      const user = result.user;
+      // const user = result.user;
       // This gives you a Facebook Access Token.
-      const credential = GoogleAuthProvider.credentialFromResult(result);
+      GoogleAuthProvider.credentialFromResult(result);
       //const token = credential.accessToken;
     }
   };

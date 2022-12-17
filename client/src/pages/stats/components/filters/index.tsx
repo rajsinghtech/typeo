@@ -1,7 +1,7 @@
 import React from "react";
 import { MultipleSelectMenu } from "components/common";
 import TimeframeSelect from "components/stats/timeframe-select";
-import { GameTypeNames, GameTypes, TextTypeNames } from "constants/settings";
+import { GameTypeNames, TextTypeNames } from "constants/settings";
 import { StatFilters } from "constants/stats";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import { Box, SelectChangeEvent } from "@mui/material";

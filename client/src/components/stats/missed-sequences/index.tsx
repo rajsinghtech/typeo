@@ -5,7 +5,6 @@ import { GridCard } from "components/common";
 import { useGameSettings } from "contexts/GameSettings";
 import { useStats } from "contexts/StatsContext";
 import { DefaultStatFilters, StatFilters, Timeframes } from "constants/stats";
-import TimeframeSelect from "components/stats/timeframe-select";
 import SortByAlphaIcon from "@mui/icons-material/SortByAlpha";
 import {
   Chart as ChartJS,
@@ -22,7 +21,7 @@ import {
 } from "chart.js";
 import CloseIcon from "@mui/icons-material/Close";
 
-import { Box, Button, SelectChangeEvent, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 
 ChartJS.register(
   BarController,
@@ -76,7 +75,7 @@ export default function MissedSequences({
   interactive,
   noBorder,
 }: MissedsequencesProps) {
-  const [timeframe, setTimeframe] = React.useState<number>(Timeframes.LAST_100);
+  const [timeframe] = React.useState<number>(Timeframes.LAST_100);
   const [missedSequenceData, setMissedSequenceData] =
     React.useState<BarChartData>();
 
@@ -84,10 +83,10 @@ export default function MissedSequences({
 
   const { getMissedSequences } = useStats();
 
-  const handleTimeframeChange = (event: SelectChangeEvent) => {
-    const newTimeframe = parseInt(event.target.value);
-    setTimeframe(newTimeframe);
-  };
+  // const handleTimeframeChange = (event: SelectChangeEvent) => {
+  //   const newTimeframe = parseInt(event.target.value);
+  //   setTimeframe(newTimeframe);
+  // };
 
   const togglePracticeStringsValue = (element: number | string) => {
     if (!missedSequenceData) return;

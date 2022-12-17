@@ -5,7 +5,7 @@ import { getRedirectResult } from "firebase/auth";
 import ReactGA from "react-ga";
 import { useAuth } from "contexts/AuthContext";
 import ProfileComponent from "components/profile/profile-component";
-import { Button, Grid } from "@mui/material";
+import { Grid } from "@mui/material";
 
 export default function Login() {
   React.useEffect(() => {
@@ -26,7 +26,7 @@ export default function Login() {
 }
 
 function LoginComponent() {
-  const { login, googleLogin } = useAuth();
+  const { login } = useAuth();
   const [errorOpen, setErrorOpen] = React.useState(false);
   const [error, setError] = React.useState("");
   const [loading, setLoading] = React.useState(false);
@@ -63,7 +63,7 @@ function LoginComponent() {
   };
 
   React.useEffect(() => {
-    getRedirectResult(auth).catch((err) => {
+    getRedirectResult(auth).catch(() => {
       setError("Could not login");
       setErrorOpen(true);
     });
