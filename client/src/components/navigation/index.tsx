@@ -1,6 +1,5 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
-import logo from "./typeologo.png";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "contexts/AuthContext";
 import { useHistory } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
@@ -12,75 +11,53 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
 import MenuIcon from "@mui/icons-material/Menu";
 import PersonIcon from "@mui/icons-material/Person";
-import {
-  Typography,
-  List,
-  Box,
-  Divider,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Button,
-  Drawer,
-} from "@mui/material";
+import FirstPageIcon from "@mui/icons-material/FirstPage";
+import LastPageIcon from "@mui/icons-material/LastPage";
+import { Typography, Box, Divider, Button, Drawer } from "@mui/material";
+
+export const drawerWidth = 260;
+export const minimizedDrawerWidth = 100;
 
 interface NavigationProps {
   children?: React.ReactNode;
 }
 
 export default function Navigation({ children }: NavigationProps) {
-  const FullDisplay = React.useMemo(() => {
-    return (
-      <Box display={{ xs: "none", md: "inherit" }}>
-        <MiniDrawer close={() => null}>{children}</MiniDrawer>
-      </Box>
-    );
-  }, []);
-
-  return (
-    <>
-      {FullDisplay}
-      <DrawerToggle>{children}</DrawerToggle>
-    </>
-  );
-}
-
-const DrawerToggle = ({ children }: { children: React.ReactNode }) => {
-  const [open, setOpen] = React.useState<boolean>(false);
   const history = useHistory();
+
+  const [open, setOpen] = React.useState<boolean>(false);
 
   const OpenHome = () => {
     history.push("/");
   };
 
-  return (
-    <>
-      <DrawerDisplay open={open} setOpen={setOpen} />
-      <Box display={{ xs: "block", md: "none" }}>
-        <Box
-          m={2}
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-        >
-          <Box sx={{ cursor: "pointer" }} onClick={OpenHome}>
-            <img width="135px" height="36px" src={logo} />
-          </Box>
-          <Button onClick={() => setOpen((prevOpen) => !prevOpen)}>
-            <MenuIcon fontSize="large" />
-          </Button>
-        </Box>
-        {React.useMemo(() => {
-          return (
-            <Box p={5} pt={0}>
-              {children}
+  const FullDisplay = React.useMemo(() => {
+    return (
+      <Box>
+        <DrawerDisplay open={open} setOpen={setOpen} />
+        <Box display={{ xs: "block", md: "none" }}>
+          <Box
+            m={2}
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Button onClick={() => setOpen((prevOpen) => !prevOpen)}>
+              <MenuIcon fontSize="large" />
+            </Button>
+            <Box sx={{ padding: 2, cursor: "pointer" }} onClick={OpenHome}>
+              <img width="135px" height="36px" src={"/typeologo.png"} />
             </Box>
-          );
-        }, [])}
+          </Box>
+        </Box>
+
+        <MiniDrawerMemo close={() => null}>{children}</MiniDrawerMemo>
       </Box>
-    </>
-  );
-};
+    );
+  }, [open]);
+
+  return <>{FullDisplay}</>;
+}
 
 const DrawerDisplay = ({
   open,
@@ -91,7 +68,7 @@ const DrawerDisplay = ({
 }) => {
   return (
     <Drawer
-      anchor="right"
+      anchor="left"
       open={open}
       onClose={() => setOpen(false)}
       sx={{
@@ -102,19 +79,27 @@ const DrawerDisplay = ({
         },
       }}
     >
-      <MiniDrawer close={() => setOpen(false)} />
+      <MiniDrawerMemo close={() => setOpen(false)} show />
     </Drawer>
   );
 };
 
-const drawerWidth = 260;
-
 interface MiniDrawerProps {
   close: () => void;
+  show?: boolean;
   children?: React.ReactNode;
 }
 
-function MiniDrawer({ close, children }: MiniDrawerProps) {
+const MiniDrawerMemo = React.memo(function MiniDrawer({
+  close,
+  show,
+  children,
+}: MiniDrawerProps) {
+  const [minimized, setMinimized] = React.useState<boolean>(
+    show
+      ? false
+      : JSON.parse(localStorage.getItem("typeo-minimized") || "false")
+  );
   const theme = useTheme();
   const { isLoggedIn, logout } = useAuth();
   const history = useHistory();
@@ -141,10 +126,9 @@ function MiniDrawer({ close, children }: MiniDrawerProps) {
     history.push("/improvement");
   };
 
-  const FindMatch = () => {
+  const Multiplayer = () => {
     close();
-    if (location.pathname === "/online") history.go(0);
-    else history.push("/online");
+    history.push("/multiplayer");
   };
 
   const Stats = () => {
@@ -157,19 +141,23 @@ function MiniDrawer({ close, children }: MiniDrawerProps) {
     history.push("/update-profile");
   };
 
-  const OpenHome = () => {
-    close();
-    history.push("/");
+  const ToggleMinimize = () => {
+    setMinimized((prev) => {
+      localStorage.setItem("typeo-minimized", JSON.stringify(!prev));
+      return !prev;
+    });
   };
 
   return (
     <>
       <Box
+        display={show ? "inherit" : { xs: "none", md: "inherit" }}
         sx={{
           position: "fixed",
           height: "100%",
-          width: drawerWidth,
+          width: minimized ? minimizedDrawerWidth : drawerWidth,
           backgroundColor: "#242635",
+          transition: "width 0.2s",
         }}
       >
         <Box
@@ -178,11 +166,30 @@ function MiniDrawer({ close, children }: MiniDrawerProps) {
           p={theme.spacing(3, 3, 1, 3)}
           height="100%"
         >
-          <Box sx={{ cursor: "pointer" }} onClick={OpenHome}>
-            <img width="135px" height="36px" src={logo} />
-          </Box>
-          <Divider sx={{ my: theme.spacing(2) }} />
+          {!show && (
+            <Button
+              color="secondary"
+              sx={{
+                minWidth: 0,
+                alignSelf: minimized ? "center" : "flex-end",
+                marginBottom: 2,
+              }}
+              onClick={ToggleMinimize}
+            >
+              <Box display="flex" gap={2} alignItems="center">
+                {minimized ? (
+                  <LastPageIcon />
+                ) : (
+                  <>
+                    <Typography>{"Minimize"}</Typography>
+                    <FirstPageIcon />
+                  </>
+                )}
+              </Box>
+            </Button>
+          )}
           <Button
+            sx={{ minWidth: 0 }}
             onClick={() => {
               const win = window.open(
                 "https://discord.gg/eWkxwfDenv",
@@ -199,41 +206,60 @@ function MiniDrawer({ close, children }: MiniDrawerProps) {
               style={{ fontSize: "20px", lineHeight: "28px" }}
               data-icon="mdi:discord"
             ></span>
-            &nbsp; Join Our Discord
+            {!minimized && <>&nbsp; Join Our Discord</>}
           </Button>
-          <Typography variant="h6" pt={7}>
-            MENU
-          </Typography>
-          <List>
+          <Divider sx={{ my: theme.spacing(2) }} />
+
+          <Box display="flex" flexDirection="column" gap={3}>
+            <Typography variant={minimized ? "subtitle1" : "h6"} pt={7}>
+              MENU
+            </Typography>
             {[
-              { name: "Home", icon: <HomeIcon />, click: Home },
-              { name: "Improve", icon: <InsightsIcon />, click: Improve },
+              { name: "Home", path: "/", icon: <HomeIcon />, click: Home },
               {
-                name: "Muliplayer (Disabled)",
+                name: "Improve",
+                path: "/improvement",
+                icon: <InsightsIcon />,
+                click: Improve,
+              },
+              {
+                name: "Multiplayer (Disabled)",
+                path: "/multiplayer",
                 icon: <GroupsIcon />,
-                click: FindMatch,
+                click: Multiplayer,
               },
               {
                 name: "Stats",
+                path: "/stats",
                 icon: <BarChartIcon />,
                 click: Stats,
               },
               {
                 name: "Update Profile",
+                path: "/update-profile",
                 icon: <PersonIcon />,
                 click: UpdateProfile,
               },
             ].map((val) => {
               if (!isLoggedIn && val.name === "Update Profile") return null;
+              let isActive =
+                location.pathname.startsWith(val.path) && val.name !== "Home";
+              if (location.pathname === "/" && val.name === "Home")
+                isActive = true;
               return (
-                <ListItem
+                <Button
                   key={val.name}
-                  disabled={val.name === "Muliplayer (Disabled)"}
-                  button
+                  color="secondary"
                   sx={{
-                    paddingX: theme.spacing(1),
-                    marginY: theme.spacing(2),
+                    minWidth: 0,
+                    padding: 1.5,
                     borderRadius: "10px",
+                    textTransform: "none",
+                    backgroundColor: isActive ? "background.default" : null,
+                    color: isActive ? "primary.main" : null,
+                    "& .MuiListItemIcon-root": {
+                      color: isActive ? "primary.main" : null,
+                    },
                     "&:hover, &:focus": {
                       backgroundColor: "background.default",
                       color: "primary.main",
@@ -250,48 +276,76 @@ function MiniDrawer({ close, children }: MiniDrawerProps) {
                       : val.click
                   }
                 >
-                  <ListItemIcon>{val.icon}</ListItemIcon>
-                  <ListItemText
-                    primary={val.name}
-                    primaryTypographyProps={{ fontSize: 15 }}
-                  />
-                </ListItem>
+                  <Box
+                    width="100%"
+                    display="flex"
+                    justifyContent={minimized ? "center" : "flex-start"}
+                    alignItems="center"
+                    gap={3}
+                  >
+                    {val.icon}
+                    {!minimized && (
+                      <Typography
+                        fontSize={15}
+                        alignSelf="flex-end"
+                        textAlign="left"
+                      >
+                        {val.name}
+                      </Typography>
+                    )}
+                  </Box>
+                </Button>
               );
             })}
-          </List>
+          </Box>
           <Box flexGrow={1} />
           <Divider />
-          <List>
-            <ListItem
-              button
-              onClick={isLoggedIn ? Logout : Login}
-              sx={{
-                paddingX: theme.spacing(1),
-                borderRadius: "10px",
-                "&:hover, &:focus": {
-                  backgroundColor: "background.default",
+          <Box
+            onClick={isLoggedIn ? Logout : Login}
+            sx={{
+              minWidth: 0,
+              padding: 1.5,
+              marginY: 1,
+              borderRadius: "10px",
+              textTransform: "none",
+              "&:hover, &:focus": {
+                backgroundColor: "background.default",
+                color: "primary.main",
+                "& .MuiListItemIcon-root": {
                   color: "primary.main",
-                  "& .MuiListItemIcon-root": {
-                    color: "primary.main",
-                  },
                 },
-              }}
+              },
+            }}
+          >
+            <Box
+              width="100%"
+              display="flex"
+              justifyContent={minimized ? "center" : "flex-start"}
+              alignItems="center"
+              gap={3}
             >
-              <ListItemIcon>
-                {isLoggedIn ? (
-                  <LogoutIcon fontSize="small" />
-                ) : (
-                  <LoginIcon fontSize="small" />
-                )}
-              </ListItemIcon>
-              <ListItemText primary={isLoggedIn ? "Logout" : "Login"} />
-            </ListItem>
-          </List>
+              {isLoggedIn ? (
+                <LogoutIcon fontSize="small" />
+              ) : (
+                <LoginIcon fontSize="small" />
+              )}
+              {!minimized && (
+                <Typography>{isLoggedIn ? "Logout" : "Login"}</Typography>
+              )}
+            </Box>
+          </Box>
         </Box>
       </Box>
-      <Box p={5} marginLeft={`${drawerWidth}px`}>
+      <Box
+        paddingX={{ xs: 5, md: minimized ? 17 : 8 }}
+        paddingY={5}
+        marginLeft={{
+          xs: 0,
+          md: `${minimized ? minimizedDrawerWidth : drawerWidth}px`,
+        }}
+      >
         {children}
       </Box>
     </>
   );
-}
+});

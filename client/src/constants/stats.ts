@@ -10,6 +10,14 @@ export interface RaceStats {
   accuracy: number;
 }
 
+export interface CharacterStats {
+  wpm: number;
+  frequency: number;
+  misses: number;
+}
+
+export type CharacterStatsMap = Map<string, CharacterStats>;
+
 export enum Timeframes {
   ALL_TIME = 1000,
   LAST_100 = 100,

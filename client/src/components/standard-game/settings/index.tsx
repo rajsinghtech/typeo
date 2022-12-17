@@ -1,6 +1,6 @@
 import React from "react";
 import { useGameSettings } from "contexts/GameSettings";
-import { GridCard } from "components/common";
+import { GridCard, StyledSwitch } from "components/common";
 import {
   GameTypeNames,
   GameTypeAmounts,
@@ -13,6 +13,7 @@ import {
   Button,
   Dialog,
   Divider,
+  FormControlLabel,
   Grid,
   Slider,
   Switch,
@@ -53,6 +54,18 @@ const TextTypeIcons = [
 export default function Settings() {
   const { gameSettings, setGameSettings } = useGameSettings();
 
+  const TogglePracticeMode = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const isPractice = event.target.checked;
+    const { practice, ...gameInfo } = gameSettings.gameInfo;
+    setGameSettings({
+      ...gameSettings,
+      gameInfo: {
+        ...gameInfo,
+        practice: { ...practice, isPractice },
+      },
+    });
+  };
+
   const SetMode = (inMode: number) => {
     setGameSettings({
       ...gameSettings,
@@ -78,13 +91,9 @@ export default function Settings() {
   return (
     <Box
       display="flex"
-      flexDirection={{
-        xs: "column",
-        vs: "row",
-        lg:
-          gameSettings.gameInfo.type === GameTypes.DEFENDER ? "row" : "column",
-      }}
       justifyContent="center"
+      alignItems="flex-end"
+      flexWrap="wrap"
       gap={3}
     >
       {/* {!(gameSettings.gameInfo.type === GameTypes.DEFENDER) ? (
@@ -98,10 +107,24 @@ export default function Settings() {
           </Box>
         </GridCard>
       ) : null} */}
-      <GridCard padding={"10px 2px"} sx={{ textAlign: "center" }}>
-        <Typography variant="subtitle2" marginBottom={1}>
-          MODE
-        </Typography>
+      <GridCard padding={"1px 15px 0 0"}>
+        <FormControlLabel
+          value={false}
+          control={
+            <StyledSwitch
+              checked={gameSettings.gameInfo.practice.isPractice}
+              onChange={TogglePracticeMode}
+            />
+          }
+          label={
+            <Typography sx={{ fontSize: "0.9rem" }}>
+              {"Practice Mode"}
+            </Typography>
+          }
+          labelPlacement="start"
+        />
+      </GridCard>
+      <GridCard padding={"10px 8px"} sx={{ textAlign: "center" }}>
         {GameTypeNames.map((name, index) => (
           <Button
             key={name}
@@ -114,10 +137,7 @@ export default function Settings() {
         ))}
       </GridCard>
       {GameTypeAmounts[gameSettings.gameInfo.type].length > 0 ? (
-        <GridCard padding={"10px 2px"} sx={{ textAlign: "center" }}>
-          <Typography variant="subtitle2" marginBottom={1}>
-            AMOUNT
-          </Typography>
+        <GridCard padding={"10px 8px"} sx={{ textAlign: "center" }}>
           {GameTypeAmounts[gameSettings.gameInfo.type].map((amount, index) => (
             <Button
               key={`${amount}_${index}`}
@@ -134,10 +154,7 @@ export default function Settings() {
       ) : null}
       {!gameSettings.gameInfo.practice.isPractice &&
       gameSettings.gameInfo.type !== GameTypes.DEFENDER ? (
-        <GridCard padding={"10px 2px"} sx={{ textAlign: "center" }}>
-          <Typography variant="subtitle2" marginBottom={1}>
-            TEXT TYPE
-          </Typography>
+        <GridCard padding={"10px 8px"} sx={{ textAlign: "center" }}>
           {TextTypeNames.map((name, index) => (
             <Button
               key={name}

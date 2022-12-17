@@ -14,3 +14,9 @@ export const DefaultGameSettings = {
   textType: TextTypes.PASSAGE,
   gameInfo: { type: GameTypes.TIMED, amount: 30 },
 };
+
+export enum RaceTypes {
+  DEFAULT,
+  ONLINE,
+  IMPROVEMENT,
+}

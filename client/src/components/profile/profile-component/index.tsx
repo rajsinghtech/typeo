@@ -140,6 +140,7 @@ export default function ProfileComponent({
                     variant="contained"
                     size="large"
                     startIcon={xsScreenSize ? null : icon}
+                    disabled={name === "FACEBOOK"}
                     sx={{
                       flexGrow: 1,
                       background: colors[0],

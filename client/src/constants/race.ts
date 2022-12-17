@@ -1,3 +1,5 @@
+import { RaceTypes } from "./settings";
+
 export interface CharacterData {
   charIndex: number;
   character: string;
@@ -19,6 +21,7 @@ export interface ResultsData {
   characters: { correct: number; incorrect: number; total: number };
   testType: { name: string; amount?: number; textType: string };
   characterDataPoints: CharacterData[];
+  raceType: RaceTypes;
 }
 
 export const MAX_INPUT_LENGTH = 15;

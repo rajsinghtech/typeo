@@ -1,13 +1,15 @@
 import React from "react";
 import { Chart } from "react-chartjs-2";
 import "chartjs-adapter-date-fns";
+import { drawerWidth, minimizedDrawerWidth } from "components/navigation";
 import { GridCard, HoverableText } from "components/common";
 import { ChartData } from "constants/graphs";
 import { ResultsData } from "constants/race";
+import { CharacterStats, CharacterStatsMap } from "constants/stats";
 import StatKeyboard from "components/stats//stat-keyboard";
 import {
-  getCharacterSpeed,
-  getMissedCharacterSequences,
+  getCharacterStatsMap,
+  getCharacterSequenceData,
 } from "contexts/StatsContext";
 import MissedSequences from "components/stats/missed-sequences";
 import { calculateWPMColor } from "components/standard-game/feedback/speed-progress";
@@ -63,11 +65,11 @@ export default function Results({
 }: ResultsProps) {
   const [graphData, setGraphData] = React.useState<ChartData>();
   const [wpm, setWPM] = React.useState<number>(0);
-  const [keyData, setKeyData] = React.useState<number[]>(new Array(26).fill(0));
+  const [keyStats, setKeyStats] = React.useState<CharacterStatsMap>(new Map());
   const theme = useTheme();
 
   React.useEffect(() => {
-    setKeyData(getCharacterSpeed(characterDataPoints));
+    setKeyStats(getCharacterStatsMap(characterDataPoints, passage));
     // Update Graph
     if (dataPoints.length < 1) return;
 
@@ -157,7 +159,16 @@ export default function Results({
           onClose(false);
         }}
         maxWidth="lg"
-        PaperProps={{ sx: { borderRadius: "7px" } }}
+        PaperProps={{
+          sx: {
+            borderRadius: "7px",
+            marginLeft: JSON.parse(
+              localStorage.getItem("typeo-minimized") || "false"
+            )
+              ? `${minimizedDrawerWidth}px`
+              : `${drawerWidth}px`,
+          },
+        }}
       >
         <Box
           p={3}
@@ -275,11 +286,11 @@ export default function Results({
             </GridCard>
           ) : null}
           <Box mt={3}>
-            <StatKeyboard data={keyData} title="Key Speed" noBorder />
+            <StatKeyboard data={keyStats} title="Key Speed" noBorder />
           </Box>
           <Box mt={3}>
             <MissedSequences
-              missedSequences={getMissedCharacterSequences(
+              missedSequences={getCharacterSequenceData(
                 {},
                 characterDataPoints,
                 passage

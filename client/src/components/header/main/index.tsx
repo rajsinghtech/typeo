@@ -1,20 +1,17 @@
 import React from "react";
 import { useHistory } from "react-router-dom";
 import { useGameSettings } from "contexts/GameSettings";
-import { GridCard, StyledSwitch } from "components/common";
 import { SettingsDialog } from "components/standard-game/settings";
 import { useAuth } from "contexts/AuthContext";
 import { HomeProfile } from "../../profile-display";
 import PersonIcon from "@mui/icons-material/Person";
-import NotificationsIcon from "@mui/icons-material/Notifications";
 import LoginIcon from "@mui/icons-material/Login";
 import SettingsIcon from "@mui/icons-material/Settings";
 import {
   Box,
   Button,
-  FormControlLabel,
+  Divider,
   Tooltip,
-  Typography,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
@@ -47,30 +44,21 @@ export default function MainHeader() {
     history.go(0);
   };
 
-  const TogglePracticeMode = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const isPractice = event.target.checked;
-    const { practice, ...gameInfo } = gameSettings.gameInfo;
-    setGameSettings({
-      ...gameSettings,
-      gameInfo: {
-        ...gameInfo,
-        practice: { ...practice, isPractice },
-      },
-    });
+  const OpenHome = () => {
+    history.push("/");
   };
 
   return (
     <>
       <SettingsDialog open={settingsOpen} setOpen={setSettingsOpen} />
-      <Box display="flex">
+      <Box display="flex" alignItems="flex-start">
         <Box
           flex={1}
           display="flex"
           justifyContent="center"
-          alignItems="flex-end"
+          alignItems="flex-start"
         >
-          <GridCard
-            padding="2px"
+          <Box
             sx={{
               marginRight: "auto",
               marginLeft: mdScreenSize ? 0 : "auto",
@@ -78,18 +66,10 @@ export default function MainHeader() {
               alignItems: "flex-start",
             }}
           >
-            <FormControlLabel
-              value={false}
-              control={
-                <StyledSwitch
-                  checked={gameSettings.gameInfo.practice.isPractice}
-                  onChange={TogglePracticeMode}
-                />
-              }
-              label="Practice Mode"
-              labelPlacement="start"
-            />
-          </GridCard>
+            <Box sx={{ cursor: "pointer" }} onClick={OpenHome}>
+              <img width="135px" height="36px" src={"/typeologo.png"} />
+            </Box>
+          </Box>
         </Box>
         {mdScreenSize ? (
           <Box

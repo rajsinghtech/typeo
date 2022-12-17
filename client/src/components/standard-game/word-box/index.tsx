@@ -1,4 +1,5 @@
 import React from "react";
+import { GameSettings, RaceTypes } from "constants/settings";
 import { styled } from "@mui/system";
 import { Box } from "@mui/material";
 
@@ -18,6 +19,7 @@ const StyledWord = styled("div")(() => ({
 interface WordBoxProps {
   words: string[];
   boxRef: React.RefObject<HTMLDivElement>;
+  settings?: GameSettings;
   textAlign?: "left" | "center" | "right";
 }
 
@@ -25,6 +27,7 @@ export default React.memo(function WordBox({
   words,
   boxRef,
   textAlign,
+  settings,
 }: WordBoxProps) {
   let char_count = 0;
   return (
@@ -33,7 +36,8 @@ export default React.memo(function WordBox({
       mt={{ xs: 2, sm: 3, md: 5 }}
       mb={1}
       overflow="hidden"
-      height="8.1em"
+      minHeight="8.1em"
+      height={settings?.raceType === RaceTypes.ONLINE ? "fit-content" : "8.1em"}
       fontSize={{ xs: "16pt", sm: "18pt", lg: "20pt" }}
       textAlign={textAlign || "left"}
     >

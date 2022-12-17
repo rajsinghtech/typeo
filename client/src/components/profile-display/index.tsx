@@ -31,12 +31,12 @@ export function HomeProfile() {
                 {currentUser.displayName?.toUpperCase() || ""}
               </Typography>
               <Divider orientation="vertical" flexItem />
-              <Typography>{"Average WPM"}</Typography>
+              <Typography>{"Average"}</Typography>
               <Typography color="secondary.main">
                 {baseStats.averages.wpm.toFixed(1)}
               </Typography>
               <Divider orientation="vertical" flexItem />
-              <Typography>{"Best WPM"}</Typography>
+              <Typography>{"Best"}</Typography>
               <Typography color="secondary.main">
                 {baseStats.best.wpm.toFixed(1)}
               </Typography>

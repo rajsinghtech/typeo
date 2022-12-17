@@ -1,7 +1,13 @@
 import React from "react";
 import { RaceSchema } from "constants/schemas/race";
-import { CharacterData } from "constants/race";
-import { RaceStats, StatFilters, Timeframes } from "constants/stats";
+import { CharacterData, ResultsData } from "constants/race";
+import {
+  CharacterStats,
+  CharacterStatsMap,
+  RaceStats,
+  StatFilters,
+  Timeframes,
+} from "constants/stats";
 import { useAuth } from "contexts/AuthContext";
 import { db } from "config/firebase";
 import {
@@ -10,26 +16,29 @@ import {
   onSnapshot,
   limit,
   orderBy,
+  Timestamp,
 } from "firebase/firestore";
 import { GameTypeNames, TextTypeNames } from "constants/settings";
 
 interface ContextStats {
   races: RaceSchema[];
+  addGuestRace: (raceData: ResultsData) => void;
   getBaseStats: (filters: StatFilters) => {
     averages: RaceStats;
     best: RaceStats;
   };
-  getKeySpeeds: (filters: StatFilters) => number[];
+  getKeyStatsMap: (filters: StatFilters) => CharacterStatsMap;
   getMissedSequences: (filters: StatFilters) => { [x: string]: number };
 }
 
 const StatContext = React.createContext<ContextStats>({
   races: [],
+  addGuestRace: (raceData: ResultsData) => null,
   getBaseStats: () => ({
     averages: { wpm: 0, accuracy: 0 },
     best: { wpm: 0, accuracy: 0 },
   }),
-  getKeySpeeds: () => [],
+  getKeyStatsMap: () => new Map(),
   getMissedSequences: () => ({}),
 });
 
@@ -40,6 +49,23 @@ export function useStats(): ContextStats {
 export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
   const { currentUser, isLoggedIn } = useAuth();
   const [races, setRaces] = React.useState<RaceSchema[]>([]);
+
+  const addGuestRace = (raceData: ResultsData) => {
+    const characterDataPoints: Array<CharacterData> =
+      raceData.characterDataPoints;
+    const wpm = raceData.dataPoints[raceData.dataPoints.length - 1].wpm;
+    const accuracy = raceData.accuracy;
+    const testType = raceData.testType;
+    const passage = raceData.passage;
+    const timestamp = Timestamp.fromMillis(raceData.startTime);
+
+    setRaces((prevRaces) => {
+      return [
+        ...prevRaces,
+        { characterDataPoints, wpm, accuracy, testType, passage, timestamp },
+      ];
+    });
+  };
 
   const getBaseStats = (filters: StatFilters) => {
     const averages: RaceStats = {
@@ -70,27 +96,17 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
     return { averages, best };
   };
 
-  const getKeySpeeds = (filters: StatFilters) => {
+  const getKeyStatsMap = (filters: StatFilters): CharacterStatsMap => {
     const keySpeedRaces = filterRaces(races, filters);
 
-    const averageCharacterSpeeds = new Array(26).fill(0);
-    const averageCharacterSpeedCount = new Array(26).fill(0);
+    const keyStatsMap = new Map();
 
     for (const race of keySpeedRaces) {
       // Character Speed Calculation
-      const characterSpeed = getCharacterSpeed(race.characterDataPoints);
-      if (characterSpeed) {
-        for (const [index, keySpeed] of characterSpeed.entries()) {
-          if (keySpeed !== 0) {
-            averageCharacterSpeeds[index] += keySpeed;
-            averageCharacterSpeedCount[index]++;
-          }
-        }
-      }
+      getCharacterStatsMap(race.characterDataPoints, race.passage, keyStatsMap);
     }
-    return averageCharacterSpeeds.map(
-      (speed, index) => speed / (averageCharacterSpeedCount[index] || 1)
-    );
+
+    return keyStatsMap;
   };
 
   const getMissedSequences = (filters: StatFilters) => {
@@ -100,7 +116,7 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
 
     for (const race of missedSequenceRaces) {
       // Missed Sequences
-      getMissedCharacterSequences(
+      getCharacterSequenceData(
         missedTwoLetterSequences,
         race.characterDataPoints,
         race.passage
@@ -142,47 +158,81 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
 
   const value = {
     races,
+    addGuestRace,
     getBaseStats,
-    getKeySpeeds,
+    getKeyStatsMap,
     getMissedSequences,
   };
 
   return <StatContext.Provider value={value}>{children}</StatContext.Provider>;
 };
 
-export const getCharacterSpeed = (characterDataPoints: CharacterData[]) => {
-  const characterSpeeds = new Array(26).fill(0);
-  if (!characterDataPoints) return characterSpeeds;
+export const getCharacterStatsMap = (
+  characterDataPoints: CharacterData[],
+  passage: string,
+  inCharacterStatsMap: CharacterStatsMap | null = null
+): CharacterStatsMap => {
+  const characterStatsMap: CharacterStatsMap =
+    inCharacterStatsMap || new Map<string, CharacterStats>();
+  if (!characterDataPoints) return characterStatsMap;
 
-  const characterCount = new Array(26).fill(0);
   for (const [index, dataPoint] of characterDataPoints.entries()) {
-    if (
-      index === 0 ||
-      !/^[a-z]$/.test(dataPoint.character) ||
-      !dataPoint.isCorrect
-    )
-      continue;
-    let prevCorrect = -1;
-    for (let i = index - 1; i >= 0; i--) {
-      if (characterDataPoints[i].isCorrect) {
-        prevCorrect = i;
-        break;
+    const passageCharacter = passage[dataPoint.charIndex].toLowerCase();
+
+    if (index === 0) {
+      if (characterStatsMap.has(passageCharacter))
+        characterStatsMap.get(passageCharacter)!.frequency++;
+      else
+        characterStatsMap.set(passageCharacter, {
+          wpm: 0,
+          frequency: 1,
+          misses: 0,
+        });
+      if (!dataPoint.isCorrect) {
+        characterStatsMap.get(passageCharacter)!.misses++;
       }
+      continue;
     }
-    if (prevCorrect === -1) continue;
-    const timeBetweenKeys =
-      dataPoint.timestamp - characterDataPoints[prevCorrect].timestamp;
-    const charSpeed = 0.2 / (timeBetweenKeys / 60000);
-    const charIndex = dataPoint.character.charCodeAt(0) - 97;
-    characterCount[charIndex]++;
-    characterSpeeds[charIndex] =
-      characterSpeeds[charIndex] +
-      (charSpeed - characterSpeeds[charIndex]) / characterCount[charIndex];
+
+    if (dataPoint.charIndex !== characterDataPoints[index - 1].charIndex) {
+      if (characterStatsMap.has(passageCharacter))
+        characterStatsMap.get(passageCharacter)!.frequency++;
+      else
+        characterStatsMap.set(passageCharacter, {
+          wpm: 0,
+          frequency: 1,
+          misses: 0,
+        });
+    }
+
+    if (dataPoint.isCorrect) {
+      let prevPassageIndex = -1;
+      for (let i = index - 1; i >= 0; i--) {
+        if (characterDataPoints[i].charIndex !== dataPoint.charIndex) {
+          prevPassageIndex = i;
+          break;
+        }
+      }
+
+      if (prevPassageIndex === -1) continue;
+      const timeBetweenKeys =
+        dataPoint.timestamp - characterDataPoints[prevPassageIndex].timestamp;
+      const charSpeed = Math.min(300, 0.2 / (timeBetweenKeys / 60000));
+      characterStatsMap.get(passageCharacter)!.wpm =
+        characterStatsMap.get(passageCharacter)!.wpm +
+        (charSpeed - characterStatsMap.get(passageCharacter)!.wpm) /
+          characterStatsMap.get(passageCharacter)!.frequency;
+    } else if (
+      dataPoint.charIndex !== characterDataPoints[index - 1].charIndex // Make sure it's not a repeated miss
+    ) {
+      characterStatsMap.get(passageCharacter)!.misses++;
+    }
   }
-  return characterSpeeds;
+
+  return characterStatsMap;
 };
 
-export const getMissedCharacterSequences = (
+export const getCharacterSequenceData = (
   missedSequences: { [x: string]: number },
   characterDataPoints: CharacterData[],
   passage: string

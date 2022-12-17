@@ -1,6 +1,7 @@
 import React from "react";
 import "chartjs-adapter-date-fns";
 import { Line } from "react-chartjs-2";
+import { minimizedDrawerWidth, drawerWidth } from "components/navigation";
 import { GridCard, HoverableText } from "components/common";
 import { GraphData } from "constants/graphs";
 import { ResultsData } from "constants/race";
@@ -42,6 +43,7 @@ interface ResultsProps {
   wpm: number;
   data: ResultsData;
   place: number;
+  container: HTMLDivElement | null;
 }
 
 export default function OnlineResults({
@@ -50,12 +52,12 @@ export default function OnlineResults({
   wpm,
   data: { dataPoints, accuracy, characters, testType },
   place,
+  container,
 }: ResultsProps) {
   const [graphData, setGraphData] = React.useState<GraphData>();
   const [isGraphOpen] = React.useState<boolean>(false);
-
   const graphRef = React.useRef<HTMLDivElement>();
-
+  console.log("RENDERING RESULTS");
   const history = useHistory();
   const theme = useTheme();
 
@@ -107,8 +109,12 @@ export default function OnlineResults({
         onClose={() => {
           setOpen(false);
         }}
-        maxWidth="lg"
+        container={container}
+        sx={{ position: "absolute" }}
         PaperProps={{
+          sx: {
+            borderRadius: "7px",
+          },
           style: {
             backgroundColor: place
               ? "transparent"
