@@ -315,17 +315,20 @@ export const StyledSwitch = (props: any) => {
       disableRipple
       disableFocusRipple
       sx={{
-        width: 80,
-        height: 50,
+        width: 70,
+        height: 45,
         "& .MuiSwitch-switchBase": {
           transitionDuration: "400ms",
           "&.Mui-checked": {
-            transform: "translateX(27px)",
+            transform: "translateX(24px)",
             "& + .MuiSwitch-track": {
               opacity: 1,
             },
             "&.Mui-disabled + .MuiSwitch-track": {
               opacity: 0.5,
+            },
+            "& .MuiSwitch-thumb": {
+              transform: "translate(6px, 6px)",
             },
           },
         },
@@ -338,9 +341,9 @@ export const StyledSwitch = (props: any) => {
         },
         "& .MuiSwitch-thumb": {
           color: "#fff",
-          width: 20,
-          height: 20,
-          transform: "translate(7px, 6px)",
+          width: 16,
+          height: 16,
+          transform: "translate(6px, 5px)",
         },
       }}
     />

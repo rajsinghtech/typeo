@@ -1,15 +1,18 @@
-import React, { useState } from "react";
-import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
-import { Box, Typography, StepContent, Button, Stack } from "@mui/material";
-
+import React, { useEffect, useState } from "react";
 import { useGameSettings } from "contexts/GameSettings";
-
 import { DefaultImproveGameSettings } from "constants/settings";
-
 import { GridCard } from "components/common";
 import StandardGame from "components/standard-game";
+import { useAuth } from "contexts/AuthContext";
+import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
+import { Box, Typography, Button, Stack } from "@mui/material";
 
-export default function CustomizedTests() {
+interface DashboardProps {
+  completed: number;
+}
+
+export default function Dashboard({ completed }: DashboardProps) {
+  const { currentUser } = useAuth();
   const { gameSettings } = useGameSettings();
 
   const [tests] = useState<number[]>([1, 2, 3, 4, 5]);
@@ -19,22 +22,18 @@ export default function CustomizedTests() {
 
   if (activeTest === 0) {
     return (
-      <StepContent>
-        <Box display="flex" gap={5}>
-          {tests.map((item) => (
-            <CustomizedTest
-              key={item}
-              id={item}
-              setActiveTest={setActiveTest}
-            />
-          ))}
-        </Box>
-      </StepContent>
+      <Box display="flex" gap={5}>
+        <Typography>{completed}</Typography>
+
+        {tests.map((item) => (
+          <CustomizedTest key={item} id={item} setActiveTest={setActiveTest} />
+        ))}
+      </Box>
     );
   }
 
   return (
-    <StepContent>
+    <>
       <Button
         sx={{ marginBottom: 2 }}
         variant="outlined"
@@ -54,7 +53,7 @@ export default function CustomizedTests() {
           }}
         />
       </Box>
-    </StepContent>
+    </>
   );
 }
 

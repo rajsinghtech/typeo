@@ -1,10 +1,11 @@
 import React from "react";
 import { TextVariant } from "constants/common";
-import { Box, Grid, Typography, LinearProgress } from "@mui/material";
+import { Box, Grid, Typography, Slider } from "@mui/material";
 
 interface LPWLProps {
   label: number | string;
   value: number;
+  step: number;
   fillColor: string;
   labelTextVariant?: TextVariant;
 }
@@ -12,27 +13,39 @@ interface LPWLProps {
 export function LinearProgressWithLabel({
   label,
   value,
+  step,
   fillColor,
   labelTextVariant,
 }: LPWLProps) {
   return (
-    <>
-      <LinearProgress
-        value={value}
-        variant="determinate"
-        color="secondary"
+    <Box display="flex" gap={3}>
+      <Slider
         sx={{
-          "& .MuiLinearProgress-bar1Determinate": {
-            background: fillColor,
-            borderRight: "1px solid black",
+          "& .MuiSlider-track": {
+            color: fillColor,
           },
-          display: "inline-block",
+          "& .MuiSlider-thumb": {
+            color: fillColor,
+          },
+          flex: 6,
         }}
+        defaultValue={0}
+        value={value}
+        step={step}
+        marks
+        min={0}
+        max={100}
+        disabled
       />
-      <Typography variant={labelTextVariant || "h5"} color="textSecondary">
+      <Typography
+        variant={labelTextVariant || "h5"}
+        color="textSecondary"
+        noWrap
+        flex={1}
+      >
         {label}
       </Typography>
-    </>
+    </Box>
   );
 }
 
@@ -56,10 +69,10 @@ export default React.memo(function SpeedProgress({ wpm }: SpeedProgressProps) {
       <Box
         sx={{
           display: "flex",
-          flexDirection: { xs: "row", md: "column" },
+          flexDirection: { xs: "row", sm: "column" },
           justifyContent: "center",
           alignItems: "center",
-          gap: { xs: 2, md: 0 },
+          gap: { xs: 2, sm: 0 },
         }}
       >
         <Typography>{"WPM "}</Typography>

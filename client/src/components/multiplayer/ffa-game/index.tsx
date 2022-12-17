@@ -1,6 +1,6 @@
 import React from "react";
 import StandardGame from "components/standard-game";
-import RacersBox from "pages/online/components/RacersBox";
+import RacersBox from "components/multiplayer/RacersBox";
 import {
   DefaultOnlineGameSettings,
   MatchStatus,
@@ -35,7 +35,10 @@ import {
   Box,
   Typography,
   CircularProgress,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
+import MainHeader from "components/header/main";
 
 export interface OnlineRaceData {
   playerData: Array<PlayerData>;
@@ -44,10 +47,12 @@ export interface OnlineRaceData {
 
 interface PlayerData {
   id: string;
+  isCorrect: boolean;
   displayName: string;
-  percentage: number;
+  currentCharIndex: number;
   wordsTyped: number;
   wpm: string;
+  isConnected: boolean;
 }
 
 interface FinisherData {
@@ -87,6 +92,9 @@ export default function FFAGame() {
   const [resultsOpen, setResultsOpen] = React.useState<boolean>(false);
   const [testDisabled, setTestDisabled] = React.useState<boolean>(true);
 
+  const theme = useTheme();
+  const mdScreenSize = useMediaQuery(theme.breakpoints.up("md"));
+
   const parentRef = React.useRef<HTMLDivElement>(null);
 
   const { socket } = useSocketContext();
@@ -99,21 +107,34 @@ export default function FFAGame() {
   ) => {
     if (passage === " ") setPassage(matchPassage);
     if (players.length === 1) setStatus(MatchStatus.WAITING_FOR_PLAYERS);
-    setOnlineRaceData({
-      ...onlineRaceData,
+    setOnlineRaceData((prevOnlineRaceData) => ({
+      ...prevOnlineRaceData,
       playerData: players.map(({ uid, displayName }) => ({
         id: uid,
+        isCorrect: true,
         displayName: displayName,
-        percentage: 0,
+        currentCharIndex: 0,
         wordsTyped: 0,
         wpm: "0",
+        isConnected: true,
       })),
-    });
+    }));
   };
 
   const PlayerLeft = (player: string) => {
+    if (status === MatchStatus.STARTED || currentUser.uid === player) {
+      setOnlineRaceData((prevOnlineRaceData) => ({
+        ...prevOnlineRaceData,
+        playerData: prevOnlineRaceData.playerData.map((prevPlayerData) => ({
+          ...prevPlayerData,
+          isConnected:
+            prevPlayerData.id === player ? false : prevPlayerData.isConnected,
+        })),
+      }));
+      return;
+    }
     setOnlineRaceData((prevOnlineRaceData) => ({
-      ...onlineRaceData,
+      ...prevOnlineRaceData,
       playerData: prevOnlineRaceData.playerData.filter(
         (val) => val.id !== player
       ),
@@ -140,6 +161,7 @@ export default function FFAGame() {
   };
 
   const JoinedExistingMatch = (time: number) => {
+    setStatus(MatchStatus.STARTING);
     setCountdown((time - (time % 1000)) / 1000 - 1);
     setTimeout(() => {
       setCountdownInterval(() => {
@@ -184,10 +206,12 @@ export default function FFAGame() {
         const prevCopy = [...prevOnlineRaceData.playerData];
         prevCopy[playerIndex] = {
           id: update.id,
+          isCorrect: update.isCorrect,
           displayName: prevCopy[playerIndex].displayName,
-          percentage: update.percentage,
+          currentCharIndex: update.currentCharIndex,
           wordsTyped: update.wordsTyped,
           wpm: update.wpm.toFixed(1),
+          isConnected: prevCopy[playerIndex].isConnected,
         };
         return { ...prevOnlineRaceData, playerData: prevCopy };
       });
@@ -209,9 +233,10 @@ export default function FFAGame() {
         const prevCopy = [...prevOnlineRaceData.playerData];
         const prevDisplayName = prevCopy[playerIndex].displayName;
         prevCopy[playerIndex] = {
+          ...prevCopy[playerIndex],
           id: racerFinish.id,
+          isCorrect: true,
           displayName: prevDisplayName,
-          percentage: 1,
           wordsTyped: racerFinish.wordsTyped,
           wpm: `${racerFinish.place} - ${racerFinish.wpm.toFixed(1)}`,
         };
@@ -226,9 +251,118 @@ export default function FFAGame() {
     }
   };
 
+  const ResultsDisplay = React.useMemo(() => {
+    console.log("RENDERING RESULTS");
+    return (
+      <OnlineResults
+        open={resultsOpen}
+        setOpen={setResultsOpen}
+        wpm={wpm}
+        data={resultsData}
+        place={place}
+        container={parentRef.current}
+      />
+    );
+  }, [resultsOpen, wpm, resultsData, place, parentRef.current]);
+
+  const StatusDisplay = React.useMemo(() => {
+    console.log("RENDERING STATUS");
+    return (
+      <Dialog
+        open={status !== MatchStatus.STARTED}
+        container={parentRef.current}
+        sx={{ position: "absolute" }}
+      >
+        <Box textAlign="center" padding={4}>
+          {status === MatchStatus.WAITING_FOR_PLAYERS ? (
+            <CircularProgress />
+          ) : (
+            <Typography variant="h1" color="success">
+              {countdown}
+            </Typography>
+          )}
+          {status === MatchStatus.WAITING_FOR_PLAYERS ? (
+            <Typography sx={{ marginTop: 3 }}>{status}</Typography>
+          ) : null}
+          <Button
+            variant="contained"
+            sx={{ marginTop: 3 }}
+            onClick={() => history.push("/multiplayer")}
+          >
+            <Typography>Leave</Typography>
+          </Button>
+        </Box>
+      </Dialog>
+    );
+  }, [status, countdown, parentRef.current]);
+
+  const HeaderDisplay = React.useMemo(() => {
+    console.log("RENDERING HEADER");
+    return (
+      <>
+        {mdScreenSize && (
+          <Grid item xs={12} marginBottom={5}>
+            <MainHeader />
+          </Grid>
+        )}
+        <Grid item xs={2}></Grid>
+      </>
+    );
+  }, [mdScreenSize]);
+
+  const RacersBoxDisplay = React.useMemo(() => {
+    console.log("RENDERING RACERS BOX");
+    return (
+      <Grid item xs={8}>
+        <RacersBox racerData={onlineRaceData} passage={passage} />
+      </Grid>
+    );
+  }, [onlineRaceData, passage]);
+
+  const StandardGameDisplay = React.useMemo(() => {
+    console.log("RENDERING STANDARD GAME");
+    return (
+      <Grid item xs={10}>
+        <StandardGame
+          settings={DefaultOnlineGameSettings}
+          testDisabled={testDisabled}
+          onlineRaceData={onlineRaceData}
+          setResultsDataProp={setResultsData}
+          passage={passage}
+        />
+      </Grid>
+    );
+  }, [testDisabled, onlineRaceData, passage]);
+
+  const ToggleResultsDisplay = React.useMemo(() => {
+    console.log("RENDERING TOGGLE RESULTS");
+    return (
+      <Grid item xs={12} textAlign="center">
+        {!resultsOpen && place !== 0 ? (
+          <Button
+            variant="contained"
+            sx={{
+              margin: 2,
+            }}
+            onClick={() => setResultsOpen(true)}
+          >
+            Show Results
+          </Button>
+        ) : null}
+      </Grid>
+    );
+  }, [resultsOpen, place]);
+
+  React.useEffect(() => {
+    socket.on(PLAYER_LEFT_EVENT, PlayerLeft);
+
+    return () => {
+      socket.removeListener(PLAYER_LEFT_EVENT, PlayerLeft);
+    };
+  }, [status]);
+
   React.useEffect(() => {
     socket.on(PLAYER_JOINED_EVENT, PlayerJoined);
-    socket.on(PLAYER_LEFT_EVENT, PlayerLeft);
     socket.on(MATCH_STARTING_EVENT, MatchStarting);
     socket.on(JOINED_EXISTING_MATCH_EVENT, JoinedExistingMatch);
     socket.on(MATCH_CANCELED_EVENT, MatchCancelled);
@@ -240,7 +374,6 @@ export default function FFAGame() {
 
     return () => {
       socket.removeListener(PLAYER_JOINED_EVENT, PlayerJoined);
-      socket.removeListener(PLAYER_LEFT_EVENT, PlayerLeft);
       socket.removeListener(MATCH_STARTING_EVENT, MatchStarting);
       socket.removeListener(JOINED_EXISTING_MATCH_EVENT, JoinedExistingMatch);
       socket.removeListener(MATCH_CANCELED_EVENT, MatchCancelled);
@@ -251,74 +384,41 @@ export default function FFAGame() {
       LeaveQueue(socket);
     };
   }, []);
+
   return (
     <>
-      <OnlineResults
-        open={resultsOpen}
-        setOpen={setResultsOpen}
-        wpm={wpm}
-        data={resultsData}
-        place={place}
-      />
-      <Grid
-        container
-        spacing={3}
-        sx={{ marginTop: 0, position: "relative" }}
-        ref={parentRef}
-      >
-        <Dialog
-          open={status !== MatchStatus.STARTED}
-          container={parentRef.current}
-          sx={{ position: "absolute" }}
-        >
-          <Box textAlign="center" padding={4}>
-            {status === MatchStatus.WAITING_FOR_PLAYERS ? (
-              <CircularProgress />
-            ) : (
-              <Typography variant="h1" color="success">
-                {countdown}
-              </Typography>
-            )}
-            {status === MatchStatus.WAITING_FOR_PLAYERS ? (
-              <Typography sx={{ marginTop: 3 }}>{status}</Typography>
-            ) : null}
-            <Button
-              variant="contained"
-              sx={{ marginTop: 3 }}
-              onClick={() => history.push("/")}
-            >
-              <Typography>Leave</Typography>
-            </Button>
-          </Box>
-        </Dialog>
-        <Grid item xs={1}></Grid>
-        <Grid item xs={10}>
-          <RacersBox racerData={onlineRaceData} />
-        </Grid>
-        <Grid item xs={12}>
-          <StandardGame
-            settings={DefaultOnlineGameSettings}
-            testDisabled={testDisabled}
-            onlineRaceData={onlineRaceData}
-            setResultsDataProp={setResultsData}
-          />
-        </Grid>
-        <Grid item xs={12} textAlign="center">
-          {!resultsOpen && place !== 0 ? (
-            <Button
-              variant="contained"
-              sx={{
-                margin: 2,
-              }}
-              onClick={() => setResultsOpen(true)}
-            >
-              Show Results
-            </Button>
-          ) : null}
-        </Grid>
-        <Grid item xs={2}></Grid>
+      <Grid container spacing={3} sx={{ position: "relative" }} ref={parentRef}>
+        {ResultsDisplay}
+        {StatusDisplay}
+        {HeaderDisplay}
+        {RacersBoxDisplay}
+        {React.useMemo(
+          () => (
+            <>
+              <Grid item xs={2}></Grid>
+              <Grid item xs={1}></Grid>
+            </>
+          ),
+          []
+        )}
+        {StandardGameDisplay}
+        {ToggleResultsDisplay}
+        {React.useMemo(
+          () => (
+            <Grid item xs={2}></Grid>
+          ),
+          []
+        )}
       </Grid>
-      {/* <Button onClick={OnLeaveMatch}>Leave</Button> */}
     </>
   );
 }
+
+export const PLAYER_COLORS = [
+  "red",
+  "cyan",
+  "lime",
+  "yellow",
+  "purple",
+  "white",
+];

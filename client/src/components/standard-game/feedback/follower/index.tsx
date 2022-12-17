@@ -1,10 +1,11 @@
 import React from "react";
+import useMutationObserver from "hooks/useMutationObserver";
 import {
   RaceState,
   RaceStateSubset,
 } from "components/standard-game/hooks/RaceLogic";
 import { useGameSettings } from "contexts/GameSettings";
-import { GameSettings } from "constants/settings";
+import { FollowerTypes, GameSettings, RaceTypes } from "constants/settings";
 import { Box } from "@mui/material";
 
 const styles = {
@@ -13,75 +14,58 @@ const styles = {
   zIndex: 999,
 };
 
-const typeStyles = [
-  {
-    ...styles,
-    minHeight: "40px",
-    backgroundColor: "rgba(158, 219, 145, 0.3)",
-  },
-  {
-    ...styles,
-    minHeight: "32px",
-    borderLeft: "2px solid",
-  },
-  {
-    ...styles,
-    minHeight: "32px",
-    borderBottom: "2px solid",
-  },
-];
-
 interface FollowerProps {
-  wbContainerRef?: React.RefObject<HTMLDivElement>;
+  wbContainerRef: React.RefObject<HTMLDivElement>;
   wbRef: React.RefObject<HTMLDivElement>;
   raceState: RaceState | RaceStateSubset;
+  settings: GameSettings;
   disabled?: boolean;
+  isCorrect?: boolean;
+  isEndOfPassage?: boolean;
+  color?: string;
 }
 
 const Follower = ({
   wbContainerRef,
   wbRef,
   raceState,
+  settings,
   disabled,
+  isCorrect,
+  isEndOfPassage,
+  color,
 }: FollowerProps) => {
   const followerRef = React.useRef<HTMLDivElement>(null);
-  const { gameSettings } = useGameSettings();
 
-  //   const followerSlide = keyframes`
-  //   from {
-  //     left: ${prevccol}px;
-  //     width: ${prevccw}px
-  //   }
-  //   to {
-  //     left: ${ccol}px;
-  //   }
-  // `;
+  const updateFollowerHandler = () => {
+    updateFollower(
+      wbRef,
+      wbContainerRef,
+      followerRef,
+      raceState,
+      settings,
+      isCorrect,
+      isEndOfPassage
+    );
+  };
+
+  useMutationObserver({
+    ref: document.body,
+    callback: (mutationList) => {
+      if (mutationList.length <= 1) return;
+      updateFollowerHandler();
+    },
+  });
+
   React.useEffect(() => {
-    updateFollower(wbRef, wbContainerRef, followerRef, raceState, gameSettings);
+    updateFollowerHandler();
   }, [raceState]);
 
   React.useEffect(() => {
-    const initFollowerInterval = setInterval(() => {
-      if (wbRef.current && wbRef.current.children[0]) {
-        updateFollower(
-          wbRef,
-          wbContainerRef,
-          followerRef,
-          raceState,
-          gameSettings
-        );
-        clearInterval(initFollowerInterval);
-      }
-    }, 100);
-
     const resizeListener = () => {
-      updateFollower(
-        wbRef,
-        wbContainerRef,
-        followerRef,
-        raceState,
-        gameSettings
-      );
+      setTimeout(() => {
+        updateFollowerHandler();
+      }, 50);
     };
     // set resize listener
     window.addEventListener("resize", resizeListener);
@@ -91,23 +75,44 @@ const Follower = ({
       // remove resize listener
       window.removeEventListener("resize", resizeListener);
     };
-  }, []);
+  }, [raceState, settings]);
 
   const FollowerBox = React.useMemo(() => {
+    const typeStyles = [
+      {
+        ...styles,
+        minHeight: "40px",
+        backgroundColor: color || "rgba(158, 219, 145)",
+        opacity: 0.2,
+      },
+      {
+        ...styles,
+        minHeight: "32px",
+        borderLeft: "2px solid",
+      },
+      {
+        ...styles,
+        minHeight: "32px",
+        borderBottom: "2px solid",
+      },
+    ];
+
     return (
       <Box
         ref={followerRef}
         sx={{
-          ...typeStyles[gameSettings.display.followerStyle],
-          transition: gameSettings.display?.smoothFollower
+          ...typeStyles[
+            color ? FollowerTypes.DEFAULT : settings.display.followerStyle
+          ],
+          transition: settings.display?.smoothFollower
             ? `left linear, width linear`
             : "none",
-          transitionDuration: `${gameSettings.display.followerSpeed}s`,
+          transitionDuration: `${settings.display.followerSpeed}s`,
         }}
         display={disabled ? "none" : "block"}
       ></Box>
     );
-  }, [disabled, gameSettings]);
+  }, [disabled, settings]);
 
   return <>{FollowerBox}</>;
 };
@@ -120,14 +125,15 @@ export default React.memo(Follower, (props, newProps) => {
     wordsTyped: newWordsTyped,
   } = newProps.raceState;
 
-  if (
+  return (
     currentCharIndex === newCurrentCharIndex &&
     currentWordIndex === newCurrentWordIndex &&
-    wordsTyped === newWordsTyped
-  )
-    return true;
-
-  return false;
+    wordsTyped === newWordsTyped &&
+    props.isEndOfPassage === newProps.isEndOfPassage &&
+    props.isCorrect === newProps.isCorrect &&
+    props.disabled === newProps.disabled &&
+    props.settings == newProps.settings
+  );
 });
 
 const updateFollower = (
@@ -135,7 +141,9 @@ const updateFollower = (
   wbContainerRef: React.RefObject<HTMLDivElement> | undefined,
   followerRef: React.RefObject<HTMLDivElement>,
   raceState: RaceState | RaceStateSubset,
-  settings: GameSettings
+  settings: GameSettings,
+  isCorrect: boolean | undefined,
+  isEndOfPassage: boolean | undefined
 ) => {
   if (
     wbRef.current &&
@@ -143,11 +151,21 @@ const updateFollower = (
     wbRef.current.offsetLeft &&
     followerRef.current
   ) {
-    const charInfo = wbRef.current.children[raceState.wordsTyped].children[
-      raceState.currentCharIndex - raceState.currentWordIndex
-    ] as HTMLDivElement;
+    const wordRef = wbRef.current.children[raceState.wordsTyped];
+    if (!wordRef) return;
+
+    let charInfo = null;
+    if (raceState.currentWordIndex === undefined) {
+      charInfo = wordRef.children[
+        isEndOfPassage ? wordRef.children.length - 2 : 0
+      ] as HTMLDivElement;
+    } else {
+      charInfo = wordRef.children[
+        raceState.currentCharIndex - raceState.currentWordIndex
+      ] as HTMLDivElement;
+    }
     if (!charInfo) return;
-    if (charInfo.offsetTop > 155)
+    if (charInfo.offsetTop > 155 && settings.raceType !== RaceTypes.ONLINE)
       wbRef.current.style.top = `-${charInfo.offsetTop - 149}px`;
 
     let containerOffsetLeft = 0;
@@ -174,5 +192,12 @@ const updateFollower = (
     followerRef.current.style.left = `${ccol}px`;
     followerRef.current.style.top = `${ccot}px`;
     followerRef.current.style.width = `${ccw}px`;
+
+    if (isCorrect === undefined) return;
+    if (!isCorrect) {
+      followerRef.current.style.border = "2px solid red";
+    } else {
+      followerRef.current.style.border = "none";
+    }
   }
 };

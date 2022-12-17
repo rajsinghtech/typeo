@@ -104,19 +104,19 @@ function StatsComponent() {
     setBaseStats(getBaseStats(statFilters));
   }, [statFilters, getBaseStats]);
 
-  if (!isLoggedIn)
-    return (
-      <>
-        <Box sx={{ textAlign: "center", width: "100%", mt: 20 }}>
-          <Typography variant="h2" color="secondary">
-            You must be logged in to see stats
-          </Typography>
-          <Typography variant="h2" color="warning.main" mt={5}>
-            Guest Stats Coming Soon
-          </Typography>
-        </Box>
-      </>
-    );
+  // if (!isLoggedIn)
+  //   return (
+  //     <>
+  //       <Box sx={{ textAlign: "center", width: "100%", mt: 20 }}>
+  //         <Typography variant="h2" color="secondary">
+  //           You must be logged in to see stats
+  //         </Typography>
+  //         <Typography variant="h2" color="warning.main" mt={5}>
+  //           Guest Stats Coming Soon
+  //         </Typography>
+  //       </Box>
+  //     </>
+  //   );
 
   return (
     <>

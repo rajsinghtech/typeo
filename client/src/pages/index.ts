@@ -1,5 +1,7 @@
 import Home from "pages/home";
-import Online from "pages/online";
+import Multiplayer from "pages/multiplayer";
+import FFA from "pages/ffa";
+import PrivateMatch from "pages/private-match";
 import Signup from "pages/signup";
 import Login from "pages/login";
 import ForgotPassword from "pages/forgot-password";
@@ -9,7 +11,9 @@ import Improve from "pages/improve";
 
 export default {
   Home,
-  Online,
+  Multiplayer,
+  FFA,
+  PrivateMatch,
   Signup,
   Login,
   ForgotPassword,

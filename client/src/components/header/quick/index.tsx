@@ -1,6 +1,6 @@
 import React from "react";
 import { useHistory } from "react-router-dom";
-import { HomeProfile } from "pages/home/components/profile-display";
+import { HomeProfile } from "components/profile-display";
 import { SettingsDialog } from "components/standard-game/settings";
 import { useAuth } from "contexts/AuthContext";
 import SettingsIcon from "@mui/icons-material/Settings";

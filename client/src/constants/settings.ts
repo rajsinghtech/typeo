@@ -105,7 +105,6 @@ export const DefaultOnlineGameSettings: GameSettings = {
   textType: TextTypes.PASSAGE,
   gameInfo: {
     type: GameTypes.WORDS,
-    amount: 50,
     practice: { isPractice: false, practiceStrings: [] },
     strict: true,
   },
