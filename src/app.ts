@@ -28,7 +28,7 @@ app.use((err: any, req: any, res: any, next: any) => {
   res.status(err.status || 500).send(err.text || "Something went wrong");
 });
 
-const buildDir = path.join(__dirname, "clientbuild");
+const buildDir = path.join(__dirname, "..", "clientbuild");
 console.log(buildDir);
 
 app.use(express.static(buildDir));
