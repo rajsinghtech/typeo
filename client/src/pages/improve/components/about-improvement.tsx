@@ -7,7 +7,6 @@ import {
   StepButton,
   Stepper,
   StepContent,
-  StepLabel,
   Button,
 } from "@mui/material";
 

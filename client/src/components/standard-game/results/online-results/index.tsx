@@ -1,7 +1,6 @@
 import React from "react";
 import "chartjs-adapter-date-fns";
 import { Line } from "react-chartjs-2";
-import { minimizedDrawerWidth, drawerWidth } from "components/navigation";
 import { GridCard, HoverableText } from "components/common";
 import { GraphData } from "constants/graphs";
 import { ResultsData } from "constants/race";
@@ -57,7 +56,7 @@ export default function OnlineResults({
   const [graphData, setGraphData] = React.useState<GraphData>();
   const [isGraphOpen] = React.useState<boolean>(false);
   const graphRef = React.useRef<HTMLDivElement>();
-  console.log("RENDERING RESULTS");
+
   const history = useHistory();
   const theme = useTheme();
 

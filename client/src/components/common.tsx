@@ -15,7 +15,6 @@ import {
   Checkbox,
   ListItemText,
   Box,
-  Chip,
   InputLabel,
   Switch,
   useTheme,
@@ -87,6 +86,7 @@ interface GridCardProps {
   noStyle?: boolean;
   textalign?: string;
   color?: string;
+  // eslint-disable-next-line
   sx?: any;
   children?: React.ReactNode;
   [x: string]: unknown;
@@ -153,6 +153,7 @@ interface HoverableTextProps {
   hoverText: string;
   placement?: Placement;
   variant?: TextVariant;
+  // eslint-disable-next-line
   sx?: any;
   [x: string]: unknown;
 }
@@ -307,8 +308,8 @@ export const getMultiSelectUpdate = (
   return newValues;
 };
 
+// eslint-disable-next-line
 export const StyledSwitch = (props: any) => {
-  const theme = useTheme();
   return (
     <Switch
       {...props}

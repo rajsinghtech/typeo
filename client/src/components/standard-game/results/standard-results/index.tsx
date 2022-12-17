@@ -5,7 +5,7 @@ import { drawerWidth, minimizedDrawerWidth } from "components/navigation";
 import { GridCard, HoverableText } from "components/common";
 import { ChartData } from "constants/graphs";
 import { ResultsData } from "constants/race";
-import { CharacterStats, CharacterStatsMap } from "constants/stats";
+import { CharacterStatsMap } from "constants/stats";
 import StatKeyboard from "components/stats//stat-keyboard";
 import {
   getCharacterStatsMap,

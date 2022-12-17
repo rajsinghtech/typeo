@@ -6,9 +6,7 @@ import {
   DefaultStatFilters,
   StatFilters,
   StatsStructure,
-  Timeframes,
 } from "constants/stats";
-import { useAuth } from "contexts/AuthContext";
 import StatKeyboard from "components/stats/stat-keyboard";
 import MissedSequences from "components/stats/missed-sequences";
 import { useStats } from "contexts/StatsContext";
@@ -24,7 +22,7 @@ import {
 import { getMultiSelectUpdate, GridCard } from "components/common";
 import Filters from "pages/stats/components/filters";
 import StatCard from "pages/stats/components/stat-card";
-import { GameTypeNames, GameTypes, TextTypeNames } from "constants/settings";
+import { GameTypeNames, TextTypeNames } from "constants/settings";
 import { SelectChangeEvent } from "@mui/material/Select";
 import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 import InsightsIcon from "@mui/icons-material/Insights";
@@ -69,7 +67,6 @@ function StatsComponent() {
 
   const { races, getBaseStats } = useStats();
 
-  const { isLoggedIn } = useAuth();
   const theme = useTheme();
 
   const handleTimeframeChange = (event: SelectChangeEvent) => {

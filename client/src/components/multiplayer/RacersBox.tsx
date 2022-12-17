@@ -1,12 +1,9 @@
 import React from "react";
 import { GridCard } from "components/common";
 import { OnlineRaceData, PLAYER_COLORS } from "components/multiplayer/ffa-game";
-import {
-  calculateWPMColor,
-  LinearProgressWithLabel,
-} from "components/standard-game/feedback/speed-progress";
+import { LinearProgressWithLabel } from "components/standard-game/feedback/speed-progress";
 import PowerOffIcon from "@mui/icons-material/PowerOff";
-import { Box, Grid, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 
 interface RacersBoxProps {
   racerData: OnlineRaceData;

@@ -14,7 +14,6 @@ import SpeedProgress from "components/standard-game/feedback/speed-progress";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import {
   Box,
-  Grid,
   IconButton,
   Theme,
   Typography,
@@ -250,7 +249,6 @@ export default function StandardGame({
   ]);
 
   const MainDisplay = React.useMemo(() => {
-    const isOnline = settings.raceType === RaceTypes.ONLINE;
     return (
       <Box
         sx={{ userSelect: "none", flexGrow: 1 }}
@@ -285,7 +283,6 @@ export default function StandardGame({
                 type: "keydown",
                 event,
                 settings,
-                currentUser,
               })
             }
             onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
@@ -293,7 +290,6 @@ export default function StandardGame({
                 type: "onChange",
                 event,
                 settings,
-                currentUser,
               })
             }
             onFocus={() => {

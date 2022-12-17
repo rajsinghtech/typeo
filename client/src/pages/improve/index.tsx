@@ -9,7 +9,6 @@ import {
   limit,
   onSnapshot,
   orderBy,
-  where,
 } from "firebase/firestore";
 
 import AboutImprovement from "./components/about-improvement";
@@ -22,7 +21,7 @@ export default function Improve() {
   const [activeComponent, setActiveComponent] = React.useState<number>(0);
   const [racesCompleted, setRacesCompleted] = React.useState<number>(0);
 
-  const { isLoggedIn, currentUser } = useAuth();
+  const { currentUser } = useAuth();
 
   React.useEffect(() => {
     let isMounted = true;

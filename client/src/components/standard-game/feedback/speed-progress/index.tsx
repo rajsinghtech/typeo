@@ -1,6 +1,6 @@
 import React from "react";
 import { TextVariant } from "constants/common";
-import { Box, Grid, Typography, Slider } from "@mui/material";
+import { Box, Typography, Slider } from "@mui/material";
 
 interface LPWLProps {
   label: number | string;

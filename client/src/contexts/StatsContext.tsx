@@ -33,7 +33,9 @@ interface ContextStats {
 
 const StatContext = React.createContext<ContextStats>({
   races: [],
-  addGuestRace: (raceData: ResultsData) => null,
+  addGuestRace: (raceData: ResultsData) => {
+    raceData;
+  },
   getBaseStats: () => ({
     averages: { wpm: 0, accuracy: 0 },
     best: { wpm: 0, accuracy: 0 },
@@ -180,24 +182,29 @@ export const getCharacterStatsMap = (
     const passageCharacter = passage[dataPoint.charIndex].toLowerCase();
 
     if (index === 0) {
-      if (characterStatsMap.has(passageCharacter))
-        characterStatsMap.get(passageCharacter)!.frequency++;
-      else
+      if (characterStatsMap.has(passageCharacter)) {
+        const cStats = characterStatsMap.get(passageCharacter);
+        if (cStats) cStats.frequency++;
+      } else
         characterStatsMap.set(passageCharacter, {
           wpm: 0,
           frequency: 1,
           misses: 0,
         });
       if (!dataPoint.isCorrect) {
-        characterStatsMap.get(passageCharacter)!.misses++;
+        const cStats = characterStatsMap.get(passageCharacter);
+        if (cStats) cStats.misses++;
       }
       continue;
     }
 
     if (dataPoint.charIndex !== characterDataPoints[index - 1].charIndex) {
-      if (characterStatsMap.has(passageCharacter))
-        characterStatsMap.get(passageCharacter)!.frequency++;
-      else
+      if (characterStatsMap.has(passageCharacter)) {
+        const cStats = characterStatsMap.get(passageCharacter);
+        if (cStats) {
+          cStats.frequency++;
+        }
+      } else
         characterStatsMap.set(passageCharacter, {
           wpm: 0,
           frequency: 1,
@@ -218,14 +225,18 @@ export const getCharacterStatsMap = (
       const timeBetweenKeys =
         dataPoint.timestamp - characterDataPoints[prevPassageIndex].timestamp;
       const charSpeed = Math.min(300, 0.2 / (timeBetweenKeys / 60000));
-      characterStatsMap.get(passageCharacter)!.wpm =
-        characterStatsMap.get(passageCharacter)!.wpm +
-        (charSpeed - characterStatsMap.get(passageCharacter)!.wpm) /
-          characterStatsMap.get(passageCharacter)!.frequency;
+
+      const cStats = characterStatsMap.get(passageCharacter);
+      if (cStats) {
+        cStats.wpm = cStats.wpm + (charSpeed - cStats.wpm) / cStats.frequency;
+      }
     } else if (
       dataPoint.charIndex !== characterDataPoints[index - 1].charIndex // Make sure it's not a repeated miss
     ) {
-      characterStatsMap.get(passageCharacter)!.misses++;
+      const cStats = characterStatsMap.get(passageCharacter);
+      if (cStats) {
+        cStats.misses++;
+      }
     }
   }
 

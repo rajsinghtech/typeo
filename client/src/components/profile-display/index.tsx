@@ -1,5 +1,5 @@
 import React from "react";
-import { DefaultStatFilters, Timeframes } from "constants/stats";
+import { DefaultStatFilters } from "constants/stats";
 import { useAuth } from "contexts/AuthContext";
 import { useStats } from "contexts/StatsContext";
 import { GridCard } from "components/common";

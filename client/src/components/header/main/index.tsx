@@ -1,26 +1,17 @@
 import React from "react";
 import { useHistory } from "react-router-dom";
-import { useGameSettings } from "contexts/GameSettings";
 import { SettingsDialog } from "components/standard-game/settings";
 import { useAuth } from "contexts/AuthContext";
 import { HomeProfile } from "../../profile-display";
 import PersonIcon from "@mui/icons-material/Person";
 import LoginIcon from "@mui/icons-material/Login";
 import SettingsIcon from "@mui/icons-material/Settings";
-import {
-  Box,
-  Button,
-  Divider,
-  Tooltip,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
+import { Box, Button, Tooltip, useMediaQuery, useTheme } from "@mui/material";
 
 export default function MainHeader() {
   const [settingsOpen, setSettingsOpen] = React.useState(false);
 
-  const { isLoggedIn, logout } = useAuth();
-  const { gameSettings, setGameSettings } = useGameSettings();
+  const { isLoggedIn } = useAuth();
   const theme = useTheme();
   const history = useHistory();
 
@@ -36,12 +27,6 @@ export default function MainHeader() {
 
   const Login = () => {
     history.push("/login");
-  };
-
-  const Logout = async () => {
-    await logout();
-    history.push("/");
-    history.go(0);
   };
 
   const OpenHome = () => {

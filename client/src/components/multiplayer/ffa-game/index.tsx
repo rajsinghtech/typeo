@@ -252,7 +252,6 @@ export default function FFAGame() {
   };
 
   const ResultsDisplay = React.useMemo(() => {
-    console.log("RENDERING RESULTS");
     return (
       <OnlineResults
         open={resultsOpen}
@@ -266,7 +265,6 @@ export default function FFAGame() {
   }, [resultsOpen, wpm, resultsData, place, parentRef.current]);
 
   const StatusDisplay = React.useMemo(() => {
-    console.log("RENDERING STATUS");
     return (
       <Dialog
         open={status !== MatchStatus.STARTED}
@@ -297,7 +295,6 @@ export default function FFAGame() {
   }, [status, countdown, parentRef.current]);
 
   const HeaderDisplay = React.useMemo(() => {
-    console.log("RENDERING HEADER");
     return (
       <>
         {mdScreenSize && (
@@ -311,7 +308,6 @@ export default function FFAGame() {
   }, [mdScreenSize]);
 
   const RacersBoxDisplay = React.useMemo(() => {
-    console.log("RENDERING RACERS BOX");
     return (
       <Grid item xs={8}>
         <RacersBox racerData={onlineRaceData} passage={passage} />
@@ -320,7 +316,6 @@ export default function FFAGame() {
   }, [onlineRaceData, passage]);
 
   const StandardGameDisplay = React.useMemo(() => {
-    console.log("RENDERING STANDARD GAME");
     return (
       <Grid item xs={10}>
         <StandardGame
@@ -335,7 +330,6 @@ export default function FFAGame() {
   }, [testDisabled, onlineRaceData, passage]);
 
   const ToggleResultsDisplay = React.useMemo(() => {
-    console.log("RENDERING TOGGLE RESULTS");
     return (
       <Grid item xs={12} textAlign="center">
         {!resultsOpen && place !== 0 ? (

@@ -12,7 +12,6 @@ export default function SoloGame() {
   const { gameSettings } = useGameSettings();
 
   const { isPractice, practiceStrings } = gameSettings.gameInfo.practice;
-  const isDefenderMode = gameSettings.gameInfo.type === GameTypes.DEFENDER;
 
   const theme = useTheme();
   const smScreenSize = useMediaQuery(theme.breakpoints.down("sm"));

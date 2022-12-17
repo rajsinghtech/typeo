@@ -4,7 +4,6 @@ import {
   RaceState,
   RaceStateSubset,
 } from "components/standard-game/hooks/RaceLogic";
-import { useGameSettings } from "contexts/GameSettings";
 import { FollowerTypes, GameSettings, RaceTypes } from "constants/settings";
 import { Box } from "@mui/material";
 

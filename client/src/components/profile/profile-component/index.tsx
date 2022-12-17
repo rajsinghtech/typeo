@@ -1,8 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "contexts/AuthContext";
-import { getRedirectResult } from "firebase/auth";
-import { auth } from "config/firebase";
 import {
   StyledTextField,
   SuccessAlert,

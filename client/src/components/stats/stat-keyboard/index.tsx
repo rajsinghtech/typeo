@@ -8,15 +8,9 @@ import {
   StatFilters,
   Timeframes,
 } from "constants/stats";
-import { getCharacterStatsMap, useStats } from "contexts/StatsContext";
+import { useStats } from "contexts/StatsContext";
 import SpeedIcon from "@mui/icons-material/Speed";
-import {
-  Box,
-  Button,
-  SelectChangeEvent,
-  Tooltip,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Tooltip, Typography } from "@mui/material";
 
 interface StatKeyboardProps {
   title: string;
@@ -33,7 +27,7 @@ export default function StatKeyboard({
   interactive,
   noBorder,
 }: StatKeyboardProps) {
-  const [timeframe, setTimeframe] = React.useState<number>(Timeframes.LAST_100);
+  const [timeframe] = React.useState<number>(Timeframes.LAST_100);
   const [keyStatsMap, setKeyStatsMap] = React.useState<CharacterStatsMap>(
     data || new Map()
   );
@@ -48,11 +42,6 @@ export default function StatKeyboard({
   const parentRef = React.useRef<HTMLDivElement>(null);
 
   const { getKeyStatsMap } = useStats();
-
-  const handleTimeframeChange = (event: SelectChangeEvent) => {
-    const newTimeframe = parseInt(event.target.value);
-    setTimeframe(newTimeframe);
-  };
 
   React.useEffect(() => {
     if (data) return;

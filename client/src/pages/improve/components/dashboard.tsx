@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useGameSettings } from "contexts/GameSettings";
 import { DefaultImproveGameSettings } from "constants/settings";
 import { GridCard } from "components/common";
 import StandardGame from "components/standard-game";
-import { useAuth } from "contexts/AuthContext";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import { Box, Typography, Button, Stack } from "@mui/material";
 
@@ -12,7 +11,6 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ completed }: DashboardProps) {
-  const { currentUser } = useAuth();
   const { gameSettings } = useGameSettings();
 
   const [tests] = useState<number[]>([1, 2, 3, 4, 5]);

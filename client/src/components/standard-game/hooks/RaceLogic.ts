@@ -10,9 +10,8 @@ import {
   RaceTypes,
   TextTypeNames,
 } from "constants/settings";
-import { GuestUser, useAuth } from "contexts/AuthContext";
+import { useAuth } from "contexts/AuthContext";
 import { useInterval } from "components/common";
-import { User } from "firebase/auth";
 import { CLIENT_RACE_UPDATE_EVENT } from "api/sockets/race";
 import { useSocketContext } from "contexts/SocketContext";
 import { useStats } from "contexts/StatsContext";
@@ -216,11 +215,7 @@ const OnStartRace = (raceState: RaceState): RaceState => {
  * @param currentUser
  * @returns - Updated race state
  */
-const OnEndRace = (
-  raceState: RaceState,
-  settings: GameSettings,
-  currentUser: User | GuestUser
-): RaceState => {
+const OnEndRace = (raceState: RaceState, settings: GameSettings): RaceState => {
   let newRaceState = { ...raceState };
   newRaceState = UpdateWPM(raceState, settings);
 
@@ -399,8 +394,7 @@ const HandleDeletion = (
 const OnChange = (
   raceState: RaceState,
   event: React.ChangeEvent<HTMLInputElement>,
-  settings: GameSettings,
-  currentUser: User | GuestUser
+  settings: GameSettings
 ): RaceState => {
   const inputVal = event.target.value;
   const inputRef = event.target as HTMLInputElement;
@@ -445,8 +439,7 @@ const OnChange = (
         ...raceState,
         charactersTyped: raceState.charactersTyped + 1,
       },
-      settings,
-      currentUser
+      settings
     );
   }
   return { ...raceState };
@@ -455,8 +448,7 @@ const OnChange = (
 const OnKeyDown = (
   raceState: RaceState,
   settings: GameSettings,
-  event: React.KeyboardEvent<HTMLInputElement>,
-  currentUser: User | GuestUser
+  event: React.KeyboardEvent<HTMLInputElement>
 ): RaceState => {
   const key = event.key;
   const inputRef = event.target as HTMLInputElement;
@@ -475,7 +467,7 @@ const OnKeyDown = (
     if (raceState.wordsTyped === raceState.words.length - 1) {
       newRaceState.isCorrect = false;
       newRaceState = AddCharacterDataPoint(raceState, newRaceState, key);
-      return OnEndRace(newRaceState, settings, currentUser);
+      return OnEndRace(newRaceState, settings);
     }
 
     const isWordCorrect =
@@ -634,8 +626,7 @@ const OnKeyDown = (
 
 const IncrementSeconds = (
   raceState: RaceState,
-  settings: GameSettings,
-  currentUser: User | GuestUser
+  settings: GameSettings
 ): RaceState => {
   let newRaceState = { ...raceState };
   newRaceState = UpdateWPM(raceState, settings);
@@ -650,7 +641,7 @@ const IncrementSeconds = (
     //     horizontal: "right",
     //   },
     // });
-    return OnEndRace(newRaceState, settings, currentUser);
+    return OnEndRace(newRaceState, settings);
   }
   return {
     ...newRaceState,
@@ -688,14 +679,12 @@ interface OnChangeAction {
   type: "onChange";
   event: React.ChangeEvent<HTMLInputElement>;
   settings: GameSettings;
-  currentUser: User | GuestUser;
 }
 
 interface KeydownAction {
   type: "keydown";
   settings: GameSettings;
   event: React.KeyboardEvent<HTMLInputElement>;
-  currentUser: User | GuestUser;
 }
 
 interface StartRaceAction {
@@ -705,7 +694,6 @@ interface StartRaceAction {
 interface EndRaceAction {
   type: "endRace";
   settings: GameSettings;
-  currentUser: User | GuestUser;
 }
 
 interface ResetAction {
@@ -724,7 +712,6 @@ interface AddPassageLengthAction {
 interface IncrementSecondsAction {
   type: "incrementSeconds";
   settings: GameSettings;
-  currentUser: User | GuestUser;
 }
 
 interface SetAmountAction {
@@ -748,14 +735,9 @@ const RaceStateReducer = (
 ): RaceState => {
   switch (action.type) {
     case "onChange":
-      return OnChange(state, action.event, action.settings, action.currentUser);
+      return OnChange(state, action.event, action.settings);
     case "keydown":
-      return OnKeyDown(
-        state,
-        action.settings,
-        action.event,
-        action.currentUser
-      );
+      return OnKeyDown(state, action.settings, action.event);
     case "reset":
       return ResetRace(
         state,
@@ -769,9 +751,9 @@ const RaceStateReducer = (
     case "startRace":
       return OnStartRace(state);
     case "endRace":
-      return OnEndRace(state, action.settings, action.currentUser);
+      return OnEndRace(state, action.settings);
     case "incrementSeconds":
-      return IncrementSeconds(state, action.settings, action.currentUser);
+      return IncrementSeconds(state, action.settings);
     case "setAmount":
       return SetAmount(state, action.amount);
     default:
@@ -804,7 +786,7 @@ export default function useRaceLogic({
 
   useInterval(
     () => {
-      raceStateDispatch({ type: "incrementSeconds", settings, currentUser });
+      raceStateDispatch({ type: "incrementSeconds", settings });
     },
     raceState.isRaceRunning ? 1000 : null
   );
@@ -865,7 +847,7 @@ export default function useRaceLogic({
   React.useEffect(() => {
     if (raceState.amount <= 0 && raceState.isRaceRunning) {
       console.log("Ending Race On Amounts");
-      raceStateDispatch({ type: "endRace", settings, currentUser });
+      raceStateDispatch({ type: "endRace", settings });
     }
   }, [raceState.amount]);
 

@@ -1,12 +1,10 @@
 import React from "react";
 import { useGameSettings } from "contexts/GameSettings";
-import { useAuth } from "contexts/AuthContext";
 
 import { DefaultImproveGameSettings } from "constants/settings";
 import StandardGame from "components/standard-game";
 
 import KeyboardIcon from "@mui/icons-material/Keyboard";
-import InfoIcon from "@mui/icons-material/Info";
 import { Box, Button, Divider, Grid, Typography } from "@mui/material";
 
 interface PlacementTestsProps {
@@ -18,8 +16,6 @@ export default function PlacementTests({
   completed,
   onDashboardPress,
 }: PlacementTestsProps) {
-  const { currentUser } = useAuth();
-
   const { gameSettings } = useGameSettings();
 
   return (
