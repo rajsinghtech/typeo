@@ -13,6 +13,7 @@ import {
   createTheme,
   responsiveFontSizes,
 } from "@mui/material/styles";
+import { Typography } from "@mui/material";
 
 declare module "@mui/material/styles" {
   interface BreakpointOverrides {
@@ -131,7 +132,7 @@ ReactDOM.render(
               maxSnack={3}
               anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
             >
-              <Router />
+              <Typography variant="h1">JASON SUCKS</Typography>
               {/* <ChatBox /> */}
             </SnackbarProvider>
           </StatsProvider>
