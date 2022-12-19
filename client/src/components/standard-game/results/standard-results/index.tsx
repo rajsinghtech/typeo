@@ -149,7 +149,14 @@ export default function Results({
 
     // Update text
     setWPM(dataPoints[dataPoints.length - 1].wpm);
-  }, [dataPoints, accuracy, characters, testType]);
+  }, [
+    characterDataPoints,
+    passage,
+    dataPoints,
+    accuracy,
+    characters,
+    testType,
+  ]);
 
   return (
     <>
@@ -158,15 +165,17 @@ export default function Results({
         onClose={() => {
           onClose(false);
         }}
-        maxWidth="lg"
+        fullWidth
+        maxWidth="sm"
         PaperProps={{
           sx: {
             borderRadius: "7px",
-            marginLeft: JSON.parse(
-              localStorage.getItem("typeo-minimized") || "false"
-            )
-              ? `${minimizedDrawerWidth}px`
-              : `${drawerWidth}px`,
+            marginLeft: {
+              xs: undefined,
+              md: JSON.parse(localStorage.getItem("typeo-minimized") || "false")
+                ? `${minimizedDrawerWidth}px`
+                : `${drawerWidth}px`,
+            },
           },
         }}
       >
@@ -186,20 +195,20 @@ export default function Results({
           >
             <Box pt={2}>
               <Typography display="inline" variant="h3" pt={2}>
-                WPM:
-              </Typography>{" "}
+                {"WPM: "}
+              </Typography>
               <Typography display="inline" variant="h3" color="secondary">
                 {wpm.toFixed(1)}
               </Typography>
             </Box>
             <Box>
-              <Typography display="inline">Accuracy:</Typography>{" "}
+              <Typography display="inline">{"Accuracy: "}</Typography>
               <Typography display="inline" color="secondary">
-                {accuracy.toFixed(1)} %
+                {`${accuracy.toFixed(1)}%`}
               </Typography>
             </Box>
             <Box>
-              <Typography display="inline-block">Characters:</Typography>{" "}
+              <Typography display="inline-block">{"Characters: "}</Typography>
               {Object.entries(characters).map(([key, val]) => (
                 <span key={key}>
                   <HoverableText
@@ -210,7 +219,7 @@ export default function Results({
                         ? "success.main"
                         : key === "incorrect"
                         ? "error"
-                        : "primary"
+                        : "info.main"
                     }
                     sx={{ display: "inline-block" }}
                   />
@@ -219,14 +228,14 @@ export default function Results({
               ))}
             </Box>
             <Box>
-              <Typography display="inline">Test Type:</Typography>{" "}
+              <Typography display="inline">{"Test Type: "}</Typography>
               <Typography display="inline" color="secondary">
                 {testType.name}
                 {testType.amount ? `, ${testType.amount}` : null}
               </Typography>
             </Box>
             <Box>
-              <Typography display="inline">Text Type:</Typography>{" "}
+              <Typography display="inline">{"Text Type: "}</Typography>
               <Typography display="inline" color="secondary">
                 {testType.textType}
               </Typography>
@@ -256,7 +265,7 @@ export default function Results({
           </GridCard>
           {graphData ? (
             <GridCard noBorder>
-              <Box height="50vh" width="50vw">
+              <Box height="50vh">
                 <Chart
                   data={graphData}
                   type="line"

@@ -33,6 +33,7 @@ export default function Multiplayer() {
         />
         <MatchButton
           title="Create Private Match"
+          disabled
           icon={<GroupsIcon sx={{ fontSize: "4em" }} />}
           onClick={() => history.push("/multiplayer/private/1234")}
         />
@@ -45,9 +46,10 @@ interface MatchButtonProps {
   title: string;
   icon: React.ReactNode;
   onClick?: () => void;
+  disabled?: boolean;
 }
 
-const MatchButton = ({ title, icon, onClick }: MatchButtonProps) => {
+const MatchButton = ({ title, icon, onClick, disabled }: MatchButtonProps) => {
   return (
     <Button
       variant="outlined"
@@ -61,6 +63,7 @@ const MatchButton = ({ title, icon, onClick }: MatchButtonProps) => {
         height: "17em",
       }}
       onClick={onClick}
+      disabled={disabled}
     >
       {icon}
       <Typography variant="h5">{title}</Typography>

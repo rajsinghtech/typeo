@@ -51,7 +51,7 @@ const Follower = ({
   useMutationObserver({
     ref: document.body,
     callback: (mutationList) => {
-      if (mutationList.length <= 1) return;
+      //if (mutationList.length <= 1) return;
       updateFollowerHandler();
     },
   });
@@ -179,7 +179,6 @@ const updateFollower = (
     const ccot =
       containerOffsetTop + wbRef.current.offsetTop + charInfo?.offsetTop - 4;
     const ccw = charInfo?.offsetWidth + 3;
-
     if (ccot !== parseFloat(followerRef.current.style.top))
       followerRef.current.style.transitionDuration = "0.03s";
     else if (followerRef.current.style.transitionDuration !== "0.1s") {

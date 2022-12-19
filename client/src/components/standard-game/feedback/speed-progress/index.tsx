@@ -27,7 +27,7 @@ export function LinearProgressWithLabel({
           "& .MuiSlider-thumb": {
             color: fillColor,
           },
-          flex: 6,
+          flex: 5,
         }}
         defaultValue={0}
         value={value}
@@ -40,6 +40,7 @@ export function LinearProgressWithLabel({
       <Typography
         variant={labelTextVariant || "h5"}
         color="textSecondary"
+        textOverflow="clip"
         noWrap
         flex={1}
       >

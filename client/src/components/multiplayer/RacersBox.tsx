@@ -1,4 +1,5 @@
 import React from "react";
+import { useAuth } from "contexts/AuthContext";
 import { GridCard } from "components/common";
 import { OnlineRaceData, PLAYER_COLORS } from "components/multiplayer/ffa-game";
 import { LinearProgressWithLabel } from "components/standard-game/feedback/speed-progress";
@@ -11,6 +12,7 @@ interface RacersBoxProps {
 }
 
 export default function RacersBox({ racerData, passage }: RacersBoxProps) {
+  const { currentUser } = useAuth();
   const stepAmount = (1 / passage.split(" ").length) * 100;
   return (
     <Box display="flex" flexDirection="column" gap={1}>
@@ -21,6 +23,7 @@ export default function RacersBox({ racerData, passage }: RacersBoxProps) {
               <Box display="flex" flex={1} overflow="hidden" gap={2}>
                 {!racer.isConnected && <PowerOffIcon color="error" />}
                 <Typography
+                  color={currentUser.uid === racer.id ? "secondary" : undefined}
                   whiteSpace="nowrap"
                   textOverflow="ellipsis"
                   overflow="hidden"

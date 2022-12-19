@@ -89,6 +89,8 @@ export default function FFAGame() {
   const [place, setPlace] = React.useState<number>(0);
   const [wpm, setWpm] = React.useState<number>(0);
 
+  const [matchUID, setMatchUID] = React.useState<string>("");
+
   const [resultsOpen, setResultsOpen] = React.useState<boolean>(false);
   const [testDisabled, setTestDisabled] = React.useState<boolean>(true);
 
@@ -107,6 +109,9 @@ export default function FFAGame() {
   ) => {
     if (passage === " ") setPassage(matchPassage);
     if (players.length === 1) setStatus(MatchStatus.WAITING_FOR_PLAYERS);
+    if (currentUser.uid === player) {
+      setPlace(0);
+    }
     setOnlineRaceData((prevOnlineRaceData) => ({
       ...prevOnlineRaceData,
       playerData: players.map(({ uid, displayName }) => ({
@@ -161,6 +166,7 @@ export default function FFAGame() {
   };
 
   const JoinedExistingMatch = (time: number) => {
+    setPlace(0);
     setStatus(MatchStatus.STARTING);
     setCountdown((time - (time % 1000)) / 1000 - 1);
     setTimeout(() => {
@@ -270,6 +276,9 @@ export default function FFAGame() {
         open={status !== MatchStatus.STARTED}
         container={parentRef.current}
         sx={{ position: "absolute" }}
+        disableAutoFocus
+        disableEnforceFocus
+        onMouseDown={(e) => e.preventDefault()}
       >
         <Box textAlign="center" padding={4}>
           {status === MatchStatus.WAITING_FOR_PLAYERS ? (
@@ -329,23 +338,35 @@ export default function FFAGame() {
     );
   }, [testDisabled, onlineRaceData, passage]);
 
+  console.log(document.activeElement);
+
   const ToggleResultsDisplay = React.useMemo(() => {
     return (
-      <Grid item xs={12} textAlign="center">
-        {!resultsOpen && place !== 0 ? (
-          <Button
-            variant="contained"
-            sx={{
-              margin: 2,
-            }}
-            onClick={() => setResultsOpen(true)}
-          >
-            Show Results
-          </Button>
-        ) : null}
-      </Grid>
+      <>
+        {!resultsOpen && place !== 0 && (
+          <Grid item xs={12} textAlign="center">
+            <Box display="flex" justifyContent="center" gap={3}>
+              <Button
+                variant="contained"
+                color="info"
+                onClick={() => setResultsOpen(true)}
+              >
+                Show Results
+              </Button>
+              <Button
+                variant="contained"
+                onClick={() => {
+                  JoinQueue(socket);
+                }}
+              >
+                Find New Match
+              </Button>
+            </Box>
+          </Grid>
+        )}
+      </>
     );
-  }, [resultsOpen, place]);
+  }, [resultsOpen, place, status, socket]);
 
   React.useEffect(() => {
     socket.on(PLAYER_LEFT_EVENT, PlayerLeft);
@@ -381,29 +402,31 @@ export default function FFAGame() {
 
   return (
     <>
-      <Grid container spacing={3} sx={{ position: "relative" }} ref={parentRef}>
-        {ResultsDisplay}
-        {StatusDisplay}
-        {HeaderDisplay}
-        {RacersBoxDisplay}
-        {React.useMemo(
-          () => (
-            <>
+      <Box ref={parentRef} position="relative" minHeight="80vh">
+        <Grid container spacing={3}>
+          {ResultsDisplay}
+          {StatusDisplay}
+          {HeaderDisplay}
+          {RacersBoxDisplay}
+          {React.useMemo(
+            () => (
+              <>
+                <Grid item xs={2}></Grid>
+                <Grid item xs={1}></Grid>
+              </>
+            ),
+            []
+          )}
+          {StandardGameDisplay}
+          {ToggleResultsDisplay}
+          {React.useMemo(
+            () => (
               <Grid item xs={2}></Grid>
-              <Grid item xs={1}></Grid>
-            </>
-          ),
-          []
-        )}
-        {StandardGameDisplay}
-        {ToggleResultsDisplay}
-        {React.useMemo(
-          () => (
-            <Grid item xs={2}></Grid>
-          ),
-          []
-        )}
-      </Grid>
+            ),
+            []
+          )}
+        </Grid>
+      </Box>
     </>
   );
 }

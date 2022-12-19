@@ -277,8 +277,8 @@ const KeyboardButton = ({
             ? () => togglePracticeStringsValue(keyboardKey)
             : () => null
         }
-        onMouseOver={drawLines}
-        onMouseLeave={removeLines}
+        // onMouseOver={drawLines}
+        // onMouseLeave={removeLines}
       >
         <Box
           sx={{

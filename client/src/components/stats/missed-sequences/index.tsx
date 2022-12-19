@@ -218,7 +218,9 @@ export default function MissedSequences({
             }}
           />
         ) : (
-          <Typography>None</Typography>
+          <Typography variant="h6" color="secondary" paddingBottom={2}>
+            None
+          </Typography>
         )}
       </GridCard>
     </>

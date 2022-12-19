@@ -34,7 +34,7 @@ export default React.memo(function WordBox({
     <Box
       mx={{ xs: 2, sm: 3, md: 5 }}
       mt={{ xs: 2, sm: 3, md: 5 }}
-      mb={1}
+      mb={settings?.raceType === RaceTypes.ONLINE ? { xs: 2, sm: 3, md: 5 } : 1}
       overflow="hidden"
       minHeight="8.1em"
       height={settings?.raceType === RaceTypes.ONLINE ? "fit-content" : "8.1em"}

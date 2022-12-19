@@ -15,6 +15,7 @@ import { useInterval } from "components/common";
 import { CLIENT_RACE_UPDATE_EVENT } from "api/sockets/race";
 import { useSocketContext } from "contexts/SocketContext";
 import { useStats } from "contexts/StatsContext";
+import { MATCH_STARTED_EVENT } from "api/sockets/matchmaking";
 
 export interface RaceState {
   textAreaText: string; // The text as one string
@@ -772,6 +773,7 @@ export default function useRaceLogic({
   settings,
   passage,
   testDisabled,
+  setResultsDataProp,
 }: RaceLogicProps) {
   const { currentUser, isLoggedIn } = useAuth();
 
@@ -839,12 +841,6 @@ export default function useRaceLogic({
   }, [raceState.wordsTyped]);
 
   React.useEffect(() => {
-    if (settings.raceType === RaceTypes.ONLINE && testDisabled === false) {
-      raceStateDispatch({ type: "startRace" });
-    }
-  }, [testDisabled]);
-
-  React.useEffect(() => {
     if (raceState.amount <= 0 && raceState.isRaceRunning) {
       console.log("Ending Race On Amounts");
       raceStateDispatch({ type: "endRace", settings });
@@ -854,6 +850,9 @@ export default function useRaceLogic({
   React.useEffect(() => {
     if (!raceState.isRaceFinished) return;
     if (settings.raceType === RaceTypes.ONLINE) {
+      if (setResultsDataProp) {
+        setResultsDataProp(raceState.statState.resultsData);
+      }
       socket.emit(
         CLIENT_RACE_UPDATE_EVENT,
         raceState.currentCharIndex,
@@ -873,6 +872,18 @@ export default function useRaceLogic({
       addGuestRace(raceState.statState.resultsData);
     }
   }, [raceState.isRaceFinished, isLoggedIn]);
+
+  React.useEffect(() => {
+    if (settings.raceType !== RaceTypes.ONLINE) return;
+    const OnMatchStarted = () => {
+      raceStateDispatch({ type: "startRace" });
+    };
+    socket.on(MATCH_STARTED_EVENT, OnMatchStarted);
+
+    return () => {
+      socket.off(MATCH_STARTED_EVENT, OnMatchStarted);
+    };
+  }, []);
 
   const val: RaceLogic = {
     raceState,

@@ -41,6 +41,7 @@ export default function StandardGame({
   settings,
   testDisabled,
   onlineRaceData,
+  setResultsDataProp,
   passage,
 }: StandardGameProps) {
   const { currentUser } = useAuth();
@@ -49,6 +50,7 @@ export default function StandardGame({
     settings,
     testDisabled,
     passage,
+    setResultsDataProp,
   });
 
   const prevRaceState = usePreviousRaceState(raceState);
@@ -56,7 +58,6 @@ export default function StandardGame({
   const wbContainerRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const wbRef = React.useRef<HTMLDivElement>(null);
-  const [inputDisabled, setInputDisabled] = React.useState<boolean>(false);
   const [isFocused, setIsFocused] = React.useState<boolean>(true);
   const [focusMessageOpen, setFocusMessageOpen] = React.useState<boolean>(true);
   const [focusTimeout, setFocusTimeout] = React.useState<number>(0);
@@ -116,11 +117,14 @@ export default function StandardGame({
   React.useEffect(() => {
     if (raceState.isRaceFinished) {
       StyleReset();
-      if (settings.raceType === RaceTypes.ONLINE) {
-        setInputDisabled(true);
-      }
     }
   }, [raceState.isRaceFinished]);
+
+  React.useEffect(() => {
+    if (settings.raceType === RaceTypes.ONLINE && inputRef.current) {
+      Reset(false);
+    }
+  }, [passage]);
 
   React.useEffect(() => {
     updateStyles(prevRaceState, raceState, wbRef, theme, settings);
@@ -259,6 +263,7 @@ export default function StandardGame({
         }}
       >
         <GridCard
+          id="main-display"
           refObject={wbContainerRef}
           accent={true}
           sx={{ position: "relative", textAlign: "center" }}
@@ -298,7 +303,7 @@ export default function StandardGame({
             onBlur={() => {
               setIsFocused(false);
             }}
-            disabled={inputDisabled || testDisabled}
+            disabled={testDisabled}
             ref={inputRef}
           />
           {testDisabled && settings.gameInfo.practice.isPractice ? (
@@ -347,7 +352,6 @@ export default function StandardGame({
   }, [
     raceState.words,
     raceStateDispatch,
-    inputDisabled,
     testDisabled,
     settings,
     currentUser,
