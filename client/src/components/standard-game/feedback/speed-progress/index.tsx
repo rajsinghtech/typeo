@@ -3,7 +3,7 @@ import { TextVariant } from "constants/common";
 import { Box, Typography, Slider } from "@mui/material";
 
 interface LPWLProps {
-  label: number | string;
+  label?: number | string;
   value: number;
   step: number;
   fillColor: string;
@@ -37,15 +37,17 @@ export function LinearProgressWithLabel({
         max={100}
         disabled
       />
-      <Typography
-        variant={labelTextVariant || "h5"}
-        color="textSecondary"
-        textOverflow="clip"
-        noWrap
-        flex={1}
-      >
-        {label}
-      </Typography>
+      {label && (
+        <Typography
+          variant={labelTextVariant || "h5"}
+          color="textSecondary"
+          textOverflow="clip"
+          noWrap
+          flex={1}
+        >
+          {label}
+        </Typography>
+      )}
     </Box>
   );
 }
@@ -87,12 +89,21 @@ export default React.memo(function SpeedProgress({ wpm }: SpeedProgressProps) {
   return <>{Display}</>;
 });
 
+export function calculateAccuracyColor(
+  accuracy: number,
+  opacity: number
+): string {
+  const green = Math.floor(((clamp(accuracy, 85, 100) - 85) / 15) * 255);
+  const red = 255 - green;
+  return `rgba(${red},${green},65, ${opacity})`;
+}
+
 export function calculateWPMColor(wpm: number, opacity: number): string {
   const green = Math.floor(((clamp(wpm, 30, 170) - 30) / 140) * 255);
   const red = 255 - green;
   return `rgba(${red},${green},65, ${opacity})`;
 }
 
-function clamp(num: number, min: number, max: number): number {
+export function clamp(num: number, min: number, max: number): number {
   return num <= min ? min : num >= max ? max : num;
 }

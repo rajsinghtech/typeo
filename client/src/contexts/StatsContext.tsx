@@ -2,9 +2,13 @@ import React from "react";
 import { RaceSchema } from "constants/schemas/race";
 import { CharacterData, ResultsData } from "constants/race";
 import {
+  BaseStats,
   CharacterStats,
+  CharacterStatsHistory,
   CharacterStatsMap,
+  CharacterStatsWithHistory,
   RaceStats,
+  SequenceData,
   StatFilters,
   Timeframes,
 } from "constants/stats";
@@ -18,21 +22,33 @@ import {
   orderBy,
   Timestamp,
 } from "firebase/firestore";
-import { GameTypeNames, TextTypeNames } from "constants/settings";
+import {
+  filterRaces,
+  getCharacterSequenceData,
+  getCharacterStatsMap,
+} from "constants/helperFunctions";
 
 interface ContextStats {
   races: RaceSchema[];
+  improvementRaces: RaceSchema[];
   addGuestRace: (raceData: ResultsData) => void;
-  getBaseStats: (filters: StatFilters) => {
-    averages: RaceStats;
-    best: RaceStats;
-  };
+  getBaseStats: (filters: StatFilters) => BaseStats;
   getKeyStatsMap: (filters: StatFilters) => CharacterStatsMap;
-  getMissedSequences: (filters: StatFilters) => { [x: string]: number };
+  getKeyStatsMapWithHistory: (
+    filters: StatFilters
+  ) => CharacterStatsWithHistory;
+  getMissedSequences: (filters: StatFilters) => SequenceData;
+  getImprovementBaseStats: (filters: StatFilters) => BaseStats;
+  getImprovementKeyStatsMap: (filters: StatFilters) => CharacterStatsMap;
+  getImprovementKeyStatsMapWithHistory: (
+    filters: StatFilters
+  ) => CharacterStatsWithHistory;
+  getImprovementMissedSequences: (filters: StatFilters) => SequenceData;
 }
 
 const StatContext = React.createContext<ContextStats>({
   races: [],
+  improvementRaces: [],
   addGuestRace: (raceData: ResultsData) => {
     raceData;
   },
@@ -41,7 +57,18 @@ const StatContext = React.createContext<ContextStats>({
     best: { wpm: 0, accuracy: 0 },
   }),
   getKeyStatsMap: () => new Map(),
+  getKeyStatsMapWithHistory: () => ({ stats: new Map(), history: [] }),
   getMissedSequences: () => ({}),
+  getImprovementBaseStats: () => ({
+    averages: { wpm: 0, accuracy: 0 },
+    best: { wpm: 0, accuracy: 0 },
+  }),
+  getImprovementKeyStatsMap: () => new Map(),
+  getImprovementKeyStatsMapWithHistory: () => ({
+    stats: new Map(),
+    history: [],
+  }),
+  getImprovementMissedSequences: () => ({}),
 });
 
 export function useStats(): ContextStats {
@@ -51,6 +78,9 @@ export function useStats(): ContextStats {
 export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
   const { currentUser, isLoggedIn } = useAuth();
   const [races, setRaces] = React.useState<RaceSchema[]>([]);
+  const [improvementRaces, setImprovementRaces] = React.useState<RaceSchema[]>(
+    []
+  );
 
   const addGuestRace = (raceData: ResultsData) => {
     const characterDataPoints: Array<CharacterData> =
@@ -69,7 +99,7 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
     });
   };
 
-  const getBaseStats = (filters: StatFilters) => {
+  const getBaseStats = (filters: StatFilters, improvement = false) => {
     const averages: RaceStats = {
       wpm: 0,
       accuracy: 0,
@@ -80,7 +110,10 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
       accuracy: 0,
     };
 
-    const statRaces = filterRaces(races, filters);
+    const statRaces = filterRaces(
+      improvement ? improvementRaces : races,
+      filters
+    );
 
     for (const race of statRaces) {
       if (race.wpm > best.wpm) {
@@ -98,8 +131,14 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
     return { averages, best };
   };
 
-  const getKeyStatsMap = (filters: StatFilters): CharacterStatsMap => {
-    const keySpeedRaces = filterRaces(races, filters);
+  const getKeyStatsMap = (
+    filters: StatFilters,
+    improvement = false
+  ): CharacterStatsMap => {
+    const keySpeedRaces = filterRaces(
+      improvement ? improvementRaces : races,
+      filters
+    );
 
     const keyStatsMap = new Map();
 
@@ -107,12 +146,44 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
       // Character Speed Calculation
       getCharacterStatsMap(race.characterDataPoints, race.passage, keyStatsMap);
     }
-
     return keyStatsMap;
   };
 
-  const getMissedSequences = (filters: StatFilters) => {
-    const missedSequenceRaces = filterRaces(races, filters);
+  const getKeyStatsMapWithHistory = (
+    filters: StatFilters,
+    improvement = false
+  ): CharacterStatsWithHistory => {
+    const keySpeedRaces = filterRaces(
+      improvement ? improvementRaces : races,
+      filters
+    );
+
+    const keyStatsMap = new Map();
+    const history: CharacterStatsHistory[] = [];
+
+    for (const race of keySpeedRaces) {
+      // Character Speed Calculation
+      getCharacterStatsMap(race.characterDataPoints, race.passage, keyStatsMap);
+      // const individualRaceStats = getCharacterStatsMap(
+      //   race.characterDataPoints,
+      //   race.passage
+      // );
+      const keyStatsCopy = new Map<string, CharacterStats>(
+        JSON.parse(JSON.stringify(Array.from(keyStatsMap)))
+      );
+      history.push({
+        stats: keyStatsCopy,
+        timestamp: race.timestamp,
+      });
+    }
+    return { stats: keyStatsMap, history };
+  };
+
+  const getMissedSequences = (filters: StatFilters, improvement = false) => {
+    const missedSequenceRaces = filterRaces(
+      improvement ? improvementRaces : races,
+      filters
+    );
 
     const missedTwoLetterSequences = {};
 
@@ -136,9 +207,32 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
       limit(Timeframes.ALL_TIME),
       orderBy("timestamp", "desc")
     );
+    const qi = query(
+      collection(db, "users", currentUser.uid, "improvement_races"),
+      limit(Timeframes.LAST_100),
+      orderBy("timestamp", "desc")
+    );
+
     onSnapshot(q, { includeMetadataChanges: true }, (snapshot) => {
       if (!isMounted || snapshot.docChanges().length <= 0) return;
       setRaces((prevRaces) => {
+        const prevRacesCopy = [...prevRaces];
+        snapshot
+          .docChanges()
+          .reverse()
+          .forEach((change) => {
+            const type = change.type;
+            if (type === "added") {
+              prevRacesCopy.push(change.doc.data() as RaceSchema);
+            }
+          });
+        return prevRacesCopy;
+      });
+    });
+
+    onSnapshot(qi, { includeMetadataChanges: true }, (snapshot) => {
+      if (!isMounted || snapshot.docChanges().length <= 0) return;
+      setImprovementRaces((prevRaces) => {
         const prevRacesCopy = [...prevRaces];
         snapshot
           .docChanges()
@@ -160,120 +254,21 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
 
   const value = {
     races,
+    improvementRaces,
     addGuestRace,
     getBaseStats,
     getKeyStatsMap,
+    getKeyStatsMapWithHistory,
     getMissedSequences,
+    getImprovementBaseStats: (filters: StatFilters) =>
+      getBaseStats(filters, true),
+    getImprovementKeyStatsMap: (filters: StatFilters) =>
+      getKeyStatsMap(filters, true),
+    getImprovementKeyStatsMapWithHistory: (filters: StatFilters) =>
+      getKeyStatsMapWithHistory(filters, true),
+    getImprovementMissedSequences: (filters: StatFilters) =>
+      getMissedSequences(filters, true),
   };
 
   return <StatContext.Provider value={value}>{children}</StatContext.Provider>;
-};
-
-export const getCharacterStatsMap = (
-  characterDataPoints: CharacterData[],
-  passage: string,
-  inCharacterStatsMap: CharacterStatsMap | null = null
-): CharacterStatsMap => {
-  const characterStatsMap: CharacterStatsMap =
-    inCharacterStatsMap || new Map<string, CharacterStats>();
-  if (!characterDataPoints) return characterStatsMap;
-
-  for (const [index, dataPoint] of characterDataPoints.entries()) {
-    const passageCharacter = passage[dataPoint.charIndex].toLowerCase();
-
-    if (index === 0) {
-      if (characterStatsMap.has(passageCharacter)) {
-        const cStats = characterStatsMap.get(passageCharacter);
-        if (cStats) cStats.frequency++;
-      } else
-        characterStatsMap.set(passageCharacter, {
-          wpm: 0,
-          frequency: 1,
-          misses: 0,
-        });
-      if (!dataPoint.isCorrect) {
-        const cStats = characterStatsMap.get(passageCharacter);
-        if (cStats) cStats.misses++;
-      }
-      continue;
-    }
-
-    if (dataPoint.charIndex !== characterDataPoints[index - 1].charIndex) {
-      if (characterStatsMap.has(passageCharacter)) {
-        const cStats = characterStatsMap.get(passageCharacter);
-        if (cStats) {
-          cStats.frequency++;
-        }
-      } else
-        characterStatsMap.set(passageCharacter, {
-          wpm: 0,
-          frequency: 1,
-          misses: 0,
-        });
-    }
-
-    if (dataPoint.isCorrect) {
-      let prevPassageIndex = -1;
-      for (let i = index - 1; i >= 0; i--) {
-        if (characterDataPoints[i].charIndex !== dataPoint.charIndex) {
-          prevPassageIndex = i;
-          break;
-        }
-      }
-
-      if (prevPassageIndex === -1) continue;
-      const timeBetweenKeys =
-        dataPoint.timestamp - characterDataPoints[prevPassageIndex].timestamp;
-      const charSpeed = Math.min(300, 0.2 / (timeBetweenKeys / 60000));
-
-      const cStats = characterStatsMap.get(passageCharacter);
-      if (cStats) {
-        cStats.wpm = cStats.wpm + (charSpeed - cStats.wpm) / cStats.frequency;
-      }
-    } else if (
-      dataPoint.charIndex !== characterDataPoints[index - 1].charIndex // Make sure it's not a repeated miss
-    ) {
-      const cStats = characterStatsMap.get(passageCharacter);
-      if (cStats) {
-        cStats.misses++;
-      }
-    }
-  }
-
-  return characterStatsMap;
-};
-
-export const getCharacterSequenceData = (
-  missedSequences: { [x: string]: number },
-  characterDataPoints: CharacterData[],
-  passage: string
-) => {
-  if (!characterDataPoints) return missedSequences;
-  for (const [index, dataPoint] of characterDataPoints.entries()) {
-    if (index === 0) continue;
-    if (!dataPoint.isCorrect && characterDataPoints[index - 1].isCorrect) {
-      const sequence = `${characterDataPoints[index - 1].character}${
-        passage[dataPoint.charIndex]
-      }`;
-      if (sequence in missedSequences) missedSequences[sequence]++;
-      else missedSequences[sequence] = 1;
-    }
-  }
-
-  return missedSequences;
-};
-
-const filterRaces = (
-  races: RaceSchema[],
-  filters: StatFilters
-): RaceSchema[] => {
-  const filteredRaces = races.slice(-filters.timeframe).filter((race) => {
-    return (
-      race.wpm > 3 &&
-      filters.gameMode.includes(GameTypeNames.indexOf(race.testType.name)) &&
-      filters.textType.includes(TextTypeNames.indexOf(race.testType.textType))
-    );
-  });
-
-  return filteredRaces;
 };

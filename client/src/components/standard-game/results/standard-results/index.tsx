@@ -10,7 +10,7 @@ import StatKeyboard from "components/stats//stat-keyboard";
 import {
   getCharacterStatsMap,
   getCharacterSequenceData,
-} from "contexts/StatsContext";
+} from "constants/helperFunctions";
 import MissedSequences from "components/stats/missed-sequences";
 import { calculateWPMColor } from "components/standard-game/feedback/speed-progress";
 import {

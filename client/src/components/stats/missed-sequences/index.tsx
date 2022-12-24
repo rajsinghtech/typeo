@@ -67,6 +67,7 @@ interface MissedsequencesProps {
   filters?: StatFilters;
   interactive?: boolean;
   noBorder?: boolean;
+  timeframe?: number;
 }
 
 export default function MissedSequences({
@@ -74,8 +75,8 @@ export default function MissedSequences({
   filters,
   interactive,
   noBorder,
+  timeframe,
 }: MissedsequencesProps) {
-  const [timeframe] = React.useState<number>(Timeframes.LAST_100);
   const [missedSequenceData, setMissedSequenceData] =
     React.useState<BarChartData>();
 
@@ -115,8 +116,7 @@ export default function MissedSequences({
   React.useEffect(() => {
     // Missed sequences
     const missedSequencesEntries = Object.entries(
-      missedSequences ||
-        getMissedSequences(filters || { ...DefaultStatFilters, timeframe })
+      missedSequences || getMissedSequences(filters || DefaultStatFilters)
     )
       .sort((a, b) => b[1] - a[1])
       .slice(0, 20);
@@ -146,7 +146,7 @@ export default function MissedSequences({
         },
       ],
     });
-  }, [timeframe, filters, getMissedSequences]);
+  }, [timeframe, filters, getMissedSequences, missedSequences]);
 
   return (
     <>
@@ -174,7 +174,15 @@ export default function MissedSequences({
             <SortByAlphaIcon color="secondary" />
             <Typography variant="subtitle1">Missed Sequences</Typography>
           </Box>
-
+          {timeframe ? (
+            <Typography>{`Last ${timeframe} Races`}</Typography>
+          ) : (
+            !missedSequences && (
+              <Typography>{`Last ${
+                filters?.timeframe || DefaultStatFilters.timeframe
+              } Races`}</Typography>
+            )
+          )}
           {/* {!filters ? (
             <TimeframeSelect
               timeframe={timeframe}

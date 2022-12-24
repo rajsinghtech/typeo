@@ -12,7 +12,7 @@ import MissedSequences from "components/stats/missed-sequences";
 import {
   getCharacterSequenceData,
   getCharacterStatsMap,
-} from "contexts/StatsContext";
+} from "constants/helperFunctions";
 import { CharacterStatsMap } from "constants/stats";
 import {
   Chart as ChartJS,

@@ -338,8 +338,6 @@ export default function FFAGame() {
     );
   }, [testDisabled, onlineRaceData, passage]);
 
-  console.log(document.activeElement);
-
   const ToggleResultsDisplay = React.useMemo(() => {
     return (
       <>

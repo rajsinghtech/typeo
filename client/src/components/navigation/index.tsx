@@ -309,6 +309,7 @@ const MiniDrawerMemo = React.memo(function MiniDrawer({
               marginY: 1,
               borderRadius: "10px",
               textTransform: "none",
+              cursor: "pointer",
               "&:hover, &:focus": {
                 backgroundColor: "background.default",
                 color: "primary.main",

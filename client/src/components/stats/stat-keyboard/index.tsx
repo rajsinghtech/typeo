@@ -2,7 +2,12 @@ import React from "react";
 import { GridCard } from "components/common";
 import { useGameSettings } from "contexts/GameSettings";
 import {
+  calculateAccuracyColor,
+  calculateWPMColor,
+} from "components/standard-game/feedback/speed-progress";
+import {
   CharacterStats,
+  CharacterStatsHistory,
   CharacterStatsMap,
   DefaultStatFilters,
   StatFilters,
@@ -10,27 +15,34 @@ import {
 } from "constants/stats";
 import { useStats } from "contexts/StatsContext";
 import SpeedIcon from "@mui/icons-material/Speed";
-import { Box, Button, Tooltip, Typography } from "@mui/material";
+import { Box, Button, Divider, Tooltip, Typography } from "@mui/material";
+import CharacterStatsHistoryGraph from "../character-stats-history";
 
 interface StatKeyboardProps {
   title: string;
   data?: CharacterStatsMap;
+  history?: CharacterStatsHistory[];
   filters?: StatFilters;
   interactive?: boolean;
   noBorder?: boolean;
+  timeframe?: number;
 }
 
 export default function StatKeyboard({
   title,
   data,
+  history,
   filters,
   interactive,
   noBorder,
+  timeframe,
 }: StatKeyboardProps) {
-  const [timeframe] = React.useState<number>(Timeframes.LAST_100);
   const [keyStatsMap, setKeyStatsMap] = React.useState<CharacterStatsMap>(
     data || new Map()
   );
+  const [keyStatsHistory, setKeyStatsHistory] = React.useState<
+    CharacterStatsHistory[]
+  >([]);
 
   const [min, setMin] = React.useState<number>(
     data ? minOfCharacterStatsMap(keyStatsMap) : 0
@@ -41,18 +53,27 @@ export default function StatKeyboard({
 
   const parentRef = React.useRef<HTMLDivElement>(null);
 
-  const { getKeyStatsMap } = useStats();
+  const { getKeyStatsMapWithHistory } = useStats();
 
   React.useEffect(() => {
-    if (data) return;
-    const newKeyStats = getKeyStatsMap(
-      filters || { ...DefaultStatFilters, timeframe }
-    );
+    let newKeyStats = new Map();
+    let newHistory = [];
+    if (data) {
+      newKeyStats = data;
+      newHistory = history || [];
+    } else {
+      const { stats, history } = getKeyStatsMapWithHistory(
+        filters || DefaultStatFilters
+      );
+      newKeyStats = stats;
+      newHistory = history;
+    }
 
     setKeyStatsMap(newKeyStats);
     setMin(minOfCharacterStatsMap(newKeyStats));
     setMax(Math.min(maxOfCharacterStatsMap(newKeyStats), 220));
-  }, [filters, timeframe, getKeyStatsMap]);
+    setKeyStatsHistory(newHistory);
+  }, [filters, getKeyStatsMapWithHistory, data, history]);
 
   return (
     <>
@@ -85,6 +106,15 @@ export default function StatKeyboard({
             <SpeedIcon color="secondary" />
             <Typography variant="subtitle1">{title}</Typography>
           </Box>
+          {timeframe ? (
+            <Typography>{`Last ${timeframe} Races`}</Typography>
+          ) : (
+            !data && (
+              <Typography>{`Last ${
+                filters?.timeframe || DefaultStatFilters.timeframe
+              } Races`}</Typography>
+            )
+          )}
           {/* {!filters ? (
             <TimeframeSelect
               timeframe={timeframe}
@@ -101,6 +131,7 @@ export default function StatKeyboard({
               min={min}
               max={max}
               interactive={interactive}
+              history={keyStatsHistory}
             />
           ))}
         </Box>
@@ -113,6 +144,7 @@ export default function StatKeyboard({
               min={min}
               max={max}
               interactive={interactive}
+              history={keyStatsHistory}
             />
           ))}
         </Box>
@@ -125,6 +157,7 @@ export default function StatKeyboard({
               min={min}
               max={max}
               interactive={interactive}
+              history={keyStatsHistory}
             />
           ))}
         </Box>
@@ -136,6 +169,7 @@ export default function StatKeyboard({
             max={max}
             widthPercentage={50}
             interactive={interactive}
+            history={keyStatsHistory}
           />
         </Box>
       </GridCard>
@@ -148,6 +182,7 @@ interface KeyboardButtonProps {
   min: number;
   max: number;
   keyStats?: CharacterStats;
+  history?: CharacterStatsHistory[];
   widthPercentage?: number;
   interactive?: boolean;
 }
@@ -155,6 +190,7 @@ interface KeyboardButtonProps {
 const KeyboardButton = ({
   keyboardKey,
   keyStats,
+  history,
   min,
   max,
   widthPercentage,
@@ -167,6 +203,9 @@ const KeyboardButton = ({
     frequency: 0,
     misses: 0,
   };
+
+  const lowFrequency = frequency < 5 && frequency > 0;
+  const accuracy = ((frequency - misses) / frequency) * 100;
 
   const inPracticeStrings =
     gameSettings.gameInfo.practice.practiceStrings.includes(keyboardKey) &&
@@ -232,18 +271,58 @@ const KeyboardButton = ({
   return (
     <Tooltip
       title={
-        wpm
-          ? `WPM: ${wpm.toFixed(1)}, Frequency: ${frequency}, Accuracy: ${(
-              ((frequency - misses) / frequency) *
-              100
-            ).toFixed(1)}%`
-          : "None"
+        <>
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            gap={1}
+          >
+            {lowFrequency && (
+              <Typography color="error">
+                Not enough data (WPM may be less accurate)
+              </Typography>
+            )}
+            {wpm ? (
+              <>
+                <Box width="100%" minHeight={200}>
+                  <CharacterStatsHistoryGraph
+                    history={history || []}
+                    keyboardKey={keyboardKey === "space" ? " " : keyboardKey}
+                  />
+                </Box>
+                <Box display="flex" gap={1}>
+                  <Box display="flex" gap={1}>
+                    <Typography>WPM:</Typography>
+                    <Typography color={calculateWPMColor(wpm, 1)}>
+                      {wpm.toFixed(1)}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" gap={1}>
+                    <Typography>Accuracy:</Typography>
+                    <Typography
+                      color={calculateAccuracyColor(accuracy, 1)}
+                    >{`${accuracy.toFixed(1)}%`}</Typography>
+                  </Box>
+                  <Box display="flex" gap={1}>
+                    <Typography>Frequency:</Typography>
+                    <Typography color="info.main">{frequency}</Typography>
+                  </Box>
+                </Box>
+              </>
+            ) : (
+              <Typography>None</Typography>
+            )}
+          </Box>
+        </>
       }
       placement="top"
       arrow
       disableInteractive
       componentsProps={{
-        tooltip: { style: { background: "rgba(100, 100, 100, 0.8)" } },
+        tooltip: {
+          style: { background: "rgba(40, 40, 40, 0.9)", maxWidth: "none" },
+        },
       }}
     >
       <Button
@@ -290,6 +369,15 @@ const KeyboardButton = ({
         >
           <Typography>{keyboardKey}</Typography>
         </Box>
+        {lowFrequency && (
+          <Divider
+            sx={{
+              borderColor: "error.main",
+              width: "75%",
+              marginBottom: 1,
+            }}
+          />
+        )}
       </Button>
     </Tooltip>
   );

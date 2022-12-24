@@ -245,6 +245,8 @@ const OnEndRace = (raceState: RaceState, settings: GameSettings): RaceState => {
     },
   };
 
+  console.log(newStatState.resultsData.characterDataPoints);
+
   newRaceState.isRaceRunning = false;
   newRaceState.isRaceFinished = true;
   newRaceState.statState = newStatState;
