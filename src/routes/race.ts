@@ -56,6 +56,7 @@ router.post("/statreport", verifyIDToken, async (req: any, res, next) => {
   const wpm = resultsData.dataPoints[resultsData.dataPoints.length - 1].wpm;
   const accuracy = resultsData.accuracy;
   const testType = resultsData.testType;
+  const improvementCategory = resultsData.improvementCategory;
 
   const passage = resultsData.passage;
 
@@ -67,6 +68,7 @@ router.post("/statreport", verifyIDToken, async (req: any, res, next) => {
         accuracy,
         characterDataPoints,
         testType,
+        improvementCategory,
       });
 
       return res.status(200).send("Stats Successfully Saved");

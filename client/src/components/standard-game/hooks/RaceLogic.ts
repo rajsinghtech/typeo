@@ -245,8 +245,6 @@ const OnEndRace = (raceState: RaceState, settings: GameSettings): RaceState => {
     },
   };
 
-  console.log(newStatState.resultsData.characterDataPoints);
-
   newRaceState.isRaceRunning = false;
   newRaceState.isRaceFinished = true;
   newRaceState.statState = newStatState;
@@ -866,7 +864,10 @@ export default function useRaceLogic({
     if (isLoggedIn) {
       try {
         // Send results data to server
-        RaceAPI.sendRaceData(currentUser, raceState.statState.resultsData);
+        RaceAPI.sendRaceData(currentUser, {
+          ...raceState.statState.resultsData,
+          improvementCategory: settings.improvementCategory,
+        });
       } catch (err) {
         console.error(err);
       }

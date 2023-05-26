@@ -20,6 +20,7 @@ export interface GameSettings {
     showProfile: boolean;
   };
   raceType: RaceTypes;
+  improvementCategory?: string;
 }
 
 export enum RaceTypes {

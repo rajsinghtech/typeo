@@ -51,9 +51,10 @@ export default function CharacterStatsHistoryGraph({
         options={{
           scales: {
             xAxes: {
-              type: "time",
               ticks: {
-                maxTicksLimit: 15,
+                maxTicksLimit: 10,
+                maxRotation: 45,
+                minRotation: 0,
               },
             },
             yAxes: {
@@ -80,7 +81,9 @@ const generateGraphDataFromHistory = (
   );
 
   const graphData = {
-    labels: historyWithKey.map(({ timestamp }) => timestamp.toMillis()),
+    labels: historyWithKey.map((race) =>
+      race.timestamp.toDate().toLocaleDateString("en-US")
+    ),
 
     datasets: [
       {
@@ -90,6 +93,7 @@ const generateGraphDataFromHistory = (
           ({ stats }) => stats.get(keyboardKey)?.wpm || 0
         ),
         fill: true,
+        pointRadius: 0,
         borderColor: theme.palette.primary.main,
         tension: 0.5,
       },

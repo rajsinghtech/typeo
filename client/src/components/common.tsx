@@ -121,12 +121,8 @@ export const GridCard = ({
       backgroundImage: "none",
       color: theme.palette.text.secondary,
       borderRadius: "15px",
-      border: noBorder ? "none" : "2px solid #393C49",
-      borderLeft: accent
-        ? "2px solid white"
-        : noBorder
-        ? "none"
-        : "2px solid #393C49",
+      border: noBorder ? "none" : "2px solid rgba(100, 100, 100, 0.1)",
+      borderLeft: accent ? "2px solid white" : undefined,
     },
   };
 

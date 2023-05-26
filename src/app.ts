@@ -3,6 +3,7 @@ import raceRouter from "./routes/race";
 import statsRouter from "./routes/stats";
 import leaderboardRouter from "./routes/leaderboard";
 import userRouter from "./routes/users";
+import improvementRouter from "./routes/improvement";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { verifyIDToken } from "./auth/authenticateToken";
@@ -24,6 +25,7 @@ app.use("/race", raceRouter);
 app.use("/stats", statsRouter);
 app.use("/leaderboard", leaderboardRouter);
 app.use("/user", verifyIDToken, userRouter);
+app.use("/improvement", verifyIDToken, improvementRouter);
 app.use((err: any, req: any, res: any, next: any) => {
   res.status(err.status || 500).send(err.text || "Something went wrong");
 });

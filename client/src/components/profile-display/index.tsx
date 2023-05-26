@@ -25,25 +25,21 @@ export function HomeProfile() {
     <>
       {smScreenSize ? (
         <GridCard padding="10px">
-          {isLoggedIn ? (
-            <Box display="flex" gap={1}>
-              <Typography color="primary.main">
-                {currentUser.displayName?.toUpperCase() || ""}
-              </Typography>
-              <Divider orientation="vertical" flexItem />
-              <Typography>{"Average"}</Typography>
-              <Typography color="secondary.main">
-                {baseStats.averages.wpm.toFixed(1)}
-              </Typography>
-              <Divider orientation="vertical" flexItem />
-              <Typography>{"Best"}</Typography>
-              <Typography color="secondary.main">
-                {baseStats.best.wpm.toFixed(1)}
-              </Typography>
-            </Box>
-          ) : (
-            <Typography>Login for stats</Typography>
-          )}
+          <Box display="flex" gap={1}>
+            <Typography color="primary.main">
+              {currentUser.displayName?.toUpperCase() || ""}
+            </Typography>
+            <Divider orientation="vertical" flexItem />
+            <Typography>{"Average"}</Typography>
+            <Typography color="secondary.main">
+              {baseStats.averages.wpm.toFixed(1)}
+            </Typography>
+            <Divider orientation="vertical" flexItem />
+            <Typography>{"Best"}</Typography>
+            <Typography color="secondary.main">
+              {baseStats.best.wpm.toFixed(1)}
+            </Typography>
+          </Box>
         </GridCard>
       ) : (
         <HomeProfileMobile />
@@ -58,13 +54,9 @@ export const HomeProfileMobile = React.memo(
 
     return (
       <GridCard padding="10px">
-        {isLoggedIn ? (
-          <Typography color="primary.main">
-            {currentUser.displayName?.toUpperCase() || ""}
-          </Typography>
-        ) : (
-          <Typography>Login for stats</Typography>
-        )}
+        <Typography color="primary.main">
+          {currentUser.displayName?.toUpperCase() || ""}
+        </Typography>
       </GridCard>
     );
   }

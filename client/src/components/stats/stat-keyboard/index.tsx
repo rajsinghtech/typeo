@@ -93,6 +93,7 @@ export default function StatKeyboard({
                 Math.random() * 300,
                 min,
                 max,
+                1,
                 1
               ),
               pointerEvents: "none",
@@ -283,14 +284,16 @@ const KeyboardButton = ({
                 Not enough data (WPM may be less accurate)
               </Typography>
             )}
-            {wpm ? (
+            {frequency > 0 ? (
               <>
-                <Box width="100%" minHeight={200}>
-                  <CharacterStatsHistoryGraph
-                    history={history || []}
-                    keyboardKey={keyboardKey === "space" ? " " : keyboardKey}
-                  />
-                </Box>
+                {history && history.length ? (
+                  <Box width="100%" minHeight={200}>
+                    <CharacterStatsHistoryGraph
+                      history={history || []}
+                      keyboardKey={keyboardKey === "space" ? " " : keyboardKey}
+                    />
+                  </Box>
+                ) : null}
                 <Box display="flex" gap={1}>
                   <Box display="flex" gap={1}>
                     <Typography>WPM:</Typography>
@@ -337,16 +340,16 @@ const KeyboardButton = ({
           height: 0,
           m: { xs: 0.5, vs: 0.9 },
           textTransform: "none",
-          borderColor: calculateKeySpeedColor(wpm, min, max, 1),
+          borderColor: calculateKeySpeedColor(wpm, min, max, frequency, 1),
           borderWidth: 1,
           backgroundColor: inPracticeStrings
             ? "primary.main"
-            : calculateKeySpeedColor(wpm, min, max, 0.3),
+            : calculateKeySpeedColor(wpm, min, max, frequency, 0.3),
           "&:hover": {
             backgroundColor: inPracticeStrings
               ? "primary.main"
-              : calculateKeySpeedColor(wpm, min, max, 0.3),
-            borderColor: calculateKeySpeedColor(wpm, min, max, 1),
+              : calculateKeySpeedColor(wpm, min, max, frequency, 0.3),
+            borderColor: calculateKeySpeedColor(wpm, min, max, frequency, 1),
             borderWidth: 1,
             opacity: 0.8,
           },
@@ -387,9 +390,10 @@ export function calculateKeySpeedColor(
   wpm: number,
   min: number,
   max: number,
+  frequency: number,
   opacity: number
 ): string {
-  if (wpm === 0) return "inherit";
+  if (frequency === 0) return "inherit";
   const limitWpm = Math.min(wpm, 220);
   const percentage = (limitWpm - min) / (max - min);
   const red = (1 - percentage) * 255 + 50;

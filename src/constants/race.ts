@@ -22,4 +22,5 @@ export interface ResultsData {
   testType: { name: string; amount?: number; textType: string };
   characterDataPoints: CharacterData[];
   raceType: RaceTypes;
+  improvementCategory?: string;
 }

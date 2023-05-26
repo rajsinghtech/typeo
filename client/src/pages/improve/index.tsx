@@ -1,21 +1,22 @@
 import React from "react";
-import { useAuth } from "contexts/AuthContext";
 import AboutImprovement from "./components/about-improvement";
 import PlacementTests from "./components/placement-tests";
 import Dashboard from "./components/dashboard";
 import { useStats } from "contexts/StatsContext";
-import { Box } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 
 export default function Improve() {
   const [activeComponent, setActiveComponent] = React.useState<number>(0);
-
-  const { currentUser } = useAuth();
 
   const { improvementRaces } = useStats();
 
   React.useEffect(() => {
     if (improvementRaces.length >= 10) {
       setActiveComponent(2);
+    } else if (improvementRaces.length > 0) {
+      setActiveComponent(1);
+    } else {
+      setActiveComponent(0);
     }
   }, [improvementRaces]);
 

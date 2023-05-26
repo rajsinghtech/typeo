@@ -22,7 +22,7 @@ export default function SoloGame() {
   return (
     <Grid container spacing={3}>
       {mdScreenSize && (
-        <Grid item xs={12} mb={5}>
+        <Grid item xs={12} mb={15}>
           <MainHeader />
         </Grid>
       )}

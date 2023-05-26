@@ -62,9 +62,10 @@ export default function RaceHistory({
         options={{
           scales: {
             xAxes: {
-              type: "time",
               ticks: {
-                maxTicksLimit: 30,
+                maxTicksLimit: 15,
+                maxRotation: 20,
+                minRotation: 0,
               },
             },
             yAxes: {
@@ -114,7 +115,9 @@ const generateGraphDataFromRaces = (
   });
 
   const graphData = {
-    labels: filteredRaces.map((race) => race.timestamp.toMillis()),
+    labels: filteredRaces.map((race) =>
+      race.timestamp.toDate().toLocaleDateString("en-US")
+    ),
 
     datasets: [
       {
@@ -132,7 +135,7 @@ const generateGraphDataFromRaces = (
         fill: true,
         borderColor: theme.palette.warning.main,
         tension: 0.85,
-        borderDash: [5, 5],
+        borderDash: [3, 5],
       },
       {
         type: "line",

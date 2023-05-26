@@ -217,7 +217,7 @@ const MiniDrawerMemo = React.memo(function MiniDrawer({
             {[
               { name: "Home", path: "/", icon: <HomeIcon />, click: Home },
               {
-                name: "Improve (disabled)",
+                name: "Improve",
                 path: "/improvement",
                 icon: <InsightsIcon />,
                 click: Improve,
@@ -250,7 +250,6 @@ const MiniDrawerMemo = React.memo(function MiniDrawer({
                 <Button
                   key={val.name}
                   color="secondary"
-                  disabled={val.path === "/improvement"}
                   sx={{
                     minWidth: 0,
                     padding: 1.5,

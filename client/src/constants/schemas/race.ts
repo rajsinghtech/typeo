@@ -7,5 +7,6 @@ export interface RaceSchema {
   accuracy: number;
   characterDataPoints: CharacterData[];
   testType: { name: string; amount?: number; textType: string };
+  improvementCategory?: string;
   timestamp: Timestamp;
 }

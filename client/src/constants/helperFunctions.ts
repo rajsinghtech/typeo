@@ -14,6 +14,7 @@ export const getCharacterStatsMap = (
   if (!characterDataPoints) return characterStatsMap;
 
   let prevCorrectIndex = -1;
+  const pendingMissedIndicies: Map<number, boolean> = new Map();
 
   for (const [index, dataPoint] of characterDataPoints.entries()) {
     const passageCharacter = passage[dataPoint.charIndex].toLowerCase();
@@ -26,9 +27,9 @@ export const getCharacterStatsMap = (
     }
 
     if (dataPoint.character === "Backspace") {
-      if (dataPoint.isCorrect) {
-        prevCorrectIndex = dataPoint.charIndex - 1;
-      }
+      // if (dataPoint.isCorrect) {
+      //   prevCorrectIndex = index;
+      // }
       continue;
     }
 
@@ -40,6 +41,7 @@ export const getCharacterStatsMap = (
 
       const cStats = characterStatsMap.get(passageCharacter);
       if (cStats) {
+        cStats.frequency++;
         cStats.wpm = cStats.wpm + (charSpeed - cStats.wpm) / cStats.frequency;
       } else {
         characterStatsMap.set(passageCharacter, {
@@ -48,14 +50,38 @@ export const getCharacterStatsMap = (
           wpm: charSpeed,
         });
       }
-      prevCorrectIndex = dataPoint.charIndex;
+      if (pendingMissedIndicies.has(dataPoint.charIndex)) {
+        pendingMissedIndicies.delete(dataPoint.charIndex);
+      }
+      prevCorrectIndex = index;
     } else if (
-      dataPoint.charIndex !== characterDataPoints[index - 1].charIndex // Make sure it's not a repeated miss
+      characterDataPoints[index - 1].isCorrect // Make sure it's not a repeated miss
     ) {
       const cStats = characterStatsMap.get(passageCharacter);
       if (cStats) {
         cStats.misses++;
+      } else {
+        characterStatsMap.set(passageCharacter, {
+          frequency: 0,
+          misses: 1,
+          wpm: 0,
+        });
       }
+      pendingMissedIndicies.set(dataPoint.charIndex, true);
+    }
+  }
+
+  for (const missedIndex of pendingMissedIndicies.keys()) {
+    const cStats = characterStatsMap.get(passage[missedIndex].toLowerCase());
+    if (cStats) {
+      cStats.frequency++;
+      cStats.wpm = (cStats.wpm * (cStats.frequency - 1)) / cStats.frequency;
+    } else {
+      characterStatsMap.set(passage[missedIndex].toLowerCase(), {
+        frequency: 1,
+        misses: 1,
+        wpm: 0,
+      });
     }
   }
 
@@ -76,9 +102,9 @@ export const getCharacterSequenceData = (
     )
       continue;
     if (!dataPoint.isCorrect && characterDataPoints[index - 1].isCorrect) {
-      const sequence = `${characterDataPoints[index - 1].character}${
-        passage[dataPoint.charIndex]
-      }`;
+      const sequence = `${characterDataPoints[
+        index - 1
+      ].character.toLowerCase()}${passage[dataPoint.charIndex].toLowerCase()}`;
       if (sequence in missedSequences) missedSequences[sequence]++;
       else missedSequences[sequence] = 1;
     }
@@ -99,4 +125,8 @@ export const filterRaces = (
     );
   });
   return filteredRaces;
+};
+
+export const secondsToHms = (d: number) => {
+  return new Date(d * 1000).toISOString().slice(11, 19);
 };
