@@ -7,7 +7,8 @@ export const RACE_COMPLETE_EVENT = `${PREFIX}race-complete`;
 
 export interface MatchUpdate {
   id: string;
-  percentage: number;
+  isCorrect: boolean;
+  currentCharIndex: number;
   wordsTyped: number;
   wpm: number;
 }

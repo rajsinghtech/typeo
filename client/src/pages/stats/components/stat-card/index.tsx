@@ -1,6 +1,5 @@
 import React from "react";
 import { GridCard } from "components/common";
-import { useTheme } from "@mui/system";
 import { Box, Typography } from "@mui/material";
 
 interface StatCardProps {
@@ -11,7 +10,6 @@ interface StatCardProps {
 }
 
 export default function StatCard({ title, stat, icon }: StatCardProps) {
-  const theme = useTheme();
   return (
     <>
       <GridCard

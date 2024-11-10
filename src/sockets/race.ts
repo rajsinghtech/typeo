@@ -10,7 +10,8 @@ export const RACE_COMPLETE_EVENT = `${PREFIX}race-complete`;
 
 interface MatchUpdate {
   id: string;
-  percentage: number;
+  isCorrect: boolean;
+  currentCharIndex: number;
   wordsTyped: number;
   wpm: number;
 }
@@ -25,7 +26,7 @@ interface RacerFinish {
 export const raceSocketHandler = (io: Server, socket: Socket) => {
   socket.on(
     CLIENT_RACE_UPDATE_EVENT,
-    (currentCharIndex: number, wordsTyped: number) => {
+    (currentCharIndex: number, wordsTyped: number, isCorrect: boolean) => {
       if (currentCharIndex && typeof currentCharIndex === "number") {
         if (socket.rooms.size > 1) {
           const socketRoomKeys = socket.rooms.keys();
@@ -33,20 +34,21 @@ export const raceSocketHandler = (io: Server, socket: Socket) => {
           const matchID: string = socketRoomKeys.next().value;
 
           const match: Match = Matches.get(matchID);
+
           if (match && match.matchState === MatchState.STARTED) {
-            const percentage = currentCharIndex / match.passage.length;
             const wpm =
               (currentCharIndex / 5 / (Date.now() - match.startTime)) * 60000;
             const matchUpdate: MatchUpdate = {
               id: socket.data.user_id,
-              percentage: percentage,
+              isCorrect,
+              currentCharIndex,
               wordsTyped: wordsTyped,
               wpm: wpm,
             };
 
             io.in(matchID).emit(SERVER_RACE_UPDATE_EVENT, matchUpdate);
 
-            if (currentCharIndex === match.passage.length) {
+            if (currentCharIndex === match.passage.length - 1 && isCorrect) {
               let place: number;
               if (match.finishers) {
                 place = match.finishers.length + 1;
@@ -55,10 +57,6 @@ export const raceSocketHandler = (io: Server, socket: Socket) => {
                 place = 1;
                 match.finishers = [socket.data.user_id];
               }
-              match.players.splice(
-                match.players.indexOf(socket.data.user_id),
-                1
-              );
 
               const racerFinish: RacerFinish = {
                 id: socket.data.user_id,
@@ -68,7 +66,7 @@ export const raceSocketHandler = (io: Server, socket: Socket) => {
               };
               io.in(matchID).emit(RACER_FINISHED_EVENT, racerFinish);
 
-              if (match.players.length === 0) {
+              if (match.finishers.length >= match.players.length) {
                 io.in(matchID).emit(RACE_COMPLETE_EVENT);
                 Matches.delete(matchID);
                 io.socketsLeave(matchID);

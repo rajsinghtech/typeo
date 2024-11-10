@@ -1,14 +1,16 @@
 import React from "react";
 import { Chart } from "react-chartjs-2";
 import "chartjs-adapter-date-fns";
+import { drawerWidth, minimizedDrawerWidth } from "components/navigation";
 import { GridCard, HoverableText } from "components/common";
 import { ChartData } from "constants/graphs";
 import { ResultsData } from "constants/race";
+import { CharacterStatsMap } from "constants/stats";
 import StatKeyboard from "components/stats//stat-keyboard";
 import {
-  getCharacterSpeed,
-  getMissedCharacterSequences,
-} from "contexts/StatsContext";
+  getCharacterStatsMap,
+  getCharacterSequenceData,
+} from "constants/helperFunctions";
 import MissedSequences from "components/stats/missed-sequences";
 import { calculateWPMColor } from "components/standard-game/feedback/speed-progress";
 import {
@@ -63,11 +65,11 @@ export default function Results({
 }: ResultsProps) {
   const [graphData, setGraphData] = React.useState<ChartData>();
   const [wpm, setWPM] = React.useState<number>(0);
-  const [keyData, setKeyData] = React.useState<number[]>(new Array(26).fill(0));
+  const [keyStats, setKeyStats] = React.useState<CharacterStatsMap>(new Map());
   const theme = useTheme();
 
   React.useEffect(() => {
-    setKeyData(getCharacterSpeed(characterDataPoints));
+    setKeyStats(getCharacterStatsMap(characterDataPoints, passage));
     // Update Graph
     if (dataPoints.length < 1) return;
 
@@ -147,7 +149,14 @@ export default function Results({
 
     // Update text
     setWPM(dataPoints[dataPoints.length - 1].wpm);
-  }, [dataPoints, accuracy, characters, testType]);
+  }, [
+    characterDataPoints,
+    passage,
+    dataPoints,
+    accuracy,
+    characters,
+    testType,
+  ]);
 
   return (
     <>
@@ -156,8 +165,19 @@ export default function Results({
         onClose={() => {
           onClose(false);
         }}
-        maxWidth="lg"
-        PaperProps={{ sx: { borderRadius: "7px" } }}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{
+          sx: {
+            borderRadius: "7px",
+            marginLeft: {
+              xs: undefined,
+              md: JSON.parse(localStorage.getItem("typeo-minimized") || "false")
+                ? `${minimizedDrawerWidth}px`
+                : `${drawerWidth}px`,
+            },
+          },
+        }}
       >
         <Box
           p={3}
@@ -175,20 +195,20 @@ export default function Results({
           >
             <Box pt={2}>
               <Typography display="inline" variant="h3" pt={2}>
-                WPM:
-              </Typography>{" "}
+                {"WPM: "}
+              </Typography>
               <Typography display="inline" variant="h3" color="secondary">
                 {wpm.toFixed(1)}
               </Typography>
             </Box>
             <Box>
-              <Typography display="inline">Accuracy:</Typography>{" "}
+              <Typography display="inline">{"Accuracy: "}</Typography>
               <Typography display="inline" color="secondary">
-                {accuracy.toFixed(1)} %
+                {`${accuracy.toFixed(1)}%`}
               </Typography>
             </Box>
             <Box>
-              <Typography display="inline-block">Characters:</Typography>{" "}
+              <Typography display="inline-block">{"Characters: "}</Typography>
               {Object.entries(characters).map(([key, val]) => (
                 <span key={key}>
                   <HoverableText
@@ -199,7 +219,7 @@ export default function Results({
                         ? "success.main"
                         : key === "incorrect"
                         ? "error"
-                        : "primary"
+                        : "info.main"
                     }
                     sx={{ display: "inline-block" }}
                   />
@@ -208,14 +228,14 @@ export default function Results({
               ))}
             </Box>
             <Box>
-              <Typography display="inline">Test Type:</Typography>{" "}
+              <Typography display="inline">{"Test Type: "}</Typography>
               <Typography display="inline" color="secondary">
                 {testType.name}
                 {testType.amount ? `, ${testType.amount}` : null}
               </Typography>
             </Box>
             <Box>
-              <Typography display="inline">Text Type:</Typography>{" "}
+              <Typography display="inline">{"Text Type: "}</Typography>
               <Typography display="inline" color="secondary">
                 {testType.textType}
               </Typography>
@@ -245,7 +265,7 @@ export default function Results({
           </GridCard>
           {graphData ? (
             <GridCard noBorder>
-              <Box height="50vh" width="50vw">
+              <Box height="50vh">
                 <Chart
                   data={graphData}
                   type="line"
@@ -275,11 +295,11 @@ export default function Results({
             </GridCard>
           ) : null}
           <Box mt={3}>
-            <StatKeyboard data={keyData} title="Key Speed" noBorder />
+            <StatKeyboard data={keyStats} title="Key Speed" noBorder />
           </Box>
           <Box mt={3}>
             <MissedSequences
-              missedSequences={getMissedCharacterSequences(
+              missedSequences={getCharacterSequenceData(
                 {},
                 characterDataPoints,
                 passage

@@ -1,3 +1,5 @@
+import { RaceTypes } from "./settings";
+
 export interface CharacterData {
   charIndex: number;
   character: string;
@@ -17,8 +19,14 @@ export interface ResultsData {
   dataPoints: WPMData[];
   accuracy: number;
   characters: { correct: number; incorrect: number; total: number };
-  testType: { name: string; amount?: number; textType: string };
+  testType: {
+    name: string;
+    textType: string;
+    amount?: number;
+  };
   characterDataPoints: CharacterData[];
+  raceType: RaceTypes;
+  improvementCategory?: string;
 }
 
 export const MAX_INPUT_LENGTH = 15;

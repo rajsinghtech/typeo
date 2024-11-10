@@ -1,10 +1,11 @@
 import React from "react";
 import { TextVariant } from "constants/common";
-import { Box, Grid, Typography, LinearProgress } from "@mui/material";
+import { Box, Typography, Slider } from "@mui/material";
 
 interface LPWLProps {
-  label: number | string;
+  label?: number | string;
   value: number;
+  step: number;
   fillColor: string;
   labelTextVariant?: TextVariant;
 }
@@ -12,27 +13,42 @@ interface LPWLProps {
 export function LinearProgressWithLabel({
   label,
   value,
+  step,
   fillColor,
   labelTextVariant,
 }: LPWLProps) {
   return (
-    <>
-      <LinearProgress
-        value={value}
-        variant="determinate"
-        color="secondary"
+    <Box display="flex" gap={3}>
+      <Slider
         sx={{
-          "& .MuiLinearProgress-bar1Determinate": {
-            background: fillColor,
-            borderRight: "1px solid black",
+          "& .MuiSlider-track": {
+            color: fillColor,
           },
-          display: "inline-block",
+          "& .MuiSlider-thumb": {
+            color: fillColor,
+          },
+          flex: 5,
         }}
+        defaultValue={0}
+        value={value}
+        step={step}
+        marks
+        min={0}
+        max={100}
+        disabled
       />
-      <Typography variant={labelTextVariant || "h5"} color="textSecondary">
-        {label}
-      </Typography>
-    </>
+      {label && (
+        <Typography
+          variant={labelTextVariant || "h5"}
+          color="textSecondary"
+          textOverflow="clip"
+          noWrap
+          flex={1}
+        >
+          {label}
+        </Typography>
+      )}
+    </Box>
   );
 }
 
@@ -56,10 +72,10 @@ export default React.memo(function SpeedProgress({ wpm }: SpeedProgressProps) {
       <Box
         sx={{
           display: "flex",
-          flexDirection: { xs: "row", md: "column" },
+          flexDirection: { xs: "row", sm: "column" },
           justifyContent: "center",
           alignItems: "center",
-          gap: { xs: 2, md: 0 },
+          gap: { xs: 2, sm: 0 },
         }}
       >
         <Typography>{"WPM "}</Typography>
@@ -73,12 +89,21 @@ export default React.memo(function SpeedProgress({ wpm }: SpeedProgressProps) {
   return <>{Display}</>;
 });
 
+export function calculateAccuracyColor(
+  accuracy: number,
+  opacity: number
+): string {
+  const green = Math.floor(((clamp(accuracy, 85, 100) - 85) / 15) * 255);
+  const red = 255 - green;
+  return `rgba(${red},${green},65, ${opacity})`;
+}
+
 export function calculateWPMColor(wpm: number, opacity: number): string {
   const green = Math.floor(((clamp(wpm, 30, 170) - 30) / 140) * 255);
   const red = 255 - green;
   return `rgba(${red},${green},65, ${opacity})`;
 }
 
-function clamp(num: number, min: number, max: number): number {
+export function clamp(num: number, min: number, max: number): number {
   return num <= min ? min : num >= max ? max : num;
 }

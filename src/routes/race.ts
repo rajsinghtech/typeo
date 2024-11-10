@@ -2,10 +2,10 @@ import express from "express";
 import { CharacterData } from "../constants/race";
 import { ResultsData } from "../constants/race";
 import { Passages, CommonWords } from "../constants/passages";
-import { TextTypes, GameTypes } from "../constants/settings";
+import { TextTypes, GameTypes, RaceTypes } from "../constants/settings";
 import { db } from "../config/firestore";
 import { doc } from "prettier";
-import { saveRaceStats } from "../db/race";
+import { saveImprovementRaceStats, saveRaceStats } from "../db/race";
 import { verifyIDToken } from "../auth/authenticateToken";
 import {
   all_time_leaderboard,
@@ -56,25 +56,39 @@ router.post("/statreport", verifyIDToken, async (req: any, res, next) => {
   const wpm = resultsData.dataPoints[resultsData.dataPoints.length - 1].wpm;
   const accuracy = resultsData.accuracy;
   const testType = resultsData.testType;
-
-  if (testType.name === "Timed" && testType.amount === 30) {
-    checkLeaderboard(daily_leaderboard, "daily_leaderboard", {
-      id: uid,
-      name: displayName,
-      accuracy,
-      wpm,
-    });
-    checkLeaderboard(all_time_leaderboard, "all_time_leaderboard", {
-      id: uid,
-      name: displayName,
-      accuracy,
-      wpm,
-    });
-  }
+  const improvementCategory = resultsData.improvementCategory;
 
   const passage = resultsData.passage;
 
   try {
+    if (resultsData.raceType === RaceTypes.IMPROVEMENT) {
+      saveImprovementRaceStats(uid, {
+        passage,
+        wpm,
+        accuracy,
+        characterDataPoints,
+        testType,
+        improvementCategory,
+      });
+
+      return res.status(200).send("Stats Successfully Saved");
+    }
+
+    if (testType.name === "Timed" && testType.amount === 30) {
+      checkLeaderboard(daily_leaderboard, "daily_leaderboard", {
+        id: uid,
+        name: displayName,
+        accuracy,
+        wpm,
+      });
+      checkLeaderboard(all_time_leaderboard, "all_time_leaderboard", {
+        id: uid,
+        name: displayName,
+        accuracy,
+        wpm,
+      });
+    }
+
     await saveRaceStats(uid, {
       passage,
       wpm,

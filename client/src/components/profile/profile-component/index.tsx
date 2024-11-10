@@ -1,8 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "contexts/AuthContext";
-import { getRedirectResult } from "firebase/auth";
-import { auth } from "config/firebase";
 import {
   StyledTextField,
   SuccessAlert,
@@ -140,6 +138,7 @@ export default function ProfileComponent({
                     variant="contained"
                     size="large"
                     startIcon={xsScreenSize ? null : icon}
+                    disabled={name === "FACEBOOK"}
                     sx={{
                       flexGrow: 1,
                       background: colors[0],

@@ -19,7 +19,14 @@ export interface GameSettings {
     showWPM: boolean;
     showProfile: boolean;
   };
-  online: boolean;
+  raceType: RaceTypes;
+  improvementCategory?: string;
+}
+
+export enum RaceTypes {
+  DEFAULT,
+  ONLINE,
+  IMPROVEMENT,
 }
 
 export type Difficulty = "easy" | "medium" | "hard" | "impossible";
@@ -71,14 +78,34 @@ export const DefaultGameSettings: GameSettings = {
     showWPM: true,
     showProfile: true,
   },
-  online: false,
+  raceType: RaceTypes.DEFAULT,
+};
+
+export const DefaultImproveGameSettings: GameSettings = {
+  textType: TextTypes.TOP_WORDS,
+  gameInfo: {
+    type: GameTypes.WORDS,
+    amount: 5,
+    practice: { isPractice: false, practiceStrings: [] },
+    strict: false,
+  },
+  defender: {
+    difficulty: "easy",
+  },
+  display: {
+    smoothFollower: true,
+    followerSpeed: 0.1,
+    followerStyle: FollowerTypes.DEFAULT,
+    showWPM: false,
+    showProfile: false,
+  },
+  raceType: RaceTypes.IMPROVEMENT,
 };
 
 export const DefaultOnlineGameSettings: GameSettings = {
   textType: TextTypes.PASSAGE,
   gameInfo: {
     type: GameTypes.WORDS,
-    amount: 50,
     practice: { isPractice: false, practiceStrings: [] },
     strict: true,
   },
@@ -92,7 +119,7 @@ export const DefaultOnlineGameSettings: GameSettings = {
     showWPM: true,
     showProfile: true,
   },
-  online: true,
+  raceType: RaceTypes.ONLINE,
 };
 
 export enum MatchStatus {

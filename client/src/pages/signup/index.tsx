@@ -90,7 +90,7 @@ function SignupComponent() {
   };
 
   React.useEffect(() => {
-    getRedirectResult(auth).catch((err) => {
+    getRedirectResult(auth).catch(() => {
       setError("Could not login");
       setErrorOpen(true);
     });

@@ -7,11 +7,15 @@ import {
   GameSettings,
   GameTypeNames,
   GameTypes,
+  RaceTypes,
   TextTypeNames,
 } from "constants/settings";
-import { GuestUser, useAuth } from "contexts/AuthContext";
+import { useAuth } from "contexts/AuthContext";
 import { useInterval } from "components/common";
-import { User } from "firebase/auth";
+import { CLIENT_RACE_UPDATE_EVENT } from "api/sockets/race";
+import { useSocketContext } from "contexts/SocketContext";
+import { useStats } from "contexts/StatsContext";
+import { MATCH_STARTED_EVENT } from "api/sockets/matchmaking";
 
 export interface RaceState {
   textAreaText: string; // The text as one string
@@ -43,8 +47,8 @@ export interface RaceState {
 
 export interface RaceStateSubset {
   currentCharIndex: number;
-  currentWordIndex: number;
   wordsTyped: number;
+  currentWordIndex?: number;
 }
 
 interface StatState {
@@ -66,6 +70,7 @@ const initialStatState: StatState = {
     characters: { correct: 0, incorrect: 0, total: 0 },
     testType: { name: "", textType: "" },
     characterDataPoints: [], // characterTrackingData
+    raceType: RaceTypes.DEFAULT,
   },
 };
 
@@ -95,14 +100,15 @@ const initialRaceState: RaceState = {
 
 const InitializePassage = (
   raceState: RaceState,
-  settings: GameSettings
+  settings: GameSettings,
+  passage?: string
 ): RaceState => {
   const textType = settings.textType;
   const gameInfo = settings.gameInfo;
 
   const practice = settings.gameInfo.practice;
 
-  let newPassage = getPassage(textType, 80, practice);
+  let newPassage = passage || getPassage(textType, 80, practice);
 
   // If we are in timed mode we have to add more passage length
   // TODO - make cleaner
@@ -139,7 +145,7 @@ const InitializePassage = (
   };
 };
 
-const AddPasageLength = (
+const AddPassageLength = (
   raceState: RaceState,
   settings: GameSettings
 ): RaceState => {
@@ -210,11 +216,7 @@ const OnStartRace = (raceState: RaceState): RaceState => {
  * @param currentUser
  * @returns - Updated race state
  */
-const OnEndRace = (
-  raceState: RaceState,
-  settings: GameSettings,
-  currentUser: User | GuestUser
-): RaceState => {
+const OnEndRace = (raceState: RaceState, settings: GameSettings): RaceState => {
   let newRaceState = { ...raceState };
   newRaceState = UpdateWPM(raceState, settings);
 
@@ -239,15 +241,9 @@ const OnEndRace = (
         textType: TextTypeNames[settings.textType],
       },
       characterDataPoints: newRaceState.statState.characterTrackingData,
+      raceType: settings.raceType,
     },
   };
-
-  try {
-    // Send results data to server
-    RaceAPI.sendRaceData(currentUser, newStatState.resultsData);
-  } catch (err) {
-    console.error(err);
-  }
 
   newRaceState.isRaceRunning = false;
   newRaceState.isRaceFinished = true;
@@ -268,7 +264,8 @@ const ResetRace = (
   raceState: RaceState,
   shouldRaceStart: boolean,
   retry: boolean,
-  settings: GameSettings
+  settings: GameSettings,
+  passage?: string
 ): RaceState => {
   const newRaceState = { ...initialRaceState };
   if (retry) {
@@ -278,7 +275,7 @@ const ResetRace = (
   }
   newRaceState.amount = settings.gameInfo.amount || 0;
   if (shouldRaceStart) return OnStartRace(newRaceState);
-  else if (!retry) return InitializePassage(newRaceState, settings);
+  else if (!retry) return InitializePassage(newRaceState, settings, passage);
   else return newRaceState;
 };
 
@@ -398,8 +395,7 @@ const HandleDeletion = (
 const OnChange = (
   raceState: RaceState,
   event: React.ChangeEvent<HTMLInputElement>,
-  settings: GameSettings,
-  currentUser: User | GuestUser
+  settings: GameSettings
 ): RaceState => {
   const inputVal = event.target.value;
   const inputRef = event.target as HTMLInputElement;
@@ -438,21 +434,13 @@ const OnChange = (
     raceState.isCorrect &&
     raceState.currentCharIndex >= raceState.textAreaText.length - 1
   ) {
-    // if (settings.online) {
-    //   socket.emit(
-    //     CLIENT_RACE_UPDATE_EVENT,
-    //     raceState.currentCharIndex + 1,
-    //     raceState.wordsTyped + 1
-    //   );
-    // }
     console.log("Ending Race On Change");
     return OnEndRace(
       {
         ...raceState,
         charactersTyped: raceState.charactersTyped + 1,
       },
-      settings,
-      currentUser
+      settings
     );
   }
   return { ...raceState };
@@ -461,8 +449,7 @@ const OnChange = (
 const OnKeyDown = (
   raceState: RaceState,
   settings: GameSettings,
-  event: React.KeyboardEvent<HTMLInputElement>,
-  currentUser: User | GuestUser
+  event: React.KeyboardEvent<HTMLInputElement>
 ): RaceState => {
   const key = event.key;
   const inputRef = event.target as HTMLInputElement;
@@ -471,14 +458,17 @@ const OnKeyDown = (
   let newRaceState = { ...raceState };
 
   if (!raceState.isRaceRunning && !raceState.isRaceFinished) {
-    if (!settings.online) newRaceState = OnStartRace(raceState);
+    if (settings.raceType !== RaceTypes.ONLINE)
+      newRaceState = OnStartRace(newRaceState);
   }
 
-  if (raceState.isRaceFinished) return raceState;
+  if (raceState.isRaceFinished) return newRaceState;
 
   if (!settings.gameInfo.strict && key === " ") {
     if (raceState.wordsTyped === raceState.words.length - 1) {
-      return OnEndRace(raceState, settings, currentUser);
+      newRaceState.isCorrect = false;
+      newRaceState = AddCharacterDataPoint(raceState, newRaceState, key);
+      return OnEndRace(newRaceState, settings);
     }
 
     const isWordCorrect =
@@ -523,7 +513,7 @@ const OnKeyDown = (
 
     inputRef.value = "";
     event.preventDefault();
-    return newRaceState;
+    return AddCharacterDataPoint(raceState, newRaceState, key);
   }
 
   if (key === "Backspace") {
@@ -537,7 +527,7 @@ const OnKeyDown = (
       event.ctrlKey ||
       inputVal.length >= MAX_INPUT_LENGTH
     )
-      return raceState;
+      return newRaceState;
 
     const selectionLength = document.getSelection()?.toString().length;
     if (selectionLength === 1 || selectionLength === 2) {
@@ -562,7 +552,7 @@ const OnKeyDown = (
       newRaceState.isCorrect = true;
       inputRef.value = "";
 
-      return newRaceState;
+      return AddCharacterDataPoint(raceState, newRaceState, key);
     }
 
     if (raceState.isCorrect) {
@@ -632,13 +622,12 @@ const OnKeyDown = (
   newRaceState.prevInput = inputVal;
   newRaceState.prevKey = key;
 
-  return newRaceState;
+  return AddCharacterDataPoint(raceState, newRaceState, key);
 };
 
 const IncrementSeconds = (
   raceState: RaceState,
-  settings: GameSettings,
-  currentUser: User | GuestUser
+  settings: GameSettings
 ): RaceState => {
   let newRaceState = { ...raceState };
   newRaceState = UpdateWPM(raceState, settings);
@@ -653,7 +642,7 @@ const IncrementSeconds = (
     //     horizontal: "right",
     //   },
     // });
-    return OnEndRace(newRaceState, settings, currentUser);
+    return OnEndRace(newRaceState, settings);
   }
   return {
     ...newRaceState,
@@ -665,36 +654,38 @@ const SetAmount = (raceState: RaceState, amount: number): RaceState => {
   return { ...raceState, amount };
 };
 
-const AddCharacterDataPoint = (raceState: RaceState): RaceState => {
-  if (!raceState.isRaceRunning) return raceState;
+const AddCharacterDataPoint = (
+  raceState: RaceState,
+  newRaceState: RaceState,
+  key: string
+): RaceState => {
+  if (!newRaceState.isRaceRunning) return newRaceState;
   const newStatState = {
-    ...raceState.statState,
+    ...newRaceState.statState,
     characterTrackingData: [
-      ...raceState.statState.characterTrackingData,
+      ...newRaceState.statState.characterTrackingData,
       {
-        charIndex: raceState.currentCharIndex - 1,
-        character: raceState.prevKey,
-        isCorrect: raceState.isCorrect,
+        charIndex: raceState.currentCharIndex,
+        character: key,
+        isCorrect: newRaceState.isCorrect,
         timestamp: Date.now(),
       },
     ],
   };
 
-  return { ...raceState, statState: newStatState };
+  return { ...newRaceState, statState: newStatState };
 };
 
 interface OnChangeAction {
   type: "onChange";
   event: React.ChangeEvent<HTMLInputElement>;
   settings: GameSettings;
-  currentUser: User | GuestUser;
 }
 
 interface KeydownAction {
   type: "keydown";
   settings: GameSettings;
   event: React.KeyboardEvent<HTMLInputElement>;
-  currentUser: User | GuestUser;
 }
 
 interface StartRaceAction {
@@ -704,7 +695,6 @@ interface StartRaceAction {
 interface EndRaceAction {
   type: "endRace";
   settings: GameSettings;
-  currentUser: User | GuestUser;
 }
 
 interface ResetAction {
@@ -712,6 +702,7 @@ interface ResetAction {
   shouldStartRace: boolean;
   retry: boolean;
   settings: GameSettings;
+  passage?: string;
 }
 
 interface AddPassageLengthAction {
@@ -722,16 +713,11 @@ interface AddPassageLengthAction {
 interface IncrementSecondsAction {
   type: "incrementSeconds";
   settings: GameSettings;
-  currentUser: User | GuestUser;
 }
 
 interface SetAmountAction {
   type: "setAmount";
   amount: number;
-}
-
-interface AddCharacterDataPointAction {
-  type: "addCharacterDataPoint";
 }
 
 export type RaceStateReducerActions =
@@ -742,8 +728,7 @@ export type RaceStateReducerActions =
   | StartRaceAction
   | EndRaceAction
   | IncrementSecondsAction
-  | SetAmountAction
-  | AddCharacterDataPointAction;
+  | SetAmountAction;
 
 const RaceStateReducer = (
   state: RaceState,
@@ -751,33 +736,27 @@ const RaceStateReducer = (
 ): RaceState => {
   switch (action.type) {
     case "onChange":
-      return OnChange(state, action.event, action.settings, action.currentUser);
+      return OnChange(state, action.event, action.settings);
     case "keydown":
-      return OnKeyDown(
-        state,
-        action.settings,
-        action.event,
-        action.currentUser
-      );
+      return OnKeyDown(state, action.settings, action.event);
     case "reset":
       return ResetRace(
         state,
         action.shouldStartRace,
         action.retry,
-        action.settings
+        action.settings,
+        action.passage
       );
     case "addPassageLength":
-      return AddPasageLength(state, action.settings);
+      return AddPassageLength(state, action.settings);
     case "startRace":
       return OnStartRace(state);
     case "endRace":
-      return OnEndRace(state, action.settings, action.currentUser);
+      return OnEndRace(state, action.settings);
     case "incrementSeconds":
-      return IncrementSeconds(state, action.settings, action.currentUser);
+      return IncrementSeconds(state, action.settings);
     case "setAmount":
       return SetAmount(state, action.amount);
-    case "addCharacterDataPoint":
-      return AddCharacterDataPoint(state);
     default:
       throw new Error();
   }
@@ -794,8 +773,13 @@ export default function useRaceLogic({
   settings,
   passage,
   testDisabled,
+  setResultsDataProp,
 }: RaceLogicProps) {
-  const { currentUser } = useAuth();
+  const { currentUser, isLoggedIn } = useAuth();
+
+  const { addGuestRace } = useStats();
+
+  const { socket } = useSocketContext();
 
   const [raceState, raceStateDispatch] = React.useReducer(
     RaceStateReducer,
@@ -804,7 +788,7 @@ export default function useRaceLogic({
 
   useInterval(
     () => {
-      raceStateDispatch({ type: "incrementSeconds", settings, currentUser });
+      raceStateDispatch({ type: "incrementSeconds", settings });
     },
     raceState.isRaceRunning ? 1000 : null
   );
@@ -815,6 +799,7 @@ export default function useRaceLogic({
       shouldStartRace: false,
       retry: false,
       settings,
+      passage,
     });
   }, [settings.gameInfo, settings.textType, passage]);
 
@@ -844,29 +829,64 @@ export default function useRaceLogic({
       raceState.words.length - raceState.wordsTyped < 20
     )
       raceStateDispatch({ type: "addPassageLength", settings });
-  }, [raceState.wordsTyped]);
 
-  React.useEffect(() => {
-    if (settings.online && testDisabled === false) {
-      raceStateDispatch({ type: "startRace" });
+    if (settings.raceType === RaceTypes.ONLINE) {
+      socket.emit(
+        CLIENT_RACE_UPDATE_EVENT,
+        raceState.currentCharIndex,
+        raceState.wordsTyped,
+        raceState.isCorrect
+      );
     }
-  }, [testDisabled]);
+  }, [raceState.wordsTyped]);
 
   React.useEffect(() => {
     if (raceState.amount <= 0 && raceState.isRaceRunning) {
       console.log("Ending Race On Amounts");
-      raceStateDispatch({ type: "endRace", settings, currentUser });
+      raceStateDispatch({ type: "endRace", settings });
     }
   }, [raceState.amount]);
 
-  // React.useEffect(() => {
-  //   if (setResultsDataProp) setResultsDataProp(statState.resultsData);
-  // }, [statState.resultsData]);
+  React.useEffect(() => {
+    if (!raceState.isRaceFinished) return;
+    if (settings.raceType === RaceTypes.ONLINE) {
+      if (setResultsDataProp) {
+        setResultsDataProp(raceState.statState.resultsData);
+      }
+      socket.emit(
+        CLIENT_RACE_UPDATE_EVENT,
+        raceState.currentCharIndex,
+        raceState.wordsTyped,
+        raceState.isCorrect
+      );
+    }
+
+    if (isLoggedIn) {
+      try {
+        // Send results data to server
+        RaceAPI.sendRaceData(currentUser, {
+          ...raceState.statState.resultsData,
+          improvementCategory: settings.improvementCategory,
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    } else {
+      addGuestRace(raceState.statState.resultsData);
+    }
+  }, [raceState.isRaceFinished, isLoggedIn]);
 
   React.useEffect(() => {
-    if (raceState.prevKey.length > 1) return;
-    raceStateDispatch({ type: "addCharacterDataPoint" });
-  }, [raceState.currentCharIndex]);
+    if (settings.raceType !== RaceTypes.ONLINE) return;
+    const OnMatchStarted = () => {
+      raceStateDispatch({ type: "startRace" });
+    };
+    socket.on(MATCH_STARTED_EVENT, OnMatchStarted);
+
+    return () => {
+      socket.off(MATCH_STARTED_EVENT, OnMatchStarted);
+    };
+  }, []);
 
   const val: RaceLogic = {
     raceState,

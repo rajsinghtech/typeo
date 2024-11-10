@@ -1,4 +1,5 @@
-import { GameTypeNames, TextTypeNames } from "./settings";
+import { Timestamp } from "firebase/firestore";
+import { GameTypeNames, GameTypes, TextTypeNames, TextTypes } from "./settings";
 
 export interface StatsStructure {
   averages: RaceStats;
@@ -8,6 +9,33 @@ export interface StatsStructure {
 export interface RaceStats {
   wpm: number;
   accuracy: number;
+}
+
+export interface CharacterStats {
+  wpm: number;
+  frequency: number;
+  misses: number;
+}
+
+export interface BaseStats {
+  averages: RaceStats;
+  best: RaceStats;
+}
+
+export type CharacterStatsMap = Map<string, CharacterStats>;
+
+export interface CharacterStatsHistory {
+  stats: CharacterStatsMap;
+  timestamp: Timestamp;
+}
+
+export interface CharacterStatsWithHistory {
+  stats: CharacterStatsMap;
+  history: CharacterStatsHistory[];
+}
+
+export interface SequenceData {
+  [x: string]: number;
 }
 
 export enum Timeframes {
@@ -25,7 +53,13 @@ export interface StatFilters {
 }
 
 export const DefaultStatFilters = {
-  timeframe: Timeframes.LAST_100,
+  timeframe: Timeframes.LAST_25,
   gameMode: GameTypeNames.slice(0, GameTypeNames.length - 1).map((_, i) => i),
   textType: TextTypeNames.map((_, i) => i),
+};
+
+export const DefaultImprovementStatFilters = {
+  timeframe: Timeframes.LAST_25,
+  gameMode: [GameTypes.WORDS],
+  textType: [TextTypes.TOP_WORDS],
 };
