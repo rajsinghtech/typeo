@@ -4,6 +4,7 @@ import {
   TimeScale,
   PointElement,
   LineElement,
+  LineController,
   Title,
   Tooltip,
   Legend,
@@ -24,6 +25,7 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
+  LineController,
   Title,
   Tooltip,
   Legend

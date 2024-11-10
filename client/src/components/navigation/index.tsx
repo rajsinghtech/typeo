@@ -217,7 +217,7 @@ const MiniDrawerMemo = React.memo(function MiniDrawer({
             {[
               { name: "Home", path: "/", icon: <HomeIcon />, click: Home },
               {
-                name: "Improve",
+                name: "Improve (Coming Soon)",
                 path: "/improvement",
                 icon: <InsightsIcon />,
                 click: Improve,
@@ -275,6 +275,7 @@ const MiniDrawerMemo = React.memo(function MiniDrawer({
                         }
                       : val.click
                   }
+                  disabled={["/improvement"].includes(val.name)}
                 >
                   <Box
                     width="100%"
