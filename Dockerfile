@@ -13,6 +13,8 @@ RUN npm install --silent
 # Copy frontend source code
 COPY client/ ./
 
+COPY client/.env ./.env
+
 # Build the frontend
 RUN npm run build
 
