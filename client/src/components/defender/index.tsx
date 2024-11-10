@@ -97,6 +97,7 @@ const DefenderComponent = ({
     if (defenderState.raceState.currentCharIndex === 0) {
       resetStyles();
     } else if (wbRef.current) {
+      if (defenderState.raceState.currentWordIndex === undefined) return;
       const raceState = defenderState.raceState;
 
       const isNewWord =

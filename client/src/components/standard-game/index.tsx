@@ -2,12 +2,11 @@ import React from "react";
 import { GridCard } from "components/common";
 import Follower from "components/standard-game/feedback/follower";
 import WordBox from "components/standard-game/word-box";
-import { GameSettings } from "constants/settings";
+import { GameSettings, RaceTypes } from "constants/settings";
 import { useAuth } from "contexts/AuthContext";
 import Results from "components/standard-game/results/standard-results";
 import { MAX_INPUT_LENGTH, ResultsData } from "constants/race";
-import { OnlineRaceData } from "pages/online/components/ffa-game";
-import { HeaderMobile } from "pages/home/components/header";
+import { OnlineRaceData, PLAYER_COLORS } from "components/multiplayer/ffa-game";
 import useRaceLogic, {
   RaceState,
 } from "components/standard-game/hooks/RaceLogic";
@@ -15,7 +14,6 @@ import SpeedProgress from "components/standard-game/feedback/speed-progress";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import {
   Box,
-  Grid,
   IconButton,
   Theme,
   Typography,
@@ -36,17 +34,23 @@ interface StandardGameProps {
   testDisabled?: boolean;
   onlineRaceData?: OnlineRaceData;
   setResultsDataProp?: (data: ResultsData) => void;
+  passage?: string;
 }
 
 export default function StandardGame({
   settings,
   testDisabled,
+  onlineRaceData,
+  setResultsDataProp,
+  passage,
 }: StandardGameProps) {
   const { currentUser } = useAuth();
 
   const { raceState, raceStateDispatch } = useRaceLogic({
     settings,
     testDisabled,
+    passage,
+    setResultsDataProp,
   });
 
   const prevRaceState = usePreviousRaceState(raceState);
@@ -54,7 +58,6 @@ export default function StandardGame({
   const wbContainerRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const wbRef = React.useRef<HTMLDivElement>(null);
-  const [inputDisabled, setInputDisabled] = React.useState<boolean>(false);
   const [isFocused, setIsFocused] = React.useState<boolean>(true);
   const [focusMessageOpen, setFocusMessageOpen] = React.useState<boolean>(true);
   const [focusTimeout, setFocusTimeout] = React.useState<number>(0);
@@ -91,12 +94,21 @@ export default function StandardGame({
         shouldStartRace: false,
         retry,
         settings,
+        passage,
       });
 
       StyleReset();
     },
-    [settings]
+    [settings, passage]
   );
+
+  React.useEffect(() => {
+    if (!testDisabled) {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }
+  }, [testDisabled]);
 
   React.useEffect(() => {
     StyleReset();
@@ -105,11 +117,14 @@ export default function StandardGame({
   React.useEffect(() => {
     if (raceState.isRaceFinished) {
       StyleReset();
-      if (settings.online) {
-        setInputDisabled(true);
-      }
     }
   }, [raceState.isRaceFinished]);
+
+  React.useEffect(() => {
+    if (settings.raceType === RaceTypes.ONLINE && inputRef.current) {
+      Reset(false);
+    }
+  }, [passage]);
 
   React.useEffect(() => {
     updateStyles(prevRaceState, raceState, wbRef, theme, settings);
@@ -140,6 +155,8 @@ export default function StandardGame({
   }, [raceState.isRaceFinished]);
 
   React.useEffect(() => {
+    let isMounted = true;
+
     clearTimeout(focusTimeout);
     if (isFocused) {
       if (wbRef.current) {
@@ -148,15 +165,19 @@ export default function StandardGame({
       setFocusMessageOpen(false);
     } else {
       const timeout = window.setTimeout(() => {
-        setFocusMessageOpen(true);
-        if (wbRef.current) {
-          wbRef.current.style.filter = "blur(2px)";
+        if (isMounted) {
+          setFocusMessageOpen(true);
+          if (wbRef.current) {
+            wbRef.current.style.filter = "blur(2px)";
+          }
         }
       }, 1000);
+
       setFocusTimeout(timeout);
     }
 
     return () => {
+      isMounted = false;
       clearTimeout();
     };
   }, [isFocused]);
@@ -171,76 +192,70 @@ export default function StandardGame({
     );
   }, [settings, raceState.isRaceFinished]);
 
-  const mdScreenSize = useMediaQuery(theme.breakpoints.up("md"));
+  const smScreenSize = useMediaQuery(theme.breakpoints.up("sm"));
   const xsScreenSize = useMediaQuery(theme.breakpoints.down("vs"));
 
   const AmountDisplay = React.useMemo(() => {
     return (
-      <Grid item xs={12} md={1.25} xl={1}>
-        <GridCard
-          noStyle={!mdScreenSize}
-          sx={{
-            display: "flex",
-            height: "100%",
-            justifyContent: "space-between",
-            flexDirection: { xs: "row", md: "column" },
-            alignItems: { xs: "flex-end", md: "center" },
-            textAlign: "center",
-            gap: 3,
-            py: { xs: 0, md: 2 },
-            px: 0,
-          }}
+      <GridCard
+        noStyle={!smScreenSize}
+        sx={{
+          display: "flex",
+          flex: { xs: null, sm: "0 0 5em" },
+          justifyContent: "space-between",
+          flexDirection: { xs: "row", sm: "column" },
+          alignItems: { xs: "flex-end", sm: "center" },
+          textAlign: "center",
+          gap: 3,
+          py: { xs: 0, sm: 2 },
+          px: 0,
+        }}
+      >
+        <Box
+          width={{ xs: "fit-content", sm: "100%" }}
+          sx={{ borderBottom: { xs: "none", sm: "1px solid #696969" } }}
+          pb={{ xs: 0, sm: 2 }}
         >
-          <Box
-            width={{ xs: "15%", md: "75%" }}
-            sx={{ borderBottom: { xs: "none", md: "1px solid #696969" } }}
-            pb={{ xs: 0, md: 2 }}
+          <GridCard
+            noStyle={smScreenSize}
+            textalign="center"
+            sx={{
+              width: { xs: "fit-content", sm: "100%" },
+              minWidth: { xs: "4em", sm: 0 },
+            }}
           >
+            <Typography variant="h5" color="primary.main">
+              {raceState.amount}
+            </Typography>
+          </GridCard>
+        </Box>
+        {settings.display.showWPM && (
+          <Box>
             <GridCard
-              noStyle={mdScreenSize}
-              textalign="center"
+              noStyle={smScreenSize}
               sx={{
-                width: { xs: "fit-content", md: "100%" },
+                width: { xs: "fit-content", sm: "100%" },
+                float: "right",
               }}
             >
-              <Typography variant="h5" color="primary.main">
-                {raceState.amount}
-              </Typography>
+              <SpeedProgress wpm={raceState.statState.wpm} />
             </GridCard>
           </Box>
-          {!mdScreenSize ? <HeaderMobile /> : null}
-          {settings.display.showWPM ? (
-            <Box width="15%">
-              <GridCard
-                noStyle={mdScreenSize}
-                sx={{
-                  width: { xs: "fit-content", md: "100%" },
-                  float: "right",
-                }}
-              >
-                <SpeedProgress wpm={raceState.statState.wpm} />
-              </GridCard>
-            </Box>
-          ) : null}
-        </GridCard>
-      </Grid>
+        )}
+      </GridCard>
     );
   }, [
     raceState.amount,
     settings.display.showWPM,
     raceState.statState.wpm,
-    mdScreenSize,
+    smScreenSize,
     xsScreenSize,
   ]);
 
   const MainDisplay = React.useMemo(() => {
     return (
-      <Grid
-        item
-        xs={12}
-        md={10.75}
-        xl={11}
-        sx={{ userSelect: "none" }}
+      <Box
+        sx={{ userSelect: "none", flexGrow: 1 }}
         onClick={() => {
           if (inputRef.current) {
             inputRef.current.focus();
@@ -248,6 +263,7 @@ export default function StandardGame({
         }}
       >
         <GridCard
+          id="main-display"
           refObject={wbContainerRef}
           accent={true}
           sx={{ position: "relative", textAlign: "center" }}
@@ -272,7 +288,6 @@ export default function StandardGame({
                 type: "keydown",
                 event,
                 settings,
-                currentUser,
               })
             }
             onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
@@ -280,7 +295,6 @@ export default function StandardGame({
                 type: "onChange",
                 event,
                 settings,
-                currentUser,
               })
             }
             onFocus={() => {
@@ -289,7 +303,7 @@ export default function StandardGame({
             onBlur={() => {
               setIsFocused(false);
             }}
-            disabled={inputDisabled || testDisabled}
+            disabled={testDisabled}
             ref={inputRef}
           />
           {testDisabled && settings.gameInfo.practice.isPractice ? (
@@ -316,27 +330,14 @@ export default function StandardGame({
                   </Typography>
                 </GridCard>
               ) : null}
-              <WordBox words={raceState.words} boxRef={wbRef} />
+              <WordBox
+                words={raceState.words}
+                boxRef={wbRef}
+                settings={settings}
+              />
             </>
           )}
-          {/* {onlineRaceData
-            ? onlineRaceData.playerData.map((player) => {
-                if (player.id === currentUser.uid) return null;
-                const { col, cot, cw } = calculateFollowerPosition(
-                  player.wordsTyped,
-                  raceState.words,
-                  wbRef
-                );
-                return (
-                  <Follower
-                    key={player.id}
-                    wbRef={wbRef}
-                    raceState={prevRaceState}
-                  />
-                );
-              })
-            : null} */}
-          {!settings.online ? (
+          {settings.raceType !== RaceTypes.ONLINE ? (
             <IconButton
               color="secondary"
               onClick={() => Reset(false)}
@@ -346,28 +347,59 @@ export default function StandardGame({
             </IconButton>
           ) : null}
         </GridCard>
-      </Grid>
+      </Box>
     );
   }, [
     raceState.words,
     raceStateDispatch,
-    inputDisabled,
     testDisabled,
     settings,
     currentUser,
     focusMessageOpen,
   ]);
 
+  const OnlineFollowersDisplay = React.useMemo(() => {
+    return (
+      <>
+        {onlineRaceData
+          ? onlineRaceData.playerData.map((player, index) => {
+              if (player.id === currentUser.uid) return null;
+
+              return (
+                <Follower
+                  key={player.id}
+                  wbContainerRef={wbContainerRef}
+                  wbRef={wbRef}
+                  raceState={{
+                    currentCharIndex: player.currentCharIndex,
+                    wordsTyped: player.wordsTyped,
+                  }}
+                  settings={settings}
+                  isCorrect={player.isCorrect}
+                  isEndOfPassage={
+                    player.currentCharIndex === (passage?.length || 0) - 1
+                  }
+                  color={PLAYER_COLORS[index]}
+                />
+              );
+            })
+          : null}
+      </>
+    );
+  }, [onlineRaceData, currentUser.uid]);
+
   return (
     <>
-      {ResultsDisplay}
+      {!onlineRaceData ? ResultsDisplay : null}
       <Follower
-        disabled={!raceState.isRaceRunning}
         wbContainerRef={wbContainerRef}
         wbRef={wbRef}
         raceState={raceState}
+        settings={settings}
       />
-      {AmountDisplay}
+
+      {OnlineFollowersDisplay}
+      {settings.raceType === RaceTypes.ONLINE ? null : AmountDisplay}
       {MainDisplay}
     </>
   );

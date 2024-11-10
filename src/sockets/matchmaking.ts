@@ -45,7 +45,7 @@ const matchmakingSocketHandler = (io: Server, socket: Socket) => {
   socket.on(JOIN_QUEUE_EVENT, async () => {
     if (socket.rooms.size > 1) {
       for (const room of socket.rooms) {
-        if (room !== socket.id) socket.leave(room);
+        if (room !== socket.id) OnPlayerLeave(io, socket, room);
       }
     }
 
@@ -129,9 +129,9 @@ const matchmakingSocketHandler = (io: Server, socket: Socket) => {
   };
 };
 
-const OnPlayerLeave = (io: Server, socket: Socket) => {
+const OnPlayerLeave = (io: Server, socket: Socket, room?: string) => {
   if (socket.rooms.size <= 1) return;
-  const matchID = Array.from(socket.rooms)[1];
+  const matchID = room || Array.from(socket.rooms)[1];
   socket.leave(matchID);
 
   const match = AwaitingMatches.get(matchID) || Matches.get(matchID);

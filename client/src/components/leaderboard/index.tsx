@@ -1,7 +1,7 @@
 import React from "react";
 import { GridCard, useInterval } from "components/common";
 import LeaderboardItem from "components/leaderboard/leaderboard-item";
-import { Grid, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 
 function msToHMS(ms: number) {
   const h = (ms / 3.6e6) | 0;

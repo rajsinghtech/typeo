@@ -26,6 +26,14 @@ const Router = () => {
             path="/forgot-password"
             component={Pages.ForgotPassword}
           />
+          <Route exact path="/improvement" component={Pages.Improve} />
+          <Route exact path="/multiplayer" component={Pages.Multiplayer} />
+          <Route exact path="/multiplayer/ffa" component={Pages.FFA} />
+          <Route
+            exact
+            path="/multiplayer/private/:matchId"
+            component={Pages.PrivateMatch}
+          />
         </Switch>
       </Nav>
     </BrowserRouter>

@@ -1,7 +1,6 @@
 import React from "react";
 import { Placement, TextVariant } from "constants/common";
 import { v4 as uuidv4 } from "uuid";
-import { useTheme } from "@mui/system";
 import { styled } from "@mui/material/styles";
 import Alert from "@mui/material/Alert";
 import {
@@ -16,8 +15,9 @@ import {
   Checkbox,
   ListItemText,
   Box,
-  Chip,
   InputLabel,
+  Switch,
+  useTheme,
 } from "@mui/material";
 
 type DefaultProps = {
@@ -86,6 +86,7 @@ interface GridCardProps {
   noStyle?: boolean;
   textalign?: string;
   color?: string;
+  // eslint-disable-next-line
   sx?: any;
   children?: React.ReactNode;
   [x: string]: unknown;
@@ -120,12 +121,8 @@ export const GridCard = ({
       backgroundImage: "none",
       color: theme.palette.text.secondary,
       borderRadius: "15px",
-      border: noBorder ? "none" : "2px solid #393C49",
-      borderLeft: accent
-        ? "2px solid white"
-        : noBorder
-        ? "none"
-        : "2px solid #393C49",
+      border: noBorder ? "none" : "2px solid rgba(100, 100, 100, 0.1)",
+      borderLeft: accent ? "2px solid white" : undefined,
     },
   };
 
@@ -152,6 +149,7 @@ interface HoverableTextProps {
   hoverText: string;
   placement?: Placement;
   variant?: TextVariant;
+  // eslint-disable-next-line
   sx?: any;
   [x: string]: unknown;
 }
@@ -173,6 +171,18 @@ export const HoverableText = ({
         {text}
       </Typography>
     </Tooltip>
+  );
+};
+
+interface StyledHeaderProps {
+  children: React.ReactNode;
+}
+
+export const StyledHeader = ({ children }: StyledHeaderProps) => {
+  return (
+    <Box padding={3} borderRadius={2} bgcolor="#212121">
+      {children}
+    </Box>
   );
 };
 
@@ -292,6 +302,49 @@ export const getMultiSelectUpdate = (
   }
 
   return newValues;
+};
+
+// eslint-disable-next-line
+export const StyledSwitch = (props: any) => {
+  return (
+    <Switch
+      {...props}
+      disableRipple
+      disableFocusRipple
+      sx={{
+        width: 70,
+        height: 45,
+        "& .MuiSwitch-switchBase": {
+          transitionDuration: "400ms",
+          "&.Mui-checked": {
+            transform: "translateX(24px)",
+            "& + .MuiSwitch-track": {
+              opacity: 1,
+            },
+            "&.Mui-disabled + .MuiSwitch-track": {
+              opacity: 0.5,
+            },
+            "& .MuiSwitch-thumb": {
+              transform: "translate(6px, 6px)",
+            },
+          },
+        },
+        "& .MuiSwitch-switchBase:hover": {
+          backgroundColor: "transparent",
+        },
+        "& .MuiSwitch-track": {
+          borderRadius: 20,
+          transition: "background-color 500ms",
+        },
+        "& .MuiSwitch-thumb": {
+          color: "#fff",
+          width: 16,
+          height: 16,
+          transform: "translate(6px, 5px)",
+        },
+      }}
+    />
+  );
 };
 
 // interface DSnackbarProps {

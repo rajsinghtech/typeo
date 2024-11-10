@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import ReactGA from "react-ga";
 import SoloGame from "pages/home/components/solo-game";
-import Header from "pages/home/components/header";
 import LeaderboardComponent from "components/leaderboard";
 import { getLeaderboards } from "api/rest/leaderboard";
 import Grid from "@mui/material/Grid";
@@ -79,12 +78,13 @@ export default function Home() {
         </Button>
         </Grid> */}
       </Grid>
-      <Grid container spacing={3} mt={1}>
-        <Grid item xs={12} sm={6}>
+      <Divider sx={{ mt: 5, mb: 5 }} />
+      <Grid container spacing={3} justifyContent="center">
+        <Grid item xs={12} sm={5}>
           <LeaderboardComponent title="Daily" players={dailyLeaderboard} />
         </Grid>
 
-        <Grid item xs={12} sm={6}>
+        <Grid item xs={12} sm={5}>
           <LeaderboardComponent title="All Time" players={allTimeLeaderboard} />
         </Grid>
       </Grid>
